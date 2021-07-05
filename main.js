@@ -68,9 +68,8 @@ const FIGURE = [{
 },
 ];
 
-// fdht
-
 let model = {
+    scores: 0,
     map: [],
     tekFig: {},
     formtekFigure() {
@@ -88,7 +87,8 @@ let model = {
         //Инициализируем массив фона с случайными числами
         this.map = Array.from({ length: view.canvas.width / SIZE_TILES }).map(() =>
             Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
-                (Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))))
+                (Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
+        this.scores = 0;
         this.formtekFigure();
 
     },
@@ -115,6 +115,7 @@ let model = {
                             this.map[i][j] = { elements: "Block", nomer: this.map[i][j - 1].nomer, fon: this.map[i][j]};
                             this.map[i][j - 1] = this.map[i][j - 1].fon;
                         }
+                this.scores += 100;
             }
 
         }
@@ -123,11 +124,13 @@ let model = {
 let view = {
     canvas: {},
     ctx: {},
+    txtScores: {},
     imgFon: new Image(),
     imgKv: [],
     init() {
         this.canvas = document.getElementById('canvasId');
         this.ctx = this.canvas.getContext("2d");
+        this.txtScores = document.getElementById('scores');
         document.addEventListener("keydown", controller.keyDownHandler, false);
         document.addEventListener("keyup", controller.keyUpHandler, false);
         //Формируем картинки для фигур
@@ -157,6 +160,7 @@ let view = {
         for (let i = 0; i < model.tekFig.number; i++) {
             this.ctx.drawImage(this.imgKv[model.tekFig.viewElement[i]], 0, 0, SIZE_TILES, SIZE_TILES, (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) + controller.x, (model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES) + controller.y, SIZE_TILES, SIZE_TILES);
         }
+        this.txtScores.innerHTML = model.scores;
     }
 };
 let controller = {
