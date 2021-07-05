@@ -6,28 +6,26 @@ const STEP_MOVEMENT_KEYPRESS = 30;//Шаг движения блоков
 const NUMBER_FIGURE_ELEMENTS = 4;// Количество элементов фигур
 const FIGURE = [{
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [1, 0], [2, 0], [3, 0]],
     // ****
-        [[0, 0], [0, 1], [0, 2], [0, 3]],
+    [[0, 0], [0, 1], [0, 2], [0, 3]],
     //    *
     //    *
     //    *
     //    *
-        [[0, 0], [1, 0], [2, 0], [3, 0]],
+    [[0, 0], [1, 0], [2, 0], [3, 0]],
     // ****
-        [[0, 0], [0, 1], [0, 2], [0, 3]]]
+    [[0, 0], [0, 1], [0, 2], [0, 3]]]
     //    *
     //    *
     //    *
     //    *
 }, {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [1, 0], [1, 1], [2, 1]],
     //** 
     // **
-        [[0, 1], [1, 1], [0, 2], [1, 0]],
+    [[0, 1], [1, 1], [0, 2], [1, 0]],
     // *
     //**
     //*
@@ -35,7 +33,6 @@ const FIGURE = [{
     [[0, 1], [1, 1], [0, 2], [1, 0]]]
 }, {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [1, 0], [1, 1], [1, 2]],
     [[0, 1], [1, 1], [2, 1], [2, 0]],
     [[0, 0], [0, 1], [0, 2], [1, 2]],
@@ -43,7 +40,6 @@ const FIGURE = [{
 },
 {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [0, 1], [1, 1], [1, 2]],
     [[0, 1], [1, 1], [1, 0], [2, 0]],
     [[0, 0], [0, 1], [1, 1], [1, 2]],
@@ -51,7 +47,6 @@ const FIGURE = [{
 },
 {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [0, 1], [1, 1], [0, 2]],
     [[0, 0], [1, 0], [2, 0], [1, 1]],
     [[0, 1], [1, 1], [1, 0], [1, 2]],
@@ -59,7 +54,6 @@ const FIGURE = [{
 },
 {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [0, 1], [1, 0], [1, 1]],
     [[0, 0], [0, 1], [1, 0], [1, 1]],
     [[0, 0], [0, 1], [1, 0], [1, 1]],
@@ -67,7 +61,6 @@ const FIGURE = [{
 },
 {
     number: 4,
-    rotate: 0,
     сoordinates: [[[0, 0], [1, 0], [0, 1], [0, 2]],
     [[0, 0], [1, 0], [2, 0], [2, 1]],
     [[1, 0], [1, 1], [1, 2], [0, 2]],
@@ -118,6 +111,33 @@ let model = {
         }
         this.formtekFigure();
 
+    },
+    deleteRow: function () {
+        for (let j = 0; j < view.canvas.height / SIZE_TILES; j++) {
+            var del = true;
+            let y = j;
+            for (let i = 0; i < view.canvas.width / SIZE_TILES; i++)
+                if (typeof (this.map[i][j]) === 'number') {
+                    del = false;
+                    break;
+                }
+            if (del == true) {
+                // Если вся строка заполнена удаляем ее
+                for (let i = 0; i < view.canvas.width / SIZE_TILES; i++)
+                    for (let j = y; j > 0; j--)
+                        if (typeof (this.map[i][j]) !== 'number' && typeof (this.map[i][j - 1]) === 'number') {
+                            this.map[i][j] = this.map[i][j].fon;
+                        }
+                        else if (typeof (this.map[i][j]) !== 'number' && typeof (this.map[i][j - 1]) !== 'number') {
+                            this.map[i][j] = { elements: "Block", nomer: this.map[i][j - 1].nomer, fon: this.map[i][j].fon };
+                            this.map[i][j - 1] = this.map[i][j - 1].fon;
+                        } else if (typeof (this.map[i][j]) === 'number' && typeof (this.map[i][j - 1]) !== 'number') {
+                            this.map[i][j] = { elements: "Block", nomer: this.map[i][j - 1].nomer, fon: this.map[i][j]};
+                            this.map[i][j - 1] = this.map[i][j - 1].fon;
+                        }
+            }
+
+        }
     }
 };
 let view = {
@@ -186,15 +206,13 @@ let controller = {
                 this.x += STEP_MOVEMENT_KEYPRESS;
         }
 
-//!!!Решить вопрос с колизиями при повороте!!!
-        
         if (this.upPressed) {
             if (model.tekFig.rotate + 1 == 4)
                 model.tekFig.rotate = 0;
             else
                 model.tekFig.rotate += 1;
             if (this.collission.call(this, this.x, this.y))
-                if (model.tekFig.rotate - 1 <0)
+                if (model.tekFig.rotate - 1 < 0)
                     model.tekFig.rotate = 4;
                 else
                     model.tekFig.rotate -= 1;
@@ -203,8 +221,10 @@ let controller = {
 
         if (this.collission.call(this, this.x, this.y) == true) {
             for (let i = 0; i < model.tekFig.number; i++) {
-                model.map[Math.floor(this.x / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][0]][Math.floor(this.y / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][1]] = { elements: "F", nomer: model.tekFig.viewElement[i] };
+                model.map[Math.floor(this.x / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][0]][Math.floor(this.y / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][1]] = { elements: "Block", nomer: model.tekFig.viewElement[i], fon: model.map[Math.floor(this.x / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][0]][Math.floor(this.y / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][1]] };
+                
             }
+            model.deleteRow();
             model.formtekFigure();
             this.y = 0;
         }
@@ -214,7 +234,7 @@ let controller = {
         }
         view.draw();
     },
-    collission: function (x, y) {
+    collission: function (x, y) { // Проверяем столкновение
 
         for (let i = 0; i < model.tekFig.number; i++) {
             if (x + (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) < 0) return true;
