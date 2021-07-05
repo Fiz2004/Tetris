@@ -244,7 +244,10 @@ let controller = {
 
             if (typeof (model.map[Math.floor((x + model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) / SIZE_TILES)][Math.floor((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) / SIZE_TILES)]) !== "number")
                 return true;
-
+            
+            if (typeof (model.map[Math.floor((x + model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) / SIZE_TILES)][Math.floor((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) / SIZE_TILES) - 1]) !== "number" &&
+                ((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) % SIZE_TILES) <= SIZE_TILES - STEP_MOVEMENT_AUTO-1)
+                return true;
         }
         return false;
     },
