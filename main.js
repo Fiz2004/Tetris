@@ -73,46 +73,26 @@ const FIGURE = [{
 let model = {
     map: [],
     tekFig: {},
-    formtekFigure: function () {
+    formtekFigure() {
         //Формируем текущую фигуру
-        this.tekFig = FIGURE[Math.floor(Math.random() * FIGURE.length)];
-        this.tekFig.rotate = 0;
-        this.tekFig.viewElement = [];
-        for (let i = 0; i < this.tekFig.number; i++) {
-            this.tekFig.viewElement[i] = Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS);
-        }
-
-        //Получаем высоту текущей фигуры
-        this.tekFig.height = this.tekFig.сoordinates[this.tekFig.rotate][0][1];
-        for (let i = 1; i < this.tekFig.сoordinates[this.tekFig.rotate].length; i++) {
-            if (this.tekFig.сoordinates[this.tekFig.rotate][i][1] > this.tekFig.height)
-                this.tekFig.height = this.tekFig.сoordinates[this.tekFig.rotate][i][1];
-        }
-
-        //Получаем ширину текущей фигуры
-        this.tekFig.width = this.tekFig.сoordinates[this.tekFig.rotate][0][0];
-        for (let i = 1; i < this.tekFig.сoordinates[this.tekFig.rotate].length; i++) {
-            if (this.tekFig.сoordinates[this.tekFig.rotate][i][0] > this.tekFig.width)
-                this.tekFig.width = this.tekFig.сoordinates[this.tekFig.rotate][i][0];
-        }
-
+        let numberTekFig = Math.floor(Math.random() * FIGURE.length);
+        this.tekFig = {
+            ...FIGURE[numberTekFig],
+            rotate: 0,
+            viewElement: Array.from({ length: FIGURE[numberTekFig].number }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS))
+        };
+        
         controller.init();
     },
-    init: function () {
-        this.map = [];
-        // Формируем карту заднего фона
-        for (let i = 0; i < view.canvas.width / SIZE_TILES; i++) {
-            this.map.push([]);
-        }
-        for (let i = 0; i < view.canvas.width / SIZE_TILES; i++) {
-            for (let j = 0; j < view.canvas.height / SIZE_TILES; j++) {
-                this.map[i].push(Math.floor(Math.random() * 16));
-            }
-        }
+    init() {
+        //Инициализируем массив фона с случайными числами
+        this.map = Array.from({ length: view.canvas.width / SIZE_TILES }).map(() =>
+            Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
+                (Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))))
         this.formtekFigure();
 
     },
-    deleteRow: function () {
+    deleteRow() {
         for (let j = 0; j < view.canvas.height / SIZE_TILES; j++) {
             var del = true;
             let y = j;
@@ -145,7 +125,7 @@ let view = {
     ctx: {},
     imgFon: new Image(),
     imgKv: [],
-    init: function () {
+    init() {
         this.canvas = document.getElementById('canvasId');
         this.ctx = this.canvas.getContext("2d");
         document.addEventListener("keydown", controller.keyDownHandler, false);
@@ -164,7 +144,7 @@ let view = {
             this.imgKv[i].src = 'Kvadrat' + (i + 1) + '.png';
         }
     },
-    draw: function () {
+    draw() {
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < this.canvas.width / SIZE_TILES; i++)
             for (let j = 0; j < this.canvas.height / SIZE_TILES; j++)
@@ -186,7 +166,7 @@ let controller = {
     leftPressed: false,
     upPressed: false,
     downPressed: false,
-    tick: function () {
+    tick() {
         let startY = this.y;
 
         if (!this.downPressed) {
@@ -234,7 +214,7 @@ let controller = {
         }
         view.draw();
     },
-    collission: function (x, y) { // Проверяем столкновение
+    collission(x, y) { // Проверяем столкновение
 
         for (let i = 0; i < model.tekFig.number; i++) {
             if (x + (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) < 0) return true;
@@ -251,12 +231,17 @@ let controller = {
         }
         return false;
     },
-    init: function () {
+    init() {
         //Задаем начальное значение падения
         this.y = 0;
-        this.x = Math.floor(Math.random() * (view.canvas.width / SIZE_TILES - model.tekFig.width)) * SIZE_TILES;
+        let width = model.tekFig.сoordinates[model.tekFig.rotate][0][0];
+        for (let i = 1; i < model.tekFig.сoordinates[model.tekFig.rotate].length; i++) {
+            if (model.tekFig.сoordinates[model.tekFig.rotate][i][0] > width)
+                width = model.tekFig.сoordinates[model.tekFig.rotate][i][0];
+        }
+        this.x = Math.floor(Math.random() * (view.canvas.width / SIZE_TILES - width)) * SIZE_TILES;
     },
-    keyDownHandler: function (e) {
+    keyDownHandler(e) {
         if (e.keyCode == 39) {
             controller.rightPressed = true;
         }
@@ -272,7 +257,7 @@ let controller = {
 
     },
 
-    keyUpHandler: function (e) {
+    keyUpHandler(e) {
         if (e.keyCode == 39) {
             controller.rightPressed = false;
         }
