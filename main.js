@@ -4,73 +4,47 @@ const UPDATE_TIME = 100;//Время в милисекундах одного д
 const STEP_MOVEMENT_AUTO = 10;//Шаг движения блоков
 const STEP_MOVEMENT_KEYPRESS = 30;//Шаг движения блоков
 const NUMBER_FIGURE_ELEMENTS = 4;// Количество элементов фигур
-const FIGURE = [{
-    number: 4,
-    сoordinates: [[[0, 0], [1, 0], [2, 0], [3, 0]],
-    // ****
-    [[0, 0], [0, 1], [0, 2], [0, 3]],
-    //    *
-    //    *
-    //    *
-    //    *
+const FIGURE = [[
     [[0, 0], [1, 0], [2, 0], [3, 0]],
-    // ****
-    [[0, 0], [0, 1], [0, 2], [0, 3]]]
-    //    *
-    //    *
-    //    *
-    //    *
-}, {
-    number: 4,
-    сoordinates: [[[0, 0], [1, 0], [1, 1], [2, 1]],
-    //** 
-    // **
-    [[0, 1], [1, 1], [0, 2], [1, 0]],
-    // *
-    //**
-    //*
+    [[0, 0], [0, 1], [0, 2], [0, 3]],
+    [[0, 0], [1, 0], [2, 0], [3, 0]],
+    [[0, 0], [0, 1], [0, 2], [0, 3]]],
+[
     [[0, 0], [1, 0], [1, 1], [2, 1]],
-    [[0, 1], [1, 1], [0, 2], [1, 0]]]
-}, {
-    number: 4,
-    сoordinates: [[[0, 0], [1, 0], [1, 1], [1, 2]],
+    [[0, 1], [1, 1], [0, 2], [1, 0]],
+    [[0, 0], [1, 0], [1, 1], [2, 1]],
+    [[0, 1], [1, 1], [0, 2], [1, 0]]],
+[
+    [[0, 0], [1, 0], [1, 1], [1, 2]],
     [[0, 1], [1, 1], [2, 1], [2, 0]],
     [[0, 0], [0, 1], [0, 2], [1, 2]],
-    [[0, 0], [0, 1], [1, 0], [2, 0]]]
-},
-{
-    number: 4,
-    сoordinates: [[[0, 0], [0, 1], [1, 1], [1, 2]],
+    [[0, 0], [0, 1], [1, 0], [2, 0]]],
+[
+    [[0, 0], [0, 1], [1, 1], [1, 2]],
     [[0, 1], [1, 1], [1, 0], [2, 0]],
     [[0, 0], [0, 1], [1, 1], [1, 2]],
-    [[0, 1], [1, 1], [1, 0], [2, 0]]]
-},
-{
-    number: 4,
-    сoordinates: [[[0, 0], [0, 1], [1, 1], [0, 2]],
+    [[0, 1], [1, 1], [1, 0], [2, 0]]],
+[
+    [[0, 0], [0, 1], [1, 1], [0, 2]],
     [[0, 0], [1, 0], [2, 0], [1, 1]],
     [[0, 1], [1, 1], [1, 0], [1, 2]],
-    [[0, 1], [1, 1], [2, 1], [1, 0]]]
-},
-{
-    number: 4,
-    сoordinates: [[[0, 0], [0, 1], [1, 0], [1, 1]],
+    [[0, 1], [1, 1], [2, 1], [1, 0]]],
+[
     [[0, 0], [0, 1], [1, 0], [1, 1]],
     [[0, 0], [0, 1], [1, 0], [1, 1]],
-    [[0, 0], [0, 1], [1, 0], [1, 1]]]
-},
-{
-    number: 4,
-    сoordinates: [[[0, 0], [1, 0], [0, 1], [0, 2]],
+    [[0, 0], [0, 1], [1, 0], [1, 1]],
+    [[0, 0], [0, 1], [1, 0], [1, 1]]],
+[
+    [[0, 0], [1, 0], [0, 1], [0, 2]],
     [[0, 0], [1, 0], [2, 0], [2, 1]],
     [[1, 0], [1, 1], [1, 2], [0, 2]],
     [[0, 0], [0, 1], [1, 1], [2, 1]]]
-},
 ];
 
 let model = {
     scores: 0,
-    map: [],
+    field: [],
+    fieldBlocks: [],
     tekFig: {},
     formtekFigure() {
         //Формируем текущую фигуру
@@ -78,47 +52,31 @@ let model = {
         this.tekFig = {
             ...FIGURE[numberTekFig],
             rotate: 0,
-            viewElement: Array.from({ length: FIGURE[numberTekFig].number }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS))
+            viewElement: Array.from({ length: FIGURE[numberTekFig][0].length }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1)
         };
-        
+
         controller.init();
     },
     init() {
         //Инициализируем массив фона с случайными числами
-        this.map = Array.from({ length: view.canvas.width / SIZE_TILES }).map(() =>
-            Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
+        this.field = Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
+            Array.from({ length: view.canvas.width / SIZE_TILES }).map(() =>
                 (Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
+        this.fieldBlocks = Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
+            Array.from({ length: view.canvas.width / SIZE_TILES }).map(() => 0));
         this.scores = 0;
         this.formtekFigure();
 
     },
     deleteRow() {
-        for (let j = 0; j < view.canvas.height / SIZE_TILES; j++) {
-            var del = true;
-            let y = j;
-            for (let i = 0; i < view.canvas.width / SIZE_TILES; i++)
-                if (typeof (this.map[i][j]) === 'number') {
-                    del = false;
-                    break;
-                }
-            if (del == true) {
-                // Если вся строка заполнена удаляем ее
-                for (let i = 0; i < view.canvas.width / SIZE_TILES; i++)
-                    for (let j = y; j > 0; j--)
-                        if (typeof (this.map[i][j]) !== 'number' && typeof (this.map[i][j - 1]) === 'number') {
-                            this.map[i][j] = this.map[i][j].fon;
-                        }
-                        else if (typeof (this.map[i][j]) !== 'number' && typeof (this.map[i][j - 1]) !== 'number') {
-                            this.map[i][j] = { elements: "Block", nomer: this.map[i][j - 1].nomer, fon: this.map[i][j].fon };
-                            this.map[i][j - 1] = this.map[i][j - 1].fon;
-                        } else if (typeof (this.map[i][j]) === 'number' && typeof (this.map[i][j - 1]) !== 'number') {
-                            this.map[i][j] = { elements: "Block", nomer: this.map[i][j - 1].nomer, fon: this.map[i][j]};
-                            this.map[i][j - 1] = this.map[i][j - 1].fon;
-                        }
+        this.fieldBlocks.forEach((y) => {
+            if (y.every((x) => x !== 0)) {
+                for (let i = this.fieldBlocks.indexOf(y); i > 0; i--)
+                    for (let j = 0; j < view.canvas.width / SIZE_TILES; j++)
+                        this.fieldBlocks[i][j] = this.fieldBlocks[i - 1][j];
                 this.scores += 100;
             }
-
-        }
+        })
     }
 };
 let view = {
@@ -149,16 +107,16 @@ let view = {
     },
     draw() {
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < this.canvas.width / SIZE_TILES; i++)
-            for (let j = 0; j < this.canvas.height / SIZE_TILES; j++)
-                if (typeof (model.map[i][j]) === "number") {
-                    this.ctx.drawImage(this.imgFon, Math.floor(model.map[i][j] / 4) * SIZE_TILES, (model.map[i][j] % 4) * SIZE_TILES, SIZE_TILES, SIZE_TILES, i * SIZE_TILES, j * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+        for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
+            for (let j = 0; j < this.canvas.width / SIZE_TILES; j++)
+                if (model.fieldBlocks[i][j] === 0) {
+                    this.ctx.drawImage(this.imgFon, Math.floor(model.field[i][j] / 4) * SIZE_TILES, (model.field[i][j] % 4) * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
                 }
                 else {
-                    this.ctx.drawImage(this.imgKv[model.map[i][j].nomer], 0, 0, SIZE_TILES, SIZE_TILES, i * SIZE_TILES, j * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+                    this.ctx.drawImage(this.imgKv[model.fieldBlocks[i][j] - 1], 0, 0, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
                 }
-        for (let i = 0; i < model.tekFig.number; i++) {
-            this.ctx.drawImage(this.imgKv[model.tekFig.viewElement[i]], 0, 0, SIZE_TILES, SIZE_TILES, (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) + controller.x, (model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES) + controller.y, SIZE_TILES, SIZE_TILES);
+        for (let i = 0; i < model.tekFig[model.tekFig.rotate].length; i++) {
+            this.ctx.drawImage(this.imgKv[model.tekFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.tekFig[model.tekFig.rotate][i][0] * SIZE_TILES) + controller.x, (model.tekFig[model.tekFig.rotate][i][1] * SIZE_TILES) + controller.y, SIZE_TILES, SIZE_TILES);
         }
         this.txtScores.innerHTML = model.scores;
     }
@@ -170,15 +128,16 @@ let controller = {
     leftPressed: false,
     upPressed: false,
     downPressed: false,
+    get_tX(x) {
+        return Math.ceil(x / SIZE_TILES);
+    },
+    get_tY(y) {
+        return Math.ceil(y / SIZE_TILES);
+    },
     tick() {
         let startY = this.y;
 
-        if (!this.downPressed) {
-            this.y += STEP_MOVEMENT_AUTO;
-        }
-        else {
-            this.y += STEP_MOVEMENT_KEYPRESS;
-        }
+
 
         if (this.leftPressed) {
             if (this.collission.call(this, this.x - STEP_MOVEMENT_KEYPRESS, this.y) == false)
@@ -202,11 +161,17 @@ let controller = {
                     model.tekFig.rotate -= 1;
         }
 
+        let stepY = STEP_MOVEMENT_AUTO;
+        if (this.downPressed) {
+            stepY = STEP_MOVEMENT_KEYPRESS;
+        }
+        this.y += stepY;
 
         if (this.collission.call(this, this.x, this.y) == true) {
-            for (let i = 0; i < model.tekFig.number; i++) {
-                model.map[Math.floor(this.x / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][0]][Math.floor(this.y / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][1]] = { elements: "Block", nomer: model.tekFig.viewElement[i], fon: model.map[Math.floor(this.x / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][0]][Math.floor(this.y / SIZE_TILES) + model.tekFig.сoordinates[model.tekFig.rotate][i][1]] };
-                
+            for (let i = 0; i < model.tekFig[model.tekFig.rotate].length; i++) {
+                let tX = this.get_tX(this.x) + model.tekFig[model.tekFig.rotate][i][0];
+                let tY = this.get_tY(this.y) + model.tekFig[model.tekFig.rotate][i][1];
+                model.fieldBlocks[tY - 1][tX] = model.tekFig.viewElement[i];
             }
             model.deleteRow();
             model.formtekFigure();
@@ -220,29 +185,33 @@ let controller = {
     },
     collission(x, y) { // Проверяем столкновение
 
-        for (let i = 0; i < model.tekFig.number; i++) {
-            if (x + (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) < 0) return true;
-            if (x + (model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) > view.canvas.width - SIZE_TILES) return true;
+        for (let i = 0; i < model.tekFig[model.tekFig.rotate].length; i++) {
+            let tX = this.get_tX(x) + model.tekFig[model.tekFig.rotate][i][0];
+            let tY = this.get_tY(y) + model.tekFig[model.tekFig.rotate][i][1];
 
-            if (y + (model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES) > view.canvas.height - SIZE_TILES) return true;
+            if (tX < 0)
+                return true;
+            if (tX > (view.canvas.width - SIZE_TILES) / SIZE_TILES)
+                return true;
 
-            if (typeof (model.map[Math.floor((x + model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) / SIZE_TILES)][Math.floor((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) / SIZE_TILES)]) !== "number")
+            if (tY > (view.canvas.height - SIZE_TILES) / SIZE_TILES)
                 return true;
-            
-            if (typeof (model.map[Math.floor((x + model.tekFig.сoordinates[model.tekFig.rotate][i][0] * SIZE_TILES) / SIZE_TILES)][Math.floor((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) / SIZE_TILES) - 1]) !== "number" &&
-                ((y + model.tekFig.сoordinates[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) % SIZE_TILES) <= SIZE_TILES - STEP_MOVEMENT_AUTO-1)
+
+            if (model.fieldBlocks[tY][tX] !== 0)
                 return true;
+
+
+            //!Дописать условие при сдвиге влево и вправо при существующем блоке
+            /*if (tY > 0 && typeof (model.map[tY][tX]) !== "number" &&
+                ((y + model.tekFig[model.tekFig.rotate][i][1] * SIZE_TILES + SIZE_TILES) % SIZE_TILES) <= SIZE_TILES - STEP_MOVEMENT_AUTO - 1)
+                return true;*/
         }
         return false;
     },
     init() {
         //Задаем начальное значение падения
         this.y = 0;
-        let width = model.tekFig.сoordinates[model.tekFig.rotate][0][0];
-        for (let i = 1; i < model.tekFig.сoordinates[model.tekFig.rotate].length; i++) {
-            if (model.tekFig.сoordinates[model.tekFig.rotate][i][0] > width)
-                width = model.tekFig.сoordinates[model.tekFig.rotate][i][0];
-        }
+        let width = model.tekFig[model.tekFig.rotate].reduce((max, coor) => coor[0] > max[0] ? max[0] : coor[0]);
         this.x = Math.floor(Math.random() * (view.canvas.width / SIZE_TILES - width)) * SIZE_TILES;
     },
     keyDownHandler(e) {
