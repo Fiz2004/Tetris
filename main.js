@@ -118,7 +118,7 @@ let view = {
         for (let i = 0; i < model.tekFig[model.tekFig.rotate].length; i++) {
             this.ctx.drawImage(this.imgKv[model.tekFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.tekFig[model.tekFig.rotate][i][0] * SIZE_TILES) + controller.x, (model.tekFig[model.tekFig.rotate][i][1] * SIZE_TILES) + controller.y, SIZE_TILES, SIZE_TILES);
         }
-        this.txtScores.innerHTML = model.scores;
+        this.txtScores.innerHTML = String(model.scores).padStart(6, "0");
     }
 };
 let controller = {
@@ -128,12 +128,8 @@ let controller = {
     leftPressed: false,
     upPressed: false,
     downPressed: false,
-    get_tX(x) {
-        return Math.ceil(x / SIZE_TILES);
-    },
-    get_tY(y) {
-        return Math.ceil(y / SIZE_TILES);
-    },
+    get_tX: (x) => Math.ceil(x / SIZE_TILES),
+    get_tY: (y) => Math.ceil(y / SIZE_TILES),
     tick() {
         let startY = this.y;
 
