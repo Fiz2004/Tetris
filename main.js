@@ -67,10 +67,40 @@ let model = {
     beetle: { x: 0, y: 0, tX: 0, tY: 0, traffic: "L", numberAnimation: 0 },
     //Функция для определения направления движения жука
     getTrafficBeetle() {
-        //Иногда жук заходит внутрь блока найти причину
+        //Иногда жук заходит внутрь блока найти причину, заметил при падении бывает движение в блок
 
-        if (this.beetle.traffic == "UL" || this.beetle.traffic == "UR")
-            return this.beetle.traffic;
+        if (this.beetle.traffic == "UUUL")
+            return "UUL";
+        if (this.beetle.traffic == "UUL")
+            return "UL";
+        if (this.beetle.traffic == "UL")
+        {
+            this.beetle.traffic = "L";
+            return this.getTrafficBeetle();
+        }
+
+        if (this.beetle.traffic == "UUUR")
+            return "UUR";
+        if (this.beetle.traffic == "UUR")
+            return "UR";
+        if (this.beetle.traffic == "UR") {
+            this.beetle.traffic = "R";
+            return this.getTrafficBeetle();
+        }
+
+        // Если жук падает вниз когда он двигался влево
+        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DL") {
+            this.beetle.traffic = "L";
+            return this.getTrafficBeetle();
+        }
+
+
+        // Если жук падает вниз когда он двигался вправо
+        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DR") {
+            this.beetle.traffic = "R";
+            return this.getTrafficBeetle();
+        }
+
 
         // Если у жука снизу образовалось место куда он может упасть
         if (this.beetle.tY + 1 < this.fieldHeight && (this.beetle.traffic == "L" || this.beetle.traffic == "DL") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
@@ -106,19 +136,7 @@ let model = {
             else
                 return "R";
 
-        // Если жук падает вниз когда он двигался влево
-        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DL") {
-            this.beetle.traffic = "L";
-            return getTrafficBeetle();
-        }
-            
 
-        // Если жук падает вниз когда он двигался вправо
-        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DR")
-        {
-            this.beetle.traffic = "R";
-            return getTrafficBeetle();
-        }
 
         // Если у жука и слева и справа образовались блоки
         if (this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0 && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0 &&this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] != 0 && this.fieldBlocks[this.beetle.tY +1][this.beetle.tX] != 0 )
@@ -136,6 +154,7 @@ let model = {
             else
                 return getTrafficBeetle();
     },
+
     //Метод движения жука
     beetleAnimation() {
         if (this.beetle.numberAnimation++ == NUMBER_PERSONNAL) {
@@ -148,132 +167,32 @@ let model = {
             if (this.beetle.x < 0) {
                 this.beetle.tX -= 1;
                 this.beetle.x = SIZE_TILES + this.beetle.x;
-                if (this.beetle.tX < 0 && this.beetle.traffic == "L") {
-                    this.beetle.tX = 0;
-                    this.beetle.traffic = "R";
-                }
-                if (this.beetle.traffic == "UL") {
-                    this.beetle.traffic = "L";
-                }
             }
-            return;
         }
         else if (this.beetle.traffic == "R" || this.beetle.traffic == "UR") {
             this.beetle.x += SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.x >= SIZE_TILES) {
                 this.beetle.tX += 1;
                 this.beetle.x = model.beetle.x - SIZE_TILES;
-                if (this.beetle.tX > this.fieldWidth - 2 && this.beetle.traffic == "R") {
-                    this.beetle.tX = this.fieldWidth - 1;
-                    this.beetle.traffic = "L";
-                    this.beetle.x = 0;
-                }
-                if (this.beetle.traffic == "UR") {
-                    this.beetle.traffic = "R";
-                }
             }
-            return;
         }
-        else if (this.beetle.traffic == "UUR") {
+        else if (this.beetle.traffic == "UUR" || this.beetle.traffic == "UUUR" ||
+            this.beetle.traffic == "UUL" || this.beetle.traffic == "UUUL") {
             this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.y < 0) {
                 this.beetle.tY -= 1;
                 this.beetle.y = SIZE_TILES + model.beetle.y;
-                if (this.beetle.tY < 0) {
-                    //!!!Дописать что пройзойдет при достижении верха стакана
-                    this.beetle.tY = 0;
-                    this.beetle.traffic = "R";
-                    this.beetle.x = 0;
-                }
             }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "UR";
-            }
-            return;
         }
-        else if (this.beetle.traffic == "UUUR") {
-            this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y < 0) {
-                this.beetle.tY -= 1;
-                this.beetle.y = SIZE_TILES + model.beetle.y;
-                if (this.beetle.tY < 0) {
-                    //!!!Дописать что пройзойдет при достижении верха стакана
-                    this.beetle.tY = 0;
-                    this.beetle.traffic = "R";
-                    this.beetle.x = 0;
-                }
-            }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "UUR";
-            }
-            return;
-        }
-        else if (this.beetle.traffic == "UUL") {
-            this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y < 0) {
-                this.beetle.tY -= 1;
-                this.beetle.y = SIZE_TILES + model.beetle.y;
-                if (this.beetle.tY < 0) {
-                    //!!!Дописать что пройзойдет при достижении верха стакана
-                    this.beetle.tY = 0;
-                    this.beetle.traffic = "L";
-                    this.beetle.x = 0;
-                }
-            }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "UL";
-            }
-            return;
-        }
-        else if (this.beetle.traffic == "UUUL") {
-            this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y < 0) {
-                this.beetle.tY -= 1;
-                this.beetle.y = SIZE_TILES + model.beetle.y;
-                if (this.beetle.tY < 0) {
-                    //!!!Дописать что пройзойдет при достижении верха стакана
-                    this.beetle.tY = 0;
-                    this.beetle.traffic = "L";
-                    this.beetle.x = 0;
-                }
-            }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "UUL";
-            }
-            return;
-        }
-        if (this.beetle.traffic == "DR") {
+
+        if (this.beetle.traffic == "DR" || this.beetle.traffic == "DL") {
             this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.y >= SIZE_TILES) {
                 this.beetle.tY += 1;
                 this.beetle.y = 0;
-                if (this.beetle.tY >= this.fieldHeight) {
-                    this.beetle.tY = this.fieldHeight - 1;
-                    this.beetle.traffic = "R";
-                    this.beetle.y = 0;
-                }
             }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "R";
-            }
-            return;
         }
-        if (this.beetle.traffic == "DL") {
-            this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y >= SIZE_TILES) {
-                this.beetle.tY += 1;
-                this.beetle.y = 0;
-                if (this.beetle.tY >= this.fieldHeight) {
-                    this.beetle.tY = this.fieldHeight - 1;
-                    this.beetle.traffic = "L";
-                    this.beetle.y = 0;
-                }
-            }
-            else if (this.beetle.y == 0) {
-                this.beetle.traffic = "L";
-            }
-            return;
-        }
+
         else if (this.beetle.traffic == "0") {
 
         }
@@ -456,7 +375,6 @@ let controller = {
         else
             if ((startY == 0 && this.y == 0) || model.fieldBlocks[model.beetle.tY][model.beetle.tX] != 0) {
                 console.log("!!!Вы проиграли!!!");
-                debugger;
                 localStorage.setItem('Record', model.scores);
                 alert("Вы проиграли");
                 model.init();
