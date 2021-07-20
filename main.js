@@ -5,6 +5,7 @@ const STEP_MOVEMENT_AUTO = 10;//Шаг движения блоков
 const STEP_MOVEMENT_KEYPRESS = 30;//Шаг движения блоков
 const NUMBER_FIGURE_ELEMENTS = 4;// Количество элементов фигур
 const NUMBER_PERSONNAL = 10;
+// Придумать более легкое обозначение фигур
 const FIGURE = [[
     [[0, 0], [1, 0], [2, 0], [3, 0]],
     [[0, 0], [0, 1], [0, 2], [0, 3]],
@@ -42,26 +43,52 @@ const FIGURE = [[
     [[0, 0], [0, 1], [1, 1], [2, 1]]]
 ];
 
+//Объект в котором хранится вся модель игры
 let model = {
+    //Текущие очки
     scores: 0,
-    record:0,
+    //Рекорд очков за все время
+    record: 0,
+    // Массив со значениями поля
     field: [],
+    //Вспомогательная переменная для хранения ширины поля
+    fieldWidth: 0,
+    //Вспомогательная переменная для хранения высоты поля
+    fieldHeight: 0,
+    //Массив со значениями блоков
     fieldBlocks: [],
+    //Текущая фигура
     tekFig: {},
+    //Следующая фигура
+    nextFig: {},
+    //ID строки для выводла рекорда
     txtRecord: {},
+    //Объект жука, с его координатами, направлением движения и кадром движения
     beetle: { x: 0, y: 0, tX: 0, tY: 0, traffic: "L", numberAnimation: 0 },
+    //Функция для определения направления движения жука
     getTrafficBeetle() {
-        if (this.beetle.tX == 0)
-            return "R";
-        if (this.beetle.tX == (view.canvas.width / SIZE_TILES) - 1)
-            return "L";
-        
-        if (this.beetle.tY + 1 < view.canvas.height / SIZE_TILES && (this.beetle.traffic == "L" || this.beetle.traffic == "DL") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
+        //Иногда жук заходит внутрь блока найти причину
+
+        if (this.beetle.traffic == "UL" || this.beetle.traffic == "UR")
+            return this.beetle.traffic;
+
+        // Если у жука снизу образовалось место куда он может упасть
+        if (this.beetle.tY + 1 < this.fieldHeight && (this.beetle.traffic == "L" || this.beetle.traffic == "DL") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
             return "DL";
 
-        if (this.beetle.tY + 1 < view.canvas.height / SIZE_TILES && (this.beetle.traffic == "R" || this.beetle.traffic == "DR") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
+        if (this.beetle.tY + 1 < this.fieldHeight && (this.beetle.traffic == "R" || this.beetle.traffic == "DR") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
             return "DR";
+        
+        //Если Жук находиться в крайней левой точке то он движется вправо
+        if (this.beetle.tX == 0)
+            return "R";
+        
+        //Если Жук находиться в крайней правой точке то он движется влево
+        if (this.beetle.tX == (this.fieldWidth) - 1)
+            return "L";
 
+
+        //Если жук идет вправо и справо препятствие
         if (this.beetle.traffic == "R" && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0)
             if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX + 1] == 0)
                 return "UUR";
@@ -70,6 +97,7 @@ let model = {
             else
                 return "L";
 
+        //Если жук идет влево и слева препятствие
         if (this.beetle.traffic == "L" && this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0)
             if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX - 1] == 0)
                 return "UUL";
@@ -77,18 +105,26 @@ let model = {
                 return "UUUL";
             else
                 return "R";
-        
-        
-        if ((this.beetle.tY + 1 == view.canvas.height / SIZE_TILES || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DL" )
-            return "L";
-        
-        if ((this.beetle.tY + 1 == view.canvas.height / SIZE_TILES || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0)&& this.beetle.traffic == "DR")
-        return "R";
 
-        if (this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0 && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0)
+        // Если жук падает вниз когда он двигался влево
+        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DL") {
+            this.beetle.traffic = "L";
+            return getTrafficBeetle();
+        }
+            
+
+        // Если жук падает вниз когда он двигался вправо
+        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DR")
+        {
+            this.beetle.traffic = "R";
+            return getTrafficBeetle();
+        }
+
+        // Если у жука и слева и справа образовались блоки
+        if (this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0 && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0 &&this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] != 0 && this.fieldBlocks[this.beetle.tY +1][this.beetle.tX] != 0 )
             return "0";
 
-
+        //Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
         let traffic = Math.floor(Math.random() * 10);
         if (traffic == 0)
             return "L"
@@ -100,11 +136,13 @@ let model = {
             else
                 return getTrafficBeetle();
     },
+    //Метод движения жука
     beetleAnimation() {
         if (this.beetle.numberAnimation++ == NUMBER_PERSONNAL) {
             this.beetle.traffic = model.getTrafficBeetle();
             this.beetle.numberAnimation = 1;
         }
+
         if (this.beetle.traffic == "L" || this.beetle.traffic == "UL") {
             this.beetle.x -= SIZE_TILES / NUMBER_PERSONNAL;
             if (this.beetle.x < 0) {
@@ -118,14 +156,15 @@ let model = {
                     this.beetle.traffic = "L";
                 }
             }
+            return;
         }
         else if (this.beetle.traffic == "R" || this.beetle.traffic == "UR") {
             this.beetle.x += SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.x >= SIZE_TILES) {
                 this.beetle.tX += 1;
                 this.beetle.x = model.beetle.x - SIZE_TILES;
-                if (this.beetle.tX > view.canvas.width / SIZE_TILES - 2 && this.beetle.traffic == "R") {
-                    this.beetle.tX = view.canvas.width / SIZE_TILES - 1;
+                if (this.beetle.tX > this.fieldWidth - 2 && this.beetle.traffic == "R") {
+                    this.beetle.tX = this.fieldWidth - 1;
                     this.beetle.traffic = "L";
                     this.beetle.x = 0;
                 }
@@ -133,6 +172,7 @@ let model = {
                     this.beetle.traffic = "R";
                 }
             }
+            return;
         }
         else if (this.beetle.traffic == "UUR") {
             this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
@@ -149,6 +189,7 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "UR";
             }
+            return;
         }
         else if (this.beetle.traffic == "UUUR") {
             this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
@@ -165,6 +206,7 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "UUR";
             }
+            return;
         }
         else if (this.beetle.traffic == "UUL") {
             this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
@@ -181,6 +223,7 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "UL";
             }
+            return;
         }
         else if (this.beetle.traffic == "UUUL") {
             this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
@@ -197,14 +240,15 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "UUL";
             }
+            return;
         }
         if (this.beetle.traffic == "DR") {
             this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.y >= SIZE_TILES) {
                 this.beetle.tY += 1;
                 this.beetle.y = 0;
-                if (this.beetle.tY >= view.canvas.height / SIZE_TILES) {
-                    this.beetle.tY = view.canvas.height / SIZE_TILES-1;
+                if (this.beetle.tY >= this.fieldHeight) {
+                    this.beetle.tY = this.fieldHeight - 1;
                     this.beetle.traffic = "R";
                     this.beetle.y = 0;
                 }
@@ -212,14 +256,15 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "R";
             }
+            return;
         }
         if (this.beetle.traffic == "DL") {
             this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL
             if (this.beetle.y >= SIZE_TILES) {
                 this.beetle.tY += 1;
                 this.beetle.y = 0;
-                if (this.beetle.tY >= view.canvas.height / SIZE_TILES) {
-                    this.beetle.tY = view.canvas.height / SIZE_TILES - 1;
+                if (this.beetle.tY >= this.fieldHeight) {
+                    this.beetle.tY = this.fieldHeight - 1;
                     this.beetle.traffic = "L";
                     this.beetle.y = 0;
                 }
@@ -227,55 +272,70 @@ let model = {
             else if (this.beetle.y == 0) {
                 this.beetle.traffic = "L";
             }
+            return;
         }
         else if (this.beetle.traffic == "0") {
 
         }
     },
-    formtekFigure() {
-        //Формируем текущую фигуру
-        let numberTekFig = Math.floor(Math.random() * FIGURE.length);
-        this.tekFig = {
-            ...FIGURE[numberTekFig],
-            rotate: 0,
-            viewElement: Array.from({ length: FIGURE[numberTekFig][0].length }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1)
+    //Метод формирования текущей фигуры
+    formTekFigure() {
+        function formFigure() {
+            let numberTekFig = Math.floor(Math.random() * FIGURE.length);
+            return {
+                ...FIGURE[numberTekFig],
+                rotate: 0,
+                viewElement: Array.from({ length: FIGURE[numberTekFig][0].length }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1)
+            }
         };
-
+        
+        if (Object.keys(this.tekFig).length == 0) {
+            this.nextFig = formFigure();
+        }
+        this.tekFig = { ...this.nextFig };
+        this.nextFig = formFigure();
         controller.init();
     },
+    //Инициализация модели игры
     init() {
+        this.fieldWidth = view.canvas.width / SIZE_TILES;
+        this.fieldHeight = view.canvas.height / SIZE_TILES;
         //Инициализируем массив фона с случайными числами
-        this.field = Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
-            Array.from({ length: view.canvas.width / SIZE_TILES }).map(() =>
+        this.field = Array.from({ length: this.fieldHeight }).map(() =>
+            Array.from({ length: this.fieldWidth }).map(() =>
                 (Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
-        this.fieldBlocks = Array.from({ length: view.canvas.height / SIZE_TILES }).map(() =>
-            Array.from({ length: view.canvas.width / SIZE_TILES }).map(() => 0));
+        this.fieldBlocks = Array.from({ length: this.fieldHeight }).map(() =>
+            Array.from({ length: this.fieldWidth }).map(() => 0));
         this.scores = 0;
-        this.formtekFigure();
-        this.beetle.tX = Math.floor(Math.random() * view.canvas.width / SIZE_TILES);
-        this.beetle.tY = (view.canvas.height / SIZE_TILES) - 1;
+        this.formTekFigure();
+        this.beetle.tX = Math.floor(Math.random() * this.fieldWidth);
+        this.beetle.tY = (this.fieldHeight) - 1;
         this.beetle.x = 0;
         this.beetle.y = 0;
         this.beetle.traffic = this.getTrafficBeetle();
         this.beetle.numberAnimation = 0;
-        model.record = localStorage.getItem('Record');
+        this.record = localStorage.getItem('Record');
         this.txtRecord = document.getElementById('record');
-        this.txtRecord.innerHTML = String(model.record).padStart(6, "0");
+        this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
     },
+    //Удаление строки
     deleteRow() {
         this.fieldBlocks.forEach((y) => {
             if (y.every((x) => x !== 0)) {
                 for (let i = this.fieldBlocks.indexOf(y); i > 0; i--)
-                    for (let j = 0; j < view.canvas.width / SIZE_TILES; j++)
+                    for (let j = 0; j < this.fieldWidth; j++)
                         this.fieldBlocks[i][j] = this.fieldBlocks[i - 1][j];
                 this.scores += 100;
             }
         })
     }
 };
+//Объект рисования
 let view = {
     canvas: {},
     ctx: {},
+    canvasNextFigure: {},
+    ctxNextFigure: {},
     txtScores: {},
     imgFon: new Image(),
     imgKv: [],
@@ -283,6 +343,8 @@ let view = {
     init() {
         this.canvas = document.getElementById('canvasId');
         this.ctx = this.canvas.getContext("2d");
+        this.canvasNextFigure = document.getElementById('canvasNextFigureId');
+        this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
         this.txtScores = document.getElementById('scores');
         document.addEventListener("keydown", controller.keyDownHandler, false);
         document.addEventListener("keyup", controller.keyUpHandler, false);
@@ -302,6 +364,13 @@ let view = {
 
         this.imgBeetle.src = 'Beetle.png';
     },
+    drawNextFigure() {
+        this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
+        for (let i = 0; i < model.nextFig[model.nextFig.rotate].length; i++) {
+            this.ctxNextFigure.drawImage(this.imgKv[model.nextFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.nextFig[model.nextFig.rotate][i][0] * SIZE_TILES), (model.nextFig[model.nextFig.rotate][i][1] * SIZE_TILES), SIZE_TILES, SIZE_TILES);
+        }
+    }
+    ,
     draw() {
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
@@ -318,7 +387,7 @@ let view = {
 
         if (model.beetle.traffic == "0" || (model.beetle.numberAnimation % 2 == 0 && model.beetle.traffic != "UUR" && model.beetle.traffic != "UUUR" && model.beetle.traffic != "UUL" && model.beetle.traffic != "UUUL"))
             this.ctx.drawImage(this.imgBeetle, 0, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-        else if (model.beetle.traffic=="L")
+        else if (model.beetle.traffic == "L")
             this.ctx.drawImage(this.imgBeetle, 30, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
         else if (model.beetle.traffic == "R")
             this.ctx.drawImage(this.imgBeetle, 60, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
@@ -328,9 +397,10 @@ let view = {
             this.ctx.drawImage(this.imgBeetle, 0, 30, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
         else
             this.ctx.drawImage(this.imgBeetle, 90, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-     
+
 
         this.txtScores.innerHTML = String(model.scores).padStart(6, "0");
+        view.drawNextFigure();
     }
 };
 let controller = {
@@ -344,8 +414,6 @@ let controller = {
     get_tY: (y) => Math.ceil(y / SIZE_TILES),
     tick() {
         let startY = this.y;
-
-
 
         if (this.leftPressed) {
             if (this.collission.call(this, this.x - STEP_MOVEMENT_KEYPRESS, this.y) == false)
@@ -382,14 +450,17 @@ let controller = {
                 model.fieldBlocks[tY - 1][tX] = model.tekFig.viewElement[i];
             }
             model.deleteRow();
-            model.formtekFigure();
+            model.formTekFigure();
             this.y = 0;
         }
-        if ((startY == 0 && this.y == 0) || model.fieldBlocks[model.beetle.tY][model.beetle.tX] != 0) {
-            localStorage.setItem('Record', model.scores);
-            alert("Вы проиграли");
-            model.init();
-        }
+        else
+            if ((startY == 0 && this.y == 0) || model.fieldBlocks[model.beetle.tY][model.beetle.tX] != 0) {
+                console.log("!!!Вы проиграли!!!");
+                debugger;
+                localStorage.setItem('Record', model.scores);
+                alert("Вы проиграли");
+                model.init();
+            }
         model.beetleAnimation();
         view.draw();
     },
@@ -421,8 +492,12 @@ let controller = {
     init() {
         //Задаем начальное значение падения
         this.y = 0;
+        controller.rightPressed = false;
+        controller.upPressed = false;
+        controller.leftPressed = false;
+        controller.downPressed = false;
         let width = model.tekFig[model.tekFig.rotate].reduce((max, coor) => coor[0] > max[0] ? max[0] : coor[0]);
-        this.x = Math.floor(Math.random() * (view.canvas.width / SIZE_TILES - width)) * SIZE_TILES;
+        this.x = Math.floor(Math.random() * (model.fieldWidth - width)) * SIZE_TILES;
     },
     keyDownHandler(e) {
         if (e.keyCode == 39) {
