@@ -64,83 +64,110 @@ let model = {
     //ID строки для выводла рекорда
     txtRecord: {},
     //Объект жука, с его координатами, направлением движения и кадром движения
-    beetle: { x: 0, y: 0, tX: 0, tY: 0, traffic: "L", numberAnimation: 0 },
-    //Функция для определения направления движения жука
+    beetle: { x: 0, y: 0, tX: 0, tY: 0, trafficX: "L", trafficY: "0", numberAnimation: 0 },
+    //Функция для определения направления движения жука по горизонтали
     getTrafficBeetle() {
+
+        function isCanNapr(napr) {
+            const Y = model.beetle.tY;
+            const X = model.beetle.tX;
+            const mY = model.fieldHeight;
+            const mX = model.fieldWidth;
+
+            switch (napr.x+napr.y) {
+                case "L0"://Проверяем возможность пойти влево
+                    if (X == 0) return false; //Если Жук находиться в крайней левой точке
+                    if (model.fieldBlocks[Y][X - 1] != 0) return false; //Если слева препятствие
+                    //if (Y + 1 < mY && model.fieldBlocks[Y+1][X-1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли слева снизу блок
+                    break;
+                case "R0":
+                    if (X+1 == mX) return false; //Если Жук находиться в крайней правой точке
+                    if (model.fieldBlocks[Y][X + 1] != 0) return false; //Если справа препятствие
+                   // if (Y + 1 < mY && model.fieldBlocks[Y + 1][X + 1]== 0) return false; //Если Жук не на дне стакана то проверить есть ли справа снизу блок
+                    break;
+                case "RD":
+                case "LD"://Проверяем возможность пойти вниз
+                    if (Y + 1 == mY) return false; //Если Жук находиться на дне стакана
+                    if (model.fieldBlocks[Y+1][X] != 0) return false; //Если внизу есть препятствие
+                    break;
+                case "RU":
+                case "LU"://Проверяем возможность пойти верх
+                    if (Y - 1 <0) return false; //Если Жук находиться на верху стакана
+                    if (model.fieldBlocks[Y - 1][X] != 0) return false; //Если сверху есть препятствие
+                    switch (napr.x) {
+                        case "L":
+                            if (X == 0) return false; //Если Жук находиться в крайней левой точке
+                            if (model.fieldBlocks[Y - 1][X - 1] != 0) return false; //Если сверху слева есть препятствие
+                            if (model.fieldBlocks[Y][X - 1] == 0) return false; //Проверить есть ли слева снизу блок
+                            break;
+                        case "R":
+                            if (X + 1 == mX) return false; //Если Жук находиться в крайней правой точке
+                            if (model.fieldBlocks[Y - 1][X + 1] != 0) return false; //Если сверху справа есть препятствие
+                            if ( model.fieldBlocks[Y][X + 1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли справа снизу блок
+                            break;
+                    }
+                    break;
+                case "RUU":
+                case "LUU"://Проверяем возможность пойти верх верх
+                    if (Y - 2 < 0) return false; //Если Жук находиться на верху стакана
+                    if (model.fieldBlocks[Y - 1][X] != 0) return false; //Если сверху есть препятствие
+                    if (model.fieldBlocks[Y - 2][X] != 0) return false; //Если сверху есть препятствие
+                    switch (napr.x) {
+                        case "L":
+                            if (X == 0) return false; //Если Жук находиться в крайней левой точке
+                            if (model.fieldBlocks[Y - 2][X - 1] != 0) return false; //Если сверху слева есть препятствие
+                            if (Y -1  < mY && model.fieldBlocks[Y-1][X - 1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли слева снизу блок
+                            break;
+                        case "R":
+                            if (X + 1 == mX) return false; //Если Жук находиться в крайней правой точке
+                            if (model.fieldBlocks[Y - 2][X + 1] != 0) return false; //Если сверху справа есть препятствие
+                            if (Y - 1 < mY && model.fieldBlocks[Y - 1][X + 1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли слева снизу блок
+                            break;
+                    }
+                    break;
+                case "00":
+                    break;
+                default:
+                    console.log("Ошибка в блоке switch model.beetle.traffic (isCanNapr)= ", this.beetle.trafficX);
+                    console.log("Ошибка в блоке switch model.beetle.traffic (isCanNapr)= ", this.beetle.trafficY);
+            }
+            return true;
+        }
+
+
+        const naprDvig = {
+            ["L0"]: [{ x: "L", y: "D" }, { x: "L", y: "0" }, { x: "L", y: "U" }, { x: "L", y: "UU" }, { x: "R", y: "0" }, { x: "R", y: "U" }, { x: "R", y: "UU" }],
+            ["R0"]: [{ x: "R", y: "D" }, { x: "R", y: "0" }, { x: "R", y: "U" }, { x: "R", y: "UU" }, { x: "L", y: "0" }, { x: "L", y: "U" }, { x: "L", y: "UU" }],
+            ["LD"]: [{ x: "L", y: "D" }, { x: "L", y: "0" }, { x: "R", y: "0" }, { x: "L", y: "U" }, { x: "L", y: "UU" }, { x: "R", y: "U" }, { x: "R", y: "UU" }],
+            ["RD"]: [{ x: "R", y: "D" }, { x: "R", y: "0" }, { x: "L", y: "0" }, { x: "R", y: "U" }, { x: "R", y: "UU" }, { x: "L", y: "U" }, { x: "L", y: "UU" }],
+
+            ["LU"]: [{ x: "L", y: "0" }, { x: "R", y: "0" }, { x: "L", y: "U" }, { x: "R", y: "U" }, { x: "L", y: "D" }],
+            ["RU"]: [{ x: "R", y: "0" }, { x: "L", y: "0" }, { x: "R", y: "U" }, { x: "L", y: "U" }, { x: "R", y: "D" }],
+
+            ["LUU"]: [{ x: "L", y: "U" }, { x: "R", y: "U" },{ x: "L", y: "0" }, { x: "R", y: "0" }, { x: "L", y: "D" }],
+            ["RUU"]: [{ x: "R", y: "U" }, { x: "L", y: "U" }, { x: "R", y: "0" }, { x: "L", y: "0" }, { x: "R", y: "D" }],
+            
+            ["00"]: [{ x: "L", y: "D" }, { x: "L", y: "0" }, { x: "L", y: "U" }, { x: "L", y: "UU" }, { x: "R", y: "0" }, { x: "R", y: "U" }, { x: "R", y: "UU" }],
+        };
         //Иногда жук заходит внутрь блока найти причину, заметил при падении бывает движение в блок
+        console.log("Движение в направлении model.beetle.trafficX= ", this.beetle.trafficX);
+        console.log("Движение в направлении model.beetle.trafficY= ", this.beetle.trafficY);
 
-        if (this.beetle.traffic == "UUUL")
-            return "UUL";
-        if (this.beetle.traffic == "UUL")
-            return "UL";
-        if (this.beetle.traffic == "UL")
-        {
-            this.beetle.traffic = "L";
-            return this.getTrafficBeetle();
+        let lengthArray = naprDvig[this.beetle.trafficX + this.beetle.trafficY].length;
+        for (let i = 0; i < lengthArray; i++) {
+            let napr = naprDvig[this.beetle.trafficX + this.beetle.trafficY].shift()
+            if (isCanNapr(napr)) {
+                console.log("Движение возможно в направлении x= ", napr.x, " y= ", napr.y);
+                this.beetle.trafficX = napr.x;
+                this.beetle.trafficY = napr.y;
+                return;
+            }
         }
+        this.beetle.trafficX = "0";
+        this.beetle.trafficY = "0";
 
-        if (this.beetle.traffic == "UUUR")
-            return "UUR";
-        if (this.beetle.traffic == "UUR")
-            return "UR";
-        if (this.beetle.traffic == "UR") {
-            this.beetle.traffic = "R";
-            return this.getTrafficBeetle();
-        }
+        /*
 
-        // Если жук падает вниз когда он двигался влево
-        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DL") {
-            this.beetle.traffic = "L";
-            return this.getTrafficBeetle();
-        }
-
-
-        // Если жук падает вниз когда он двигался вправо
-        if ((this.beetle.tY + 1 == this.fieldHeight || this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] != 0) && this.beetle.traffic == "DR") {
-            this.beetle.traffic = "R";
-            return this.getTrafficBeetle();
-        }
-
-
-        // Если у жука снизу образовалось место куда он может упасть
-        if (this.beetle.tY + 1 < this.fieldHeight && (this.beetle.traffic == "L" || this.beetle.traffic == "DL") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
-            return "DL";
-
-        if (this.beetle.tY + 1 < this.fieldHeight && (this.beetle.traffic == "R" || this.beetle.traffic == "DR") && this.fieldBlocks[this.beetle.tY + 1][this.beetle.tX] == 0)
-            return "DR";
-        
-        //Если Жук находиться в крайней левой точке то он движется вправо
-        if (this.beetle.tX == 0)
-            return "R";
-        
-        //Если Жук находиться в крайней правой точке то он движется влево
-        if (this.beetle.tX == (this.fieldWidth) - 1)
-            return "L";
-
-
-        //Если жук идет вправо и справо препятствие
-        if (this.beetle.traffic == "R" && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0)
-            if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX + 1] == 0)
-                return "UUR";
-            else if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 2][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 2][this.beetle.tX + 1] == 0)
-                return "UUUR";
-            else
-                return "L";
-
-        //Если жук идет влево и слева препятствие
-        if (this.beetle.traffic == "L" && this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0)
-            if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX - 1] == 0)
-                return "UUL";
-            else if (this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 2][this.beetle.tX] == 0 && this.fieldBlocks[this.beetle.tY - 2][this.beetle.tX - 1] == 0)
-                return "UUUL";
-            else
-                return "R";
-
-
-
-        // Если у жука и слева и справа образовались блоки
-        if (this.fieldBlocks[this.beetle.tY][this.beetle.tX - 1] != 0 && this.fieldBlocks[this.beetle.tY][this.beetle.tX + 1] != 0 &&this.fieldBlocks[this.beetle.tY - 1][this.beetle.tX] != 0 && this.fieldBlocks[this.beetle.tY +1][this.beetle.tX] != 0 )
-            return "0";
 
         //Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
         let traffic = Math.floor(Math.random() * 10);
@@ -149,53 +176,71 @@ let model = {
         else if (traffic == 1)
             return "R"
         else
-            if (this.beetle.traffic != undefined)
-                return this.beetle.traffic;
-            else
-                return getTrafficBeetle();
-    },
+            //if (this.beetle.trafficX != undefined)
+            return this.beetle.trafficX;
+        //else
+        //return getTrafficBeetle();*/
 
+
+
+    },
     //Метод движения жука
     beetleAnimation() {
+        function examCoor(value) {//Проверка перехода за край клетки
+            if (value.coor < 0) {
+                value.coorTiles -= 1;
+                value.coor = SIZE_TILES + value.coor;
+            }
+            if (value.coor >= SIZE_TILES) {
+                value.coorTiles += 1;
+                value.coor = value.coor - SIZE_TILES;
+            }
+            return [value.coor, value.coorTiles];
+        }
+
         if (this.beetle.numberAnimation++ == NUMBER_PERSONNAL) {
-            this.beetle.traffic = model.getTrafficBeetle();
+            model.getTrafficBeetle();
             this.beetle.numberAnimation = 1;
         }
-
-        if (this.beetle.traffic == "L" || this.beetle.traffic == "UL") {
-            this.beetle.x -= SIZE_TILES / NUMBER_PERSONNAL;
-            if (this.beetle.x < 0) {
-                this.beetle.tX -= 1;
-                this.beetle.x = SIZE_TILES + this.beetle.x;
+        switch (this.beetle.trafficY) {
+            case "U":
+            case "UU":
+            case "D":
+                switch (this.beetle.trafficY) {
+                    case "U":
+                    case "UU":
+                        this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL;
+                        break;
+                    case "D":
+                        this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL;
+                        break;
+                }
+                [this.beetle.y, this.beetle.tY] = examCoor({ coor: this.beetle.y, coorTiles: this.beetle.tY });
+                break;
+            case "0":
+                break;
+            default:
+                console.log("Ошибка в блоке switch model.beetle.trafficY= ", this.beetle.trafficY);
+        }
+        if (this.beetle.trafficY == "0")
+            switch (this.beetle.trafficX) {
+                case "L":
+                case "R":
+                    switch (this.beetle.trafficX) {
+                        case "L":
+                            this.beetle.x -= SIZE_TILES / NUMBER_PERSONNAL;
+                            break;
+                        case "R":
+                            this.beetle.x += SIZE_TILES / NUMBER_PERSONNAL;
+                            break;
+                    }
+                    [this.beetle.x, this.beetle.tX] = examCoor({ coor: this.beetle.x, coorTiles: this.beetle.tX });
+                    break;
+                case "0":
+                    break;
+                default:
+                    console.log("Ошибка в блоке switch model.beetle.trafficX= ", this.beetle.trafficX);
             }
-        }
-        else if (this.beetle.traffic == "R" || this.beetle.traffic == "UR") {
-            this.beetle.x += SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.x >= SIZE_TILES) {
-                this.beetle.tX += 1;
-                this.beetle.x = model.beetle.x - SIZE_TILES;
-            }
-        }
-        else if (this.beetle.traffic == "UUR" || this.beetle.traffic == "UUUR" ||
-            this.beetle.traffic == "UUL" || this.beetle.traffic == "UUUL") {
-            this.beetle.y -= SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y < 0) {
-                this.beetle.tY -= 1;
-                this.beetle.y = SIZE_TILES + model.beetle.y;
-            }
-        }
-
-        if (this.beetle.traffic == "DR" || this.beetle.traffic == "DL") {
-            this.beetle.y += SIZE_TILES / NUMBER_PERSONNAL
-            if (this.beetle.y >= SIZE_TILES) {
-                this.beetle.tY += 1;
-                this.beetle.y = 0;
-            }
-        }
-
-        else if (this.beetle.traffic == "0") {
-
-        }
     },
     //Метод формирования текущей фигуры
     formTekFigure() {
@@ -207,7 +252,7 @@ let model = {
                 viewElement: Array.from({ length: FIGURE[numberTekFig][0].length }).map(() => Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1)
             }
         };
-        
+
         if (Object.keys(this.tekFig).length == 0) {
             this.nextFig = formFigure();
         }
@@ -231,7 +276,10 @@ let model = {
         this.beetle.tY = (this.fieldHeight) - 1;
         this.beetle.x = 0;
         this.beetle.y = 0;
-        this.beetle.traffic = this.getTrafficBeetle();
+        //Установить случайное движение
+        this.beetle.trafficX = "L";
+        this.beetle.trafficY = "0";
+        this.getTrafficBeetle();
         this.beetle.numberAnimation = 0;
         this.record = localStorage.getItem('Record');
         this.txtRecord = document.getElementById('record');
@@ -304,15 +352,15 @@ let view = {
             this.ctx.drawImage(this.imgKv[model.tekFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.tekFig[model.tekFig.rotate][i][0] * SIZE_TILES) + controller.x, (model.tekFig[model.tekFig.rotate][i][1] * SIZE_TILES) + controller.y, SIZE_TILES, SIZE_TILES);
         }
 
-        if (model.beetle.traffic == "0" || (model.beetle.numberAnimation % 2 == 0 && model.beetle.traffic != "UUR" && model.beetle.traffic != "UUUR" && model.beetle.traffic != "UUL" && model.beetle.traffic != "UUUL"))
+        if (model.beetle.trafficY == "0" || (model.beetle.numberAnimation % 2 == 0 && model.beetle.trafficY != "U" && model.beetle.trafficY != "UU"))
             this.ctx.drawImage(this.imgBeetle, 0, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-        else if (model.beetle.traffic == "L")
+        else if (model.beetle.trafficX == "L" && model.beetle.trafficY == "0")
             this.ctx.drawImage(this.imgBeetle, 30, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-        else if (model.beetle.traffic == "R")
+        else if (model.beetle.trafficX == "R" && model.beetle.trafficY == "0")
             this.ctx.drawImage(this.imgBeetle, 60, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-        else if (model.beetle.traffic == "UUR" || model.beetle.traffic == "UUUR")
+        else if (model.beetle.trafficX == "R" && (model.beetle.trafficY == "U" || model.beetle.trafficY == "UU"))
             this.ctx.drawImage(this.imgBeetle, 0, 60, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
-        else if (model.beetle.traffic == "UUL" || model.beetle.traffic == "UUUL")
+        else if (model.beetle.trafficX == "L" && (model.beetle.trafficY == "U" || model.beetle.trafficY == "UU"))
             this.ctx.drawImage(this.imgBeetle, 0, 30, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
         else
             this.ctx.drawImage(this.imgBeetle, 90, 0, SIZE_TILES, SIZE_TILES, model.beetle.tX * SIZE_TILES + model.beetle.x, model.beetle.tY * SIZE_TILES + model.beetle.y, SIZE_TILES, SIZE_TILES);
@@ -360,8 +408,10 @@ let controller = {
         if (this.downPressed) {
             stepY = STEP_MOVEMENT_KEYPRESS;
         }
-        this.y += stepY;
+            this.y += stepY;
 
+        //!!!не дает застрять палке верху и проиграть
+        // Проверить иногда палка застревает в верху стакана
         if (this.collission.call(this, this.x, this.y) == true) {
             for (let i = 0; i < model.tekFig[model.tekFig.rotate].length; i++) {
                 let tX = this.get_tX(this.x) + model.tekFig[model.tekFig.rotate][i][0];
@@ -375,6 +425,11 @@ let controller = {
         else
             if ((startY == 0 && this.y == 0) || model.fieldBlocks[model.beetle.tY][model.beetle.tX] != 0) {
                 console.log("!!!Вы проиграли!!!");
+
+                //Для отладки
+                console.log("Последнее движение было в направлении model.beetle.trafficX= ", model.beetle.trafficX);
+                console.log("Последнее движение было в направлении model.beetle.trafficY= ", model.beetle.trafficY);
+
                 localStorage.setItem('Record', model.scores);
                 alert("Вы проиграли");
                 model.init();
@@ -415,7 +470,7 @@ let controller = {
         controller.leftPressed = false;
         controller.downPressed = false;
         let width = model.tekFig[model.tekFig.rotate].reduce((max, coor) => coor[0] > max[0] ? max[0] : coor[0]);
-        this.x = Math.floor(Math.random() * (model.fieldWidth - width)) * SIZE_TILES;
+        this.x = Math.floor(Math.random() * (model.fieldWidth-1 - width)) * SIZE_TILES;
     },
     keyDownHandler(e) {
         if (e.keyCode == 39) {
