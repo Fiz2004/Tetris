@@ -13,41 +13,49 @@ const NUMBER_FIGURE_ELEMENTS = 4;
 // Число кадров движения
 const NUMBER_PERSONNAL = 10;
 // TODO Придумать более легкое обозначение фигур
-const FIGURE = [[
-	[[0, 0], [1, 0], [2, 0], [3, 0]],
-	[[0, 0], [0, 1], [0, 2], [0, 3]],
-	[[0, 0], [1, 0], [2, 0], [3, 0]],
-	[[0, 0], [0, 1], [0, 2], [0, 3]]],
-[
-	[[0, 0], [1, 0], [1, 1], [2, 1]],
-	[[0, 1], [1, 1], [0, 2], [1, 0]],
-	[[0, 0], [1, 0], [1, 1], [2, 1]],
-	[[0, 1], [1, 1], [0, 2], [1, 0]]],
-[
-	[[0, 0], [1, 0], [1, 1], [1, 2]],
-	[[0, 1], [1, 1], [2, 1], [2, 0]],
-	[[0, 0], [0, 1], [0, 2], [1, 2]],
-	[[0, 0], [0, 1], [1, 0], [2, 0]]],
-[
-	[[0, 0], [0, 1], [1, 1], [1, 2]],
-	[[0, 1], [1, 1], [1, 0], [2, 0]],
-	[[0, 0], [0, 1], [1, 1], [1, 2]],
-	[[0, 1], [1, 1], [1, 0], [2, 0]]],
-[
-	[[0, 0], [0, 1], [1, 1], [0, 2]],
-	[[0, 0], [1, 0], [2, 0], [1, 1]],
-	[[0, 1], [1, 1], [1, 0], [1, 2]],
-	[[0, 1], [1, 1], [2, 1], [1, 0]]],
-[
-	[[0, 0], [0, 1], [1, 0], [1, 1]],
-	[[0, 0], [0, 1], [1, 0], [1, 1]],
-	[[0, 0], [0, 1], [1, 0], [1, 1]],
-	[[0, 0], [0, 1], [1, 0], [1, 1]]],
-[
-	[[0, 0], [1, 0], [0, 1], [0, 2]],
-	[[0, 0], [1, 0], [2, 0], [2, 1]],
-	[[1, 0], [1, 1], [1, 2], [0, 2]],
-	[[0, 0], [0, 1], [1, 1], [2, 1]]]
+const FIGURE = [
+	[
+		[[0, 0], [1, 0], [2, 0], [3, 0]],
+		[[0, 0], [0, 1], [0, 2], [0, 3]],
+		[[0, 0], [1, 0], [2, 0], [3, 0]],
+		[[0, 0], [0, 1], [0, 2], [0, 3]]
+	],
+	[
+		[[0, 0], [1, 0], [1, 1], [2, 1]],
+		[[0, 1], [1, 1], [0, 2], [1, 0]],
+		[[0, 0], [1, 0], [1, 1], [2, 1]],
+		[[0, 1], [1, 1], [0, 2], [1, 0]]
+	],
+	[
+		[[0, 0], [1, 0], [1, 1], [1, 2]],
+		[[0, 1], [1, 1], [2, 1], [2, 0]],
+		[[0, 0], [0, 1], [0, 2], [1, 2]],
+		[[0, 0], [0, 1], [1, 0], [2, 0]]
+	],
+	[
+		[[0, 0], [0, 1], [1, 1], [1, 2]],
+		[[0, 1], [1, 1], [1, 0], [2, 0]],
+		[[0, 0], [0, 1], [1, 1], [1, 2]],
+		[[0, 1], [1, 1], [1, 0], [2, 0]]
+	],
+	[
+		[[0, 0], [0, 1], [1, 1], [0, 2]],
+		[[0, 0], [1, 0], [2, 0], [1, 1]],
+		[[0, 1], [1, 1], [1, 0], [1, 2]],
+		[[0, 1], [1, 1], [2, 1], [1, 0]]
+	],
+	[
+		[[0, 0], [0, 1], [1, 0], [1, 1]],
+		[[0, 0], [0, 1], [1, 0], [1, 1]],
+		[[0, 0], [0, 1], [1, 0], [1, 1]],
+		[[0, 0], [0, 1], [1, 0], [1, 1]]
+	],
+	[
+		[[0, 0], [1, 0], [0, 1], [0, 2]],
+		[[0, 0], [1, 0], [2, 0], [2, 1]],
+		[[1, 0], [1, 1], [1, 2], [0, 2]],
+		[[0, 0], [0, 1], [1, 1], [2, 1]]
+	]
 ];
 
 //TODO Поворот фигур выполнить через функцию
@@ -68,6 +76,47 @@ class Point {
 	}
 }
 
+class Cell extends Point {
+	view;
+	constructor(x, y, view) {
+		super(x, y);
+		this.view = view;
+	}
+}
+
+class Figure {
+	cell=[];
+	angle;
+	constructor() {
+		this.angle = 0;
+		let randNumber = Math.floor(Math.random() * FIGURE.length);
+		for (let i = 0; i < 4; i++) {
+			let randView = Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1;
+			//TODO Убрать поворот, добавить вычесления и индекс заменить на х и y
+			this.cell[i] = new Cell(FIGURE[randNumber][0][i][0], FIGURE[randNumber][0][i][1], randView);
+		}
+
+	}
+}
+
+class CurrentFigure extends Figure {
+	position;
+	constructor() {
+		super();
+		//Задаем стартовую позицию
+		//!Скорректировать исходя из того что теперь ширина определяется по массиву ячеек cell
+		//let width = FIGURE[randNumber][0].reduce((max, coor) => coor[0] > max[0] ? max[0] : coor[0]);
+		let width = 3;
+		this.position = new Point(Math.floor(Math.random() * (model.fieldWidth - 1 - width)) * SIZE_TILES, 0);
+	}
+	copyFigure(newCell) {
+		this.cell = [...newCell];
+	}
+}
+
+
+
+
 //Объект в котором хранится вся модель игры
 let model = {
 	//Текущие очки
@@ -83,9 +132,9 @@ let model = {
 	//Массив со значениями блоков
 	fieldBlocks: [],
 	//Текущая фигура
-	currentFig: {},
+	currentFigure: {},
 	//Следующая фигура
-	nextFig: {},
+	nextFigure: {},
 	//ID строки для выводла рекорда
 	txtRecord: {},
 	//Объект жука, с его координатами, направлением движения и кадром движения
@@ -355,11 +404,15 @@ let model = {
 			}
 		};
 
-		if (Object.keys(this.currentFig).length == 0) {
-			this.nextFig = formFigure();
+		if (Object.keys(this.currentFigure).length == 0) {
+			//?this.nextFigure = formFigure();
+			this.nextFigure = new Figure();
 		}
-		this.currentFig = { ...this.nextFig };
-		this.nextFig = formFigure();
+		this.currentFigure = new CurrentFigure();
+		//?this.currentFigure = { ...this.nextFigure };
+		this.currentFigure.copyFigure(this.nextFigure.cell);
+		//?this.nextFigure = formFigure();
+		this.nextFigure = new Figure();
 		controller.init();
 	},
 	//Инициализация модели игры
@@ -399,50 +452,50 @@ let model = {
 	get_tX: (x) => Math.ceil(x / SIZE_TILES),
 	get_tY: (y) => Math.ceil(y / SIZE_TILES),
 	tick() {
-		let startY = this.currentFig.position.y;
+		let startY = this.currentFigure.position.y;
 
 		if (controller.leftPressed) {
-			if (this.collission.call(this, this.currentFig.position.x - STEP_MOVEMENT_KEYPRESS, this.currentFig.position.y) == false)
-				this.currentFig.position.x -= STEP_MOVEMENT_KEYPRESS;
+			if (this.collission.call(this, this.currentFigure.position.x - STEP_MOVEMENT_KEYPRESS, this.currentFigure.position.y) == false)
+				this.currentFigure.position.x -= STEP_MOVEMENT_KEYPRESS;
 		}
 
 		if (controller.rightPressed) {
-			if (this.collission.call(this, this.currentFig.position.x + STEP_MOVEMENT_KEYPRESS, this.currentFig.position.y) == false)
-				this.currentFig.position.x += STEP_MOVEMENT_KEYPRESS;
+			if (this.collission.call(this, this.currentFigure.position.x + STEP_MOVEMENT_KEYPRESS, this.currentFigure.position.y) == false)
+				this.currentFigure.position.x += STEP_MOVEMENT_KEYPRESS;
 		}
 
 		if (controller.upPressed) {
-			if (this.currentFig.rotate + 1 == 4)
-				this.currentFig.rotate = 0;
+			if (this.currentFigure.rotate + 1 == 4)
+				this.currentFigure.rotate = 0;
 			else
-				this.currentFig.rotate += 1;
+				this.currentFigure.rotate += 1;
 
-			if (this.collission.call(this, this.currentFig.position.x, this.currentFig.position.y))
-				if (this.currentFig.rotate - 1 < 0)
-					this.currentFig.rotate = 4;
+			if (this.collission.call(this, this.currentFigure.position.x, this.currentFigure.position.y))
+				if (this.currentFigure.rotate - 1 < 0)
+					this.currentFigure.rotate = 4;
 				else
-					this.currentFig.rotate -= 1;
+					this.currentFigure.rotate -= 1;
 		}
 
 		let stepY = STEP_MOVEMENT_AUTO;
 		if (controller.downPressed) {
 			stepY = STEP_MOVEMENT_KEYPRESS;
 		}
-		this.currentFig.position.y += stepY;
+		this.currentFigure.position.y += stepY;
 
 		//!!!не дает застрять палке верху и проиграть
 		// Проверить иногда палка застревает в верху стакана
-		if (this.collission.call(this, this.currentFig.position.x, this.currentFig.position.y) == true) {
-			for (let i = 0; i < this.currentFig[model.currentFig.rotate].length; i++) {
-				let tX = this.get_tX(this.currentFig.position.x) + this.currentFig[model.currentFig.rotate][i][0];
-				let tY = this.get_tY(this.currentFig.position.y) + this.currentFig[model.currentFig.rotate][i][1];
-				this.fieldBlocks[tY - 1][tX] = this.currentFig.viewElement[i];
+		if (this.collission.call(this, this.currentFigure.position.x, this.currentFigure.position.y) == true) {
+			for (let i = 0; i < this.currentFigure[model.currentFigure.rotate].length; i++) {
+				let tX = this.get_tX(this.currentFigure.position.x) + this.currentFigure[model.currentFigure.rotate][i][0];
+				let tY = this.get_tY(this.currentFigure.position.y) + this.currentFigure[model.currentFigure.rotate][i][1];
+				this.fieldBlocks[tY - 1][tX] = this.currentFigure.viewElement[i];
 			}
 			this.deleteRow();
 			this.formCurrentFigure();
-			this.currentFig.position.y = 0;
+			this.currentFigure.position.y = 0;
 		} else {
-			if ((startY == 0 && this.currentFig.position.y == 0) || this.fieldBlocks[model.beetle.positionTile.y][this.beetle.positionTile.x] != 0) {
+			if ((startY == 0 && this.currentFigure.position.y == 0) || this.fieldBlocks[model.beetle.positionTile.y][this.beetle.positionTile.x] != 0) {
 				console.log("!!!Вы проиграли!!!");
 
 				//Для отладки
@@ -460,9 +513,9 @@ let model = {
 	},
 	collission(x, y) { // Проверяем столкновение
 
-		for (let i = 0; i < this.currentFig[this.currentFig.rotate].length; i++) {
-			let tX = this.get_tX(x) + this.currentFig[this.currentFig.rotate][i][0];
-			let tY = this.get_tY(y) + this.currentFig[this.currentFig.rotate][i][1];
+		for (let i = 0; i < this.currentFigure.cell.length; i++) {
+			let tX = this.get_tX(x) + this.currentFigure.cell[i].x;
+			let tY = this.get_tY(y) + this.currentFigure.cell[i].y;
 
 			if (tX < 0) return true;
 			if (tX > (view.canvas.width - SIZE_TILES) / SIZE_TILES) return true;
@@ -512,8 +565,8 @@ let view = {
 	},
 	drawNextFigure() {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
-		for (let i = 0; i < model.nextFig[model.nextFig.rotate].length; i++) {
-			this.ctxNextFigure.drawImage(this.imgKv[model.nextFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.nextFig[model.nextFig.rotate][i][0] * SIZE_TILES), (model.nextFig[model.nextFig.rotate][i][1] * SIZE_TILES), SIZE_TILES, SIZE_TILES);
+		for (let i = 0; i < model.nextFigure[model.nextFigure.rotate].length; i++) {
+			this.ctxNextFigure.drawImage(this.imgKv[model.nextFigure.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.nextFigure[model.nextFigure.rotate][i][0] * SIZE_TILES), (model.nextFigure[model.nextFigure.rotate][i][1] * SIZE_TILES), SIZE_TILES, SIZE_TILES);
 		}
 	},
 	draw() {
@@ -528,8 +581,8 @@ let view = {
 				}
 
 		//Рисуем текущую падующую фигуру
-		for (let i = 0; i < model.currentFig[model.currentFig.rotate].length; i++) {
-			this.ctx.drawImage(this.imgKv[model.currentFig.viewElement[i] - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.currentFig[model.currentFig.rotate][i][0] * SIZE_TILES) + model.currentFig.position.x, (model.currentFig[model.currentFig.rotate][i][1] * SIZE_TILES) + model.currentFig.position.y, SIZE_TILES, SIZE_TILES);
+		for (let i = 0; i < model.currentFigure.cell.length; i++) {
+			this.ctx.drawImage(this.imgKv[model.currentFigure.cell[i].view - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.currentFigure.cell[i].x * SIZE_TILES) + model.currentFigure.position.x, (model.currentFigure.cell[i].y * SIZE_TILES) + model.currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
 		//Рисуем бегующего жука
