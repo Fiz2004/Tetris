@@ -87,8 +87,9 @@ class CurrentFigure extends Figure {
 		//Задаем стартовую позицию
 		let width = this.cell.reduce((a, b) => a.x > b.x ? a : b).x;
 		let height = this.cell.reduce((a, b) => a.y > b.y ? a : b).y;
-		this.position = new Point(Math.floor(Math.random() * (fieldWidth - 1 - width)) * SIZE_TILES, (0 - height) * SIZE_TILES);
+		this.position = new Point(Math.floor(Math.random() * (fieldWidth - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
 	};
+
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPosition(x = this.position.x, y = this.position.y) {
 		let position = [];
@@ -98,8 +99,10 @@ class CurrentFigure extends Figure {
 		)));
 		return position;
 	};
-	isCollission(x, y, field) { // Проверяем столкновение
-		let position = this.getPosition(x,y);
+	
+	// Проверяем столкновение
+	isCollission(x, y, field) {
+		let position = this.getPosition(x, y);
 		for (let i = 0; i < position.length; i++) {
 			if (position[i].x < 0) return true;
 			if (position[i].x > (view.canvas.width - SIZE_TILES) / SIZE_TILES) return true;
@@ -110,6 +113,7 @@ class CurrentFigure extends Figure {
 
 		return false;
 	};
+
 	//функция поворота фигуры
 	rotate() {
 		this.cell.forEach((cell) => {
@@ -142,6 +146,42 @@ let model = {
 	txtRecord: {},
 	//Объект жука, с его координатами, направлением движения и кадром движения
 	beetle: { position: Point, positionTile: Point, trafficX: "L", trafficY: "0", numberAnimation: 0 },
+	//Инициализация модели игры
+	init() {
+		this.fieldWidth = view.canvas.width / SIZE_TILES;
+		this.fieldHeight = view.canvas.height / SIZE_TILES;
+		//Инициализируем массив фона с случайными числами
+		this.field = Array.from({ length: this.fieldHeight }).map(() =>
+			Array.from({ length: this.fieldWidth }).map(() =>
+				(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
+		this.fieldBlocks = Array.from({ length: this.fieldHeight }).map(() =>
+			Array.from({ length: this.fieldWidth }).map(() => 0));
+		this.scores = 0;
+
+		this.nextFigure = new Figure();
+		this.formCurrentFigure();
+
+		this.beetle.positionTile = new Point(Math.floor(Math.random() * this.fieldWidth), (this.fieldHeight) - 1);
+		this.beetle.position = new Point(0, 0);
+		//Установить случайное движение
+		this.beetle.trafficX = "L";
+		this.beetle.trafficY = "0";
+		this.getTrafficBeetle();
+		this.beetle.numberAnimation = 0;
+		this.record = localStorage.getItem('Record');
+		this.txtRecord = document.getElementById('record');
+		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
+
+		//?Временное для тестирования
+		/*
+		for (let i = 0; i < this.fieldWidth - 1; i++)
+			this.fieldBlocks[29][i] = 1;
+		this.fieldBlocks[28][4] = 1;
+		this.fieldBlocks[27][4] = 1;
+		this.fieldBlocks[28][8] = 1;
+		this.beetle.positionTile.y = 28;*/
+	},
+
 	//Функция для определения направления движения жука по горизонтали
 	getTrafficBeetle() {
 		function isCanNapr(napr) {
@@ -168,15 +208,21 @@ let model = {
 					//Если Жук не на дне стакана то проверить есть ли справа снизу блок
 					// if (Y + 1 < mY && model.fieldBlocks[Y + 1][X + 1]== 0) return false; 
 					break;
+				//Проверяем возможность пойти вниз
 				case "RD":
-				case "LD"://Проверяем возможность пойти вниз
-					if (Y + 1 == mY) return false; //Если Жук находиться на дне стакана
-					if (model.fieldBlocks[Y + 1][X] != 0) return false; //Если внизу есть препятствие
+				case "LD":
+					//Если Жук находиться на дне стакана
+					if (Y + 1 == mY) return false;
+					//Если внизу есть препятствие
+					if (model.fieldBlocks[Y + 1][X] != 0) return false;
 					break;
+				//Проверяем возможность пойти верх
 				case "RU":
-				case "LU"://Проверяем возможность пойти верх
-					if (Y - 1 < 0) return false; //Если Жук находиться на верху стакана
-					if (model.fieldBlocks[Y - 1][X] != 0) return false; //Если сверху есть препятствие
+				case "LU":
+					//Если Жук находиться на верху стакана
+					if (Y - 1 < 0) return false;
+					//Если сверху есть препятствие
+					if (model.fieldBlocks[Y - 1][X] != 0) return false;
 					switch (napr.x) {
 						case "L":
 							if (X == 0) return false; //Если Жук находиться в крайней левой точке
@@ -190,21 +236,31 @@ let model = {
 							break;
 					}
 					break;
+				//Проверяем возможность пойти верх верх
 				case "RUU":
-				case "LUU"://Проверяем возможность пойти верх верх
-					if (Y - 2 < 0) return false; //Если Жук находиться на верху стакана
-					if (model.fieldBlocks[Y - 1][X] != 0) return false; //Если сверху есть препятствие
-					if (model.fieldBlocks[Y - 2][X] != 0) return false; //Если сверху есть препятствие
+				case "LUU":
+					//Если Жук находиться на верху стакана
+					if (Y - 2 < 0) return false;
+					//Если сверху есть препятствие
+					if (model.fieldBlocks[Y - 1][X] != 0) return false;
+					//Если сверху есть препятствие
+					if (model.fieldBlocks[Y - 2][X] != 0) return false;
 					switch (napr.x) {
 						case "L":
-							if (X == 0) return false; //Если Жук находиться в крайней левой точке
-							if (model.fieldBlocks[Y - 2][X - 1] != 0) return false; //Если сверху слева есть препятствие
-							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X - 1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли слева снизу блок
+							//Если Жук находиться в крайней левой точке
+							if (X == 0) return false;
+							//Если сверху слева есть препятствие
+							if (model.fieldBlocks[Y - 2][X - 1] != 0) return false;
+							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
+							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X - 1] == 0) return false;
 							break;
 						case "R":
-							if (X + 1 == mX) return false; //Если Жук находиться в крайней правой точке
-							if (model.fieldBlocks[Y - 2][X + 1] != 0) return false; //Если сверху справа есть препятствие
-							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X + 1] == 0) return false; //Если Жук не на дне стакана то проверить есть ли слева снизу блок
+							//Если Жук находиться в крайней правой точке
+							if (X + 1 == mX) return false;
+							//Если сверху справа есть препятствие
+							if (model.fieldBlocks[Y - 2][X + 1] != 0) return false;
+							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
+							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X + 1] == 0) return false;
 							break;
 					}
 					break;
@@ -218,7 +274,7 @@ let model = {
 		}
 
 		const naprDvig = {
-			//FIXME Починить движение запрыгивания когда исчезает ряд
+			//?FIXME Починить движение запрыгивания когда исчезает ряд
 			["L0"]: [
 				{ x: "L", y: "D" },
 				{ x: "L", y: "0" },
@@ -301,7 +357,6 @@ let model = {
 		for (let i = 0; i < lengthArray; i++) {
 			let napr = naprDvig[this.beetle.trafficX + this.beetle.trafficY].shift()
 			if (isCanNapr(napr)) {
-				console.log("Движение возможно в направлении x= ", napr.x, " y= ", napr.y);
 				this.beetle.trafficX = napr.x;
 				this.beetle.trafficY = napr.y;
 				return;
@@ -312,23 +367,20 @@ let model = {
 		this.beetle.trafficY = "0";
 
 		/*
-
-
-		//Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
-		let traffic = Math.floor(Math.random() * 10);
-		if (traffic == 0)
-				return "L"
-		else if (traffic == 1)
-				return "R"
-		else
-				//if (this.beetle.trafficX != undefined)
-				return this.beetle.trafficX;
-		//else
-		//return getTrafficBeetle();*/
-
-
+		 * //Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
+		 * let traffic = Math.floor(Math.random() * 10);
+		 * if (traffic == 0)
+		 *			return "L"
+		 *	else if (traffic == 1)
+		 *		return "R"
+		 *	else
+		 *			//if (this.beetle.trafficX != undefined)
+		 *			return this.beetle.trafficX;
+		 *		//else
+		 *	//return getTrafficBeetle();*/
 
 	},
+
 	//Метод движения жука
 	beetleAnimation() {
 		//Проверка перехода за край клетки
@@ -394,6 +446,7 @@ let model = {
 					console.log("Ошибка в блоке switch model.beetle.trafficX= ", this.beetle.trafficX);
 			}
 	},
+
 	//Метод формирования текущей фигуры
 	formCurrentFigure() {
 		this.currentFigure = new CurrentFigure(this.fieldWidth, this.nextFigure.cell);
@@ -404,44 +457,32 @@ let model = {
 
 		controller.init();
 	},
-	//Инициализация модели игры
-	init() {
-		this.fieldWidth = view.canvas.width / SIZE_TILES;
-		this.fieldHeight = view.canvas.height / SIZE_TILES;
-		//Инициализируем массив фона с случайными числами
-		this.field = Array.from({ length: this.fieldHeight }).map(() =>
-			Array.from({ length: this.fieldWidth }).map(() =>
-				(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
-		this.fieldBlocks = Array.from({ length: this.fieldHeight }).map(() =>
-			Array.from({ length: this.fieldWidth }).map(() => 0));
-		this.scores = 0;
 
-		this.nextFigure = new Figure();
-		this.formCurrentFigure();
-
-		this.beetle.positionTile = new Point(Math.floor(Math.random() * this.fieldWidth), (this.fieldHeight) - 1);
-		this.beetle.position = new Point(0, 0);
-		//Установить случайное движение
-		this.beetle.trafficX = "L";
-		this.beetle.trafficY = "0";
-		this.getTrafficBeetle();
-		this.beetle.numberAnimation = 0;
-		this.record = localStorage.getItem('Record');
-		this.txtRecord = document.getElementById('record');
-		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
-
-	},
 	//Удаление строки
 	deleteRow() {
 		this.fieldBlocks.forEach((y) => {
 			if (y.every((x) => x !== 0)) {
-				for (let i = this.fieldBlocks.indexOf(y); i > 0; i--)
+				//?Проверить как лучше чтобы жук падал сразщу при исчезновании или двигался вниз
+				// if (this.beetle.positionTile.y < this.fieldBlocks.indexOf(y))
+				// 	this.beetle.positionTile.y += 1;
+				this.fieldBlocks.splice(this.fieldBlocks.indexOf(y), 1);
+				this.fieldBlocks.unshift(Array.from({ length: this.fieldWidth }).map(() =>0));
+				
+				/*for (let i = this.fieldBlocks.indexOf(y); i > 0; i--)
 					for (let j = 0; j < this.fieldWidth; j++)
-						this.fieldBlocks[i][j] = this.fieldBlocks[i - 1][j];
+						this.fieldBlocks[i][j] = this.fieldBlocks[i - 1][j];*/
+				
+			/*	this.field = Array.from({ length: this.fieldHeight }).map(() =>
+					Array.from({ length: this.fieldWidth }).map(() =>
+						(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
+				this.fieldBlocks = Array.from({ length: this.fieldHeight }).map(() =>
+					Array.from({ length: this.fieldWidth }).map(() => 0));
+			*/	
 				this.scores += 100;
 			}
 		})
 	},
+
 	get_tX: (x) => Math.ceil(x / SIZE_TILES),
 	get_tY: (y) => Math.ceil(y / SIZE_TILES),
 	tick() {
@@ -540,7 +581,6 @@ let view = {
 		}
 	},
 	draw() {
-		//ctx.clearRect(0, 0, canvas.width, canvas.height);
 		//Рисуем фон и заполненный стакан
 		for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
 			for (let j = 0; j < this.canvas.width / SIZE_TILES; j++)
