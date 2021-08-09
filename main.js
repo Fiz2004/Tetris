@@ -1,623 +1,136 @@
-// Размер в пикселях элемента
-const SIZE_TILES = 30;
-// Количество элементов фона
-const NUMBER_BACKGROUND_ELEMENTS = 16;
-// Время в милисекундах одного движения
-const UPDATE_TIME = 100;
-// Шаг движения блоков
-const STEP_MOVEMENT_AUTO = 10;
-// Шаг движения блоков
-const STEP_MOVEMENT_KEYPRESS = 30;
-// Количество элементов фигур
-const NUMBER_FIGURE_ELEMENTS = 4;
-// Число кадров движения
-const NUMBER_FRAMES_BEEATLE = 10;
-// Количество Кадров при повреждении фигуры
-const NUMBER_FRAMES_ELEMENTS = 4;
-// Вероятность того что жук будет есть блок
-const PROBABILITY_EAT = 10;
-// Директория где храняться картинки
-const DirectoryImg = "/resurs/v2/"
-// Обозначение фигур, задаются координаты каждой ячейки
-const FIGURE = [
-	[[0, 1], [1, 1], [2, 1], [3, 1]],
-	[[1, 1], [2, 1], [2, 2], [3, 2]],
-	[[1, 1], [2, 1], [2, 2], [2, 3]],
-	[[1, 1], [1, 2], [2, 2], [2, 3]],
-	[[1, 1], [1, 2], [2, 2], [1, 3]],
-	[[1, 1], [1, 2], [2, 1], [2, 2]],
-	[[1, 1], [2, 1], [1, 2], [1, 3]]
-];
-
-// Просто сохранить, функция поворота точки x,y относительно x0,y0 на угол angle
-function rotate(x, y, angle, x0 = 0, y0 = 0) {
-	return {
-		x: (x - x0) * Math.cos(pi * angle / 180) - (y - y0) * Math.sin(pi * angle / 180),
-		y: (x - x0) * Math.sin(pi * angle / 180) + (y - y0) * Math.cos(pi * angle / 180),
-	}
-}
-
-// Класс для обозначения элементов на поле
-class Element {
-	//Показывает вид элемента от 0 до NUMBER_FIGURE_ELEMENTS
-	view;
-	//Показывает повреждения хранит свойства L,R,U со значениями от 0 до NUMBER_FRAMES_ELEMENTS
-	status;
-	constructor(valueView) {
-		this.view = valueView;
-		this.status = {
-			L: 0,
-			R: 0,
-			U: 0,
-		};
-	}
-
-}
-
-// Класс для обзначения координат x и y
-class Point {
-	x;
-	y;
-	constructor(x, y) {
-		this.x = x;
-		this.y = y;
-	}
-}
-
-// Класс для обзначения ячейки с координатами x и y, и сохранением номера фона
-class Cell extends Point {
-	view;
-	constructor(x, y, view) {
-		super(x, y);
-		this.view = view;
-	}
-}
-
-// Класс для фигуры
-class Figure {
-	cell = [];
-	constructor() {
-		//Задаем случайный номер для фигуры
-		let randNumber = Math.floor(Math.random() * FIGURE.length);
-		for (let i = 0; i < 4; i++) {
-			//Задаем случайный фон для ячейки
-			let randView = Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1;
-			this.cell[i] = new Cell(FIGURE[randNumber][i][0], FIGURE[randNumber][i][1], randView);
-		}
-	};
-}
-
-// Класс для текущей падающей фигуры
-class CurrentFigure extends Figure {
-	position;
-	constructor(fieldWidth, newCell) {
-		super();
-		this.cell = [...newCell];
-		//Задаем стартовую позицию
-		let width = this.cell.reduce((a, b) => a.x > b.x ? a : b).x;
-		let height = this.cell.reduce((a, b) => a.y > b.y ? a : b).y;
-		this.position = new Point(Math.floor(Math.random() * (fieldWidth - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
-	};
-
-	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
-	getPosition(x = this.position.x, y = this.position.y) {
-		let position = [];
-		this.cell.forEach((cell) => position.push(new Point(
-			cell.x + Math.ceil(x / SIZE_TILES),
-			cell.y + Math.ceil(y / SIZE_TILES)
-		)));
-		return position;
-	};
-
-	// Проверяем столкновение
-	isCollission(x, y, field) {
-		let position = this.getPosition(x, y);
-		for (let i = 0; i < position.length; i++) {
-			if (position[i].x < 0) return true;
-			if (position[i].x > (view.canvas.width - SIZE_TILES) / SIZE_TILES) return true;
-			if (position[i].y < 0) return false;
-			if (position[i].y > (view.canvas.height - SIZE_TILES) / SIZE_TILES) return true;
-			if (field[position[i].y][position[i].x].view !== 0) return true;
-		}
-
-		return false;
-	};
-
-	//функция поворота фигуры
-	rotate() {
-		this.cell.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] })
-	};
-}
+import { Element, Point, Figure, CurrentFigure } from './class.js';
+import { Grid } from './grid.js';
+import { Beetle } from './class_beetle.js';
+import {
+	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME, STEP_MOVE_AUTO,
+	STEP_MOVE_KEY_Y, NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
+	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE
+} from './const.js';
+let display;
+let model;
+let controller;
 
 //Объект в котором хранится вся модель игры
-let model = {
+class Model {
 	//Текущие очки
-	scores: 0,
+	scores;
 	//Рекорд очков за все время
-	record: 0,
-	// Массив со значениями поля
-	field: [],
-	//Вспомогательная переменная для хранения ширины поля
-	fieldWidth: 0,
-	//Вспомогательная переменная для хранения высоты поля
-	fieldHeight: 0,
-	//Массив со значениями блоков
-	fieldBlocks: [],
+	record;
+	// Массив со значениями сетки
+	grid;
 	//Текущая фигура
-	currentFigure: {},
+	currentFigure;
 	//Следующая фигура
-	nextFigure: {},
-	//ID строки для выводла рекорда
-	txtRecord: {},
+	nextFigure;
+	//ID строки для вывода рекорда
+	txtRecord;
 	//Объект жука, с его координатами, направлением движения и кадром движения
-	beetle: { position: Point, positionTile: Point, trafficX: "L", trafficY: "0", framesAnimation: 0, eat: 0 },
+	beetle;
 	//Инициализация модели игры
-	init() {
-		this.fieldWidth = view.canvas.width / SIZE_TILES;
-		this.fieldHeight = view.canvas.height / SIZE_TILES;
-		//Инициализируем массив фона с случайными числами
-		this.field = Array.from({ length: this.fieldHeight }).map(() =>
-			Array.from({ length: this.fieldWidth }).map(() =>
-				(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS))));
-		this.fieldBlocks = Array.from({ length: this.fieldHeight }).map(() =>
-			Array.from({ length: this.fieldWidth }).map(() => new Element(0)));
-		this.scores = 0;
-
+	constructor() {
+		//Инициализируем сетку с случайными числами фона и заданием элементов
+		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
+		//Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
-
-		this.beetle.positionTile = new Point(Math.floor(Math.random() * this.fieldWidth), (this.fieldHeight) - 1);
-		this.beetle.position = new Point(0, 0);
-		//Установить случайное движение
-		this.beetle.trafficX = "L";
-		this.beetle.trafficY = "0";
-		this.beetle.eat = 0;
-		this.getTrafficBeetle();
-		this.beetle.framesAnimation = 0;
+		//Создаем жука
+		this.beetle = new Beetle(this.grid);
+		//Инициализируем очки и рекорд
+		this.scores = 0;
 		this.record = localStorage.getItem('Record');
 		this.txtRecord = document.getElementById('record');
 		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
 
 		//?Временное для тестирования
-
-		this.fieldBlocks[28][0].view = 1;
-		this.fieldBlocks[28][1].view = 2;
-		this.fieldBlocks[28][2].view = 3;
-		this.fieldBlocks[28][3].view = 4;
-		this.fieldBlocks[27][3].view = 4;
-		for (let i = 0; i < this.fieldWidth - 1; i++)
-			this.fieldBlocks[29][i].view = 2;
+		this.grid.space[28][0].element = 1;
+		this.grid.space[28][1].element = 2;
+		this.grid.space[28][2].element = 3;
+		this.grid.space[28][3].element = 4;
+		this.grid.space[27][3].element = 4;
+		this.grid.space[26][3].element = 4;
+		this.grid.space[25][0].element = 4;
+		this.grid.space[25][1].element = 4;
+		this.grid.space[25][2].element = 4;
+		this.grid.space[25][3].element = 4;
+		for (let i = 0; i < display.canvas.width / SIZE_TILES - 1; i++)
+			this.grid.space[29][i].element = 2;
 		this.beetle.positionTile.y = 28;
-		this.beetle.positionTile.x = 6;
-	},
-
-	//Функция для определения направления движения жука по горизонтали
-	getTrafficBeetle() {
-		function isCanNapr(napr) {
-			const Y = model.beetle.positionTile.y;
-			const X = model.beetle.positionTile.x;
-			const mY = model.fieldHeight;
-			const mX = model.fieldWidth;
-			//Определяем будет ли жук есть блок исходя из вероятности заданной константой
-			const randEat = Math.floor(Math.random() * 100) < PROBABILITY_EAT ? true : false;
-
-			switch (napr.x + napr.y) {
-				//Проверяем возможность пойти влево
-				case "L0":
-					//Если Жук находиться в крайней левой точке
-					if (X == 0) return false;
-					//Если слева препятствие
-					if (model.fieldBlocks[Y][X - 1].view != 0) {
-						if (randEat) {
-							model.beetle.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-
-				case "R0":
-					//Если Жук находиться в крайней правой точке
-					if (X + 1 == mX) return false;
-					//Если справа препятствие
-					if (model.fieldBlocks[Y][X + 1].view != 0) {
-						//?Забыл что проверяет, уточнить
-						//if (model.fieldBlocks[Y][X - 1].view != 0) return false;
-						if (randEat) {
-							model.beetle.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-				//Проверяем возможность пойти вниз
-				case "RD":
-				case "LD":
-					//Если Жук находиться на дне стакана
-					if (Y + 1 == mY) return false;
-					//Если внизу есть препятствие
-					if (model.fieldBlocks[Y + 1][X].view != 0) {
-						//?Забыл что проверяет, уточнить
-						//if (model.fieldBlocks[Y][X - 1].view != 0) return false;
-						if (randEat) {
-							model.beetle.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-				//Проверяем возможность пойти верх
-				case "RU":
-				case "LU":
-					//Если Жук находиться на верху стакана
-					if (Y - 1 < 0) return false;
-					//Если сверху есть препятствие
-					if (model.fieldBlocks[Y - 1][X].view != 0) return false;
-					switch (napr.x) {
-						case "L":
-							//Если Жук находиться в крайней левой точке
-							if (X == 0) return false;
-							//Если сверху слева есть препятствие
-							if (model.fieldBlocks[Y - 1][X - 1].view != 0) return false;
-							//Проверить есть ли слева снизу блок
-							if (model.fieldBlocks[Y][X - 1].view == 0) return false;
-							break;
-						case "R":
-							//Если Жук находиться в крайней правой точке
-							if (X + 1 == mX) return false;
-							//Если сверху справа есть препятствие
-							if (model.fieldBlocks[Y - 1][X + 1].view != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли справа снизу блок
-							if (model.fieldBlocks[Y][X + 1].view == 0) return false;
-							break;
-					}
-					break;
-				//Проверяем возможность пойти верх верх
-				case "RUU":
-				case "LUU":
-					//Если Жук находиться на верху стакана
-					if (Y - 2 < 0) return false;
-					//Если сверху есть препятствие
-					if (model.fieldBlocks[Y - 1][X].view != 0) return false;
-					//Если сверху есть препятствие
-					if (model.fieldBlocks[Y - 2][X].view != 0) return false;
-					switch (napr.x) {
-						case "L":
-							//Если Жук находиться в крайней левой точке
-							if (X == 0) return false;
-							//Если сверху слева есть препятствие
-							if (model.fieldBlocks[Y - 2][X - 1].view != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
-							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X - 1].view == 0) return false;
-							break;
-						case "R":
-							//Если Жук находиться в крайней правой точке
-							if (X + 1 == mX) return false;
-							//Если сверху справа есть препятствие
-							if (model.fieldBlocks[Y - 2][X + 1].view != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
-							if (Y - 1 < mY && model.fieldBlocks[Y - 1][X + 1].view == 0) return false;
-							break;
-					}
-					break;
-				case "00":
-					break;
-				default:
-					console.log("Ошибка в блоке switch model.beetle.traffic (isCanNapr)= ", this.beetle.trafficX);
-					console.log("Ошибка в блоке switch model.beetle.traffic (isCanNapr)= ", this.beetle.trafficY);
-			}
-			return true;
-		}
-
-		const naprDvig = {
-			//?FIXME Починить движение запрыгивания когда исчезает ряд
-			["L0"]: [
-				{ x: "L", y: "D" },
-				{ x: "L", y: "0" },
-				{ x: "L", y: "U" },
-				{ x: "L", y: "UU" },
-				{ x: "R", y: "0" },
-				{ x: "R", y: "U" },
-				{ x: "R", y: "UU" }
-			],
-			["R0"]: [
-				{ x: "R", y: "D" },
-				{ x: "R", y: "0" },
-				{ x: "R", y: "U" },
-				{ x: "R", y: "UU" },
-				{ x: "L", y: "0" },
-				{ x: "L", y: "U" },
-				{ x: "L", y: "UU" }
-			],
-			["LD"]: [
-				{ x: "L", y: "D" },
-				{ x: "L", y: "0" },
-				{ x: "R", y: "0" },
-				{ x: "L", y: "U" },
-				{ x: "L", y: "UU" },
-				{ x: "R", y: "U" },
-				{ x: "R", y: "UU" }
-			],
-			["RD"]: [
-				{ x: "R", y: "D" },
-				{ x: "R", y: "0" },
-				{ x: "L", y: "0" },
-				{ x: "R", y: "U" },
-				{ x: "R", y: "UU" },
-				{ x: "L", y: "U" },
-				{ x: "L", y: "UU" }
-			],
-
-			["LU"]: [
-				{ x: "L", y: "0" },
-				{ x: "R", y: "0" },
-				{ x: "L", y: "U" },
-				{ x: "R", y: "U" },
-				{ x: "L", y: "D" }
-			],
-			["RU"]: [
-				{ x: "R", y: "0" },
-				{ x: "L", y: "0" },
-				{ x: "R", y: "U" },
-				{ x: "L", y: "U" },
-				{ x: "R", y: "D" }
-			],
-
-			["LUU"]: [
-				{ x: "L", y: "U" },
-				{ x: "R", y: "U" },
-				{ x: "L", y: "0" },
-				{ x: "R", y: "0" },
-				{ x: "L", y: "D" }
-			],
-			["RUU"]: [
-				{ x: "R", y: "U" },
-				{ x: "L", y: "U" },
-				{ x: "R", y: "0" },
-				{ x: "L", y: "0" },
-				{ x: "R", y: "D" }
-			],
-
-			["00"]: [
-				{ x: "L", y: "D" },
-				{ x: "L", y: "0" },
-				{ x: "L", y: "U" },
-				{ x: "L", y: "UU" },
-				{ x: "R", y: "0" },
-				{ x: "R", y: "U" },
-				{ x: "R", y: "UU" }
-			],
-		};
-
-		let lengthArray = naprDvig[this.beetle.trafficX + this.beetle.trafficY].length;
-		for (let i = 0; i < lengthArray; i++) {
-			let napr = naprDvig[this.beetle.trafficX + this.beetle.trafficY].shift()
-			if (isCanNapr(napr)) {
-				this.beetle.trafficX = napr.x;
-				this.beetle.trafficY = napr.y;
-				return;
-			}
-		}
-
-		this.beetle.trafficX = "0";
-		this.beetle.trafficY = "0";
-
-		/*
-		 * //Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
-		 * let traffic = Math.floor(Math.random() * 10);
-		 * if (traffic == 0)
-		 *			return "L"
-		 *	else if (traffic == 1)
-		 *		return "R"
-		 *	else
-		 *			//if (this.beetle.trafficX != undefined)
-		 *			return this.beetle.trafficX;
-		 *		//else
-		 *	//return getTrafficBeetle();*/
-
-	},
-
-	//Метод движения жука
-	beetleAnimation() {
-		//Проверка перехода за край клетки
-		function examCoor(value) {
-			if (value.coor < 0) {
-				value.coorTiles -= 1;
-				value.coor = SIZE_TILES + value.coor;
-			}
-
-			if (value.coor >= SIZE_TILES) {
-				value.coorTiles += 1;
-				value.coor = value.coor - SIZE_TILES;
-			}
-
-			return [value.coor, value.coorTiles];
-		}
-
-		if (this.beetle.framesAnimation++ == NUMBER_FRAMES_BEEATLE) {
-			if (this.beetle.eat == 1) {
-				this.beetle.eat = 0;
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].view = 0;
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.L = 0;
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.R = 0;
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.U = 0;
-			}
-			model.getTrafficBeetle();
-			this.beetle.framesAnimation = 1;
-		}
-
-		if (this.beetle.eat == 1 && (this.beetle.trafficX + this.beetle.trafficY) == "L0") {
-			if (this.beetle.framesAnimation <= 3)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.R = 1;
-			if (this.beetle.framesAnimation > 3 && this.beetle.framesAnimation <= 6)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.R = 2;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= 8)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.R = 3;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].status.R = 4;
-		}
-		if (this.beetle.eat == 1 && (this.beetle.trafficX + this.beetle.trafficY) == "R0") {
-			if (this.beetle.framesAnimation <= 3)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x+1].status.L = 1;
-			if (this.beetle.framesAnimation > 3 && this.beetle.framesAnimation <= 6)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x+1].status.L = 2;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= 8)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x+1].status.L = 3;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x+1].status.L = 4;
-		}
-		if (this.beetle.eat == 1 && ((this.beetle.trafficX + this.beetle.trafficY) == "RD" || (this.beetle.trafficX + this.beetle.trafficY) == "LD")) {
-			if (this.beetle.framesAnimation <= 3)
-				this.fieldBlocks[this.beetle.positionTile.y + 1][this.beetle.positionTile.x].status.U = 1;
-			if (this.beetle.framesAnimation > 3 && this.beetle.framesAnimation <= 6)
-				this.fieldBlocks[this.beetle.positionTile.y + 1][this.beetle.positionTile.x].status.U = 2;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= 8)
-				this.fieldBlocks[this.beetle.positionTile.y + 1][this.beetle.positionTile.x].status.U = 3;
-			if (this.beetle.framesAnimation > 6 && this.beetle.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.fieldBlocks[this.beetle.positionTile.y + 1][this.beetle.positionTile.x].status.U = 4;
-		}
-
-		switch (this.beetle.trafficY) {
-			case "U":
-			case "UU":
-			case "D":
-				switch (this.beetle.trafficY) {
-					case "U":
-					case "UU":
-						this.beetle.position.y -= SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-						break;
-					case "D":
-						this.beetle.position.y += SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-						break;
-				}
-
-				[this.beetle.position.y, this.beetle.positionTile.y] = examCoor({ coor: this.beetle.position.y, coorTiles: this.beetle.positionTile.y });
-				break;
-			case "0":
-				break;
-			default:
-				console.log("Ошибка в блоке switch model.beetle.trafficY= ", this.beetle.trafficY);
-		}
-
-		if (this.beetle.trafficY == "0")
-			switch (this.beetle.trafficX) {
-				case "L":
-				case "R":
-					switch (this.beetle.trafficX) {
-						case "L":
-							this.beetle.position.x -= SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-							break;
-						case "R":
-							this.beetle.position.x += SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-							break;
-					}
-
-					[this.beetle.position.x, this.beetle.positionTile.x] = examCoor({ coor: this.beetle.position.x, coorTiles: this.beetle.positionTile.x });
-					break;
-				case "0":
-					break;
-				default:
-					console.log("Ошибка в блоке switch model.beetle.trafficX= ", this.beetle.trafficX);
-			}
-	},
+		this.beetle.positionTile.x = 8;
+	};
 
 	//Метод формирования текущей фигуры
 	formCurrentFigure() {
-		this.currentFigure = new CurrentFigure(this.fieldWidth, this.nextFigure.cell);
+		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cell);
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисову в методе view.draw
 		//view.drawNextFigure();
-
-		controller.init();
-	},
+	};
 
 	//Удаление строки
 	deleteRow() {
-		this.fieldBlocks.forEach((y) => {
-			if (y.every((x) => x.view !== 0)) {
-				//?Проверить как лучше чтобы жук падал сразу при исчезновании или двигался вниз
-				// if (this.beetle.positionTile.y < this.fieldBlocks.indexOf(y))
-				// 	this.beetle.positionTile.y += 1;
-				this.fieldBlocks.splice(this.fieldBlocks.indexOf(y), 1);
-				this.fieldBlocks.unshift(Array.from({ length: this.fieldWidth }).map(() => new Element(0)));
+		this.grid.space.forEach((y) => {
+			if (y.every((x) => x.element !== 0)) {
+				for (let i = this.grid.space.indexOf(y); i > 0; i--)
+					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
+						this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
+						this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
+						this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
+						this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
+					}
+
+				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
+					this.grid.space[0][j].element = 0;
+					this.grid.space[0][j].status.L = 0;
+					this.grid.space[0][j].status.R = 0;
+					this.grid.space[0][j].status.U = 0;
+				}
+
 				this.scores += 100;
+
+				//?Проверить как лучше чтобы жук падал сразу при исчезновании или двигался вниз
+				// if (this.beetle.positionTile.y < this.grid.indexOf(y))
+				// 	this.beetle.positionTile.y += 1;
 				// Тестирование при исчезновании строки, если жук запрыгивает на 2 клетки
 				//if (this.beetle.trafficY === "U") this.beetle.trafficY = "0";
 				//if (this.beetle.trafficY === "UU") this.beetle.trafficY = "U";
 			}
 		})
-	},
+	};
 
-	get_tX: (x) => Math.ceil(x / SIZE_TILES),
-	get_tY: (y) => Math.ceil(y / SIZE_TILES),
 	tick() {
-		if (controller.leftPressed) {
-			if (this.currentFigure.isCollission(this.currentFigure.position.x - STEP_MOVEMENT_KEYPRESS, this.currentFigure.position.y, this.fieldBlocks) == false)
-				this.currentFigure.position.x -= STEP_MOVEMENT_KEYPRESS;
-		}
+		// Проверяем нажатие клавиатуры и запускаем события
+		if (controller.pressed.left) this.currentFigure.moveLeft();
+		if (controller.pressed.right) this.currentFigure.moveRight();
+		if (controller.pressed.up) this.currentFigure.rotate();
+		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
+		this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO,this);
 
-		if (controller.rightPressed) {
-			if (this.currentFigure.isCollission(this.currentFigure.position.x + STEP_MOVEMENT_KEYPRESS, this.currentFigure.position.y, this.fieldBlocks) == false)
-				this.currentFigure.position.x += STEP_MOVEMENT_KEYPRESS;
-		}
 
-		if (controller.upPressed) {
-			this.currentFigure.rotate();
-			if (this.currentFigure.isCollission(this.currentFigure.position.x, this.currentFigure.position.y, this.fieldBlocks)) {
-				this.currentFigure.rotate();
-				this.currentFigure.rotate();
-				this.currentFigure.rotate();
-			}
-		}
 
-		let stepY = STEP_MOVEMENT_AUTO;
-		if (controller.downPressed) {
-			stepY = STEP_MOVEMENT_KEYPRESS;
-		}
-
-		this.currentFigure.position.y += stepY;
-
-		if (this.currentFigure.isCollission(this.currentFigure.position.x, this.currentFigure.position.y, this.fieldBlocks)) {
-			let positionCells = this.currentFigure.getPosition();
-			for (let i = 0; i < positionCells.length; i++) {
-				//! Условия проигрыша не полные иногда фигура ложится в существующую
-				if (positionCells[i].y - 1 < 0) {
-					localStorage.setItem('Record', model.scores);
-					alert("Вы проиграли");
-					this.init();
-					return;
-				}
-
-				this.fieldBlocks[positionCells[i].y - 1][positionCells[i].x].view = this.currentFigure.cell[i].view;
-			}
-			this.deleteRow();
-			this.formCurrentFigure();
-		};
-
-		if (this.fieldBlocks[this.beetle.positionTile.y][this.beetle.positionTile.x].view != 0 && this.beetle.eat == 0) {
+		if (this.grid.space[this.beetle.positionTile.y][this.beetle.positionTile.x].element != 0 && this.beetle.eat == 0) {
 			console.log("!!!Вы проиграли!!!");
 			localStorage.setItem('Record', model.scores);
 			alert("Вы проиграли");
-			this.init();
+			model = new Model();
 			return;
 		}
 
-		this.beetleAnimation();
-		view.draw();
-	},
+		this.beetle.beetleAnimation();
+		display.draw();
+	};
 };
 //Объект рисования
-let view = {
-	canvas: {},
-	ctx: {},
-	canvasNextFigure: {},
-	ctxNextFigure: {},
-	txtScores: {},
-	imgFon: new Image(),
-	imgKv: [],
-	imgBeetle: new Image(),
-	init() {
+class Display {
+	canvas;
+	ctx;
+	canvasNextFigure;
+	ctxNextFigure;
+	txtScores;
+	imgFon;
+	imgKv;
+	imgBeetle;
+	constructor() {
 		this.canvas = document.getElementById('canvasId');
 		this.ctx = this.canvas.getContext("2d");
 		this.canvasNextFigure = document.getElementById('canvasNextFigureId');
@@ -630,40 +143,42 @@ let view = {
 			this.imgKv[i] = new Image();
 		}
 
+		this.imgFon = new Image();
 		//загружаем картинки фона
-		this.imgFon.src = DirectoryImg + 'fon.png';
+		this.imgFon.src = DIRECTORY_IMG + 'fon.png';
 
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++) {
-			this.imgKv[i].src = DirectoryImg + 'Kvadrat' + (i + 1) + '.png';
+			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 		}
 
-		this.imgBeetle.src = DirectoryImg + 'Beetle.png';
-	},
+		this.imgBeetle = new Image();
+		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+	};
 	drawNextFigure() {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (let i = 0; i < model.nextFigure.cell.length; i++) {
 			this.ctxNextFigure.drawImage(this.imgKv[model.nextFigure.cell[i].view - 1], 0, 0, SIZE_TILES, SIZE_TILES, (model.nextFigure.cell[i].x * SIZE_TILES), (model.nextFigure.cell[i].y * SIZE_TILES), SIZE_TILES, SIZE_TILES);
 		}
-	},
+	};
 	draw() {
 
 		//Рисуем фон и заполненный стакан
 		for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
 			for (let j = 0; j < this.canvas.width / SIZE_TILES; j++)
-				this.ctx.drawImage(this.imgFon, Math.floor(model.field[i][j] / 4) * SIZE_TILES, (model.field[i][j] % 4) * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+				this.ctx.drawImage(this.imgFon, Math.floor(model.grid.space[i][j].background / 4) * SIZE_TILES, (model.grid.space[i][j].background % 4) * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
 
 		for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
 			for (let j = 0; j < this.canvas.width / SIZE_TILES; j++)
-				if (model.fieldBlocks[i][j].view !== 0)
-					if (model.fieldBlocks[i][j].status.L === 0 && model.fieldBlocks[i][j].status.R === 0 && model.fieldBlocks[i][j].status.U === 0)
-						this.ctx.drawImage(this.imgKv[model.fieldBlocks[i][j].view - 1], 0, 0, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
-					else if (model.fieldBlocks[i][j].status.L !== 0)
-						this.ctx.drawImage(this.imgKv[model.fieldBlocks[i][j].view - 1], (model.fieldBlocks[i][j].status.L - 1) * SIZE_TILES, 2 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
-					else if (model.fieldBlocks[i][j].status.R !== 0)
-						this.ctx.drawImage(this.imgKv[model.fieldBlocks[i][j].view - 1], (model.fieldBlocks[i][j].status.R - 1) * SIZE_TILES, 1 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
-					else if (model.fieldBlocks[i][j].status.U !== 0)
-						this.ctx.drawImage(this.imgKv[model.fieldBlocks[i][j].view - 1], (model.fieldBlocks[i][j].status.U - 1) * SIZE_TILES, 3 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+				if (model.grid.space[i][j].element !== 0)
+					if (model.grid.space[i][j].status.L === 0 && model.grid.space[i][j].status.R === 0 && model.grid.space[i][j].status.U === 0)
+						this.ctx.drawImage(this.imgKv[model.grid.space[i][j].element - 1], 0, 0, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+					else if (model.grid.space[i][j].status.L !== 0)
+						this.ctx.drawImage(this.imgKv[model.grid.space[i][j].element - 1], (model.grid.space[i][j].status.L - 1) * SIZE_TILES, 2 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+					else if (model.grid.space[i][j].status.R !== 0)
+						this.ctx.drawImage(this.imgKv[model.grid.space[i][j].element - 1], (model.grid.space[i][j].status.R - 1) * SIZE_TILES, 1 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
+					else if (model.grid.space[i][j].status.U !== 0)
+						this.ctx.drawImage(this.imgKv[model.grid.space[i][j].element - 1], (model.grid.space[i][j].status.U - 1) * SIZE_TILES, 3 * SIZE_TILES, SIZE_TILES, SIZE_TILES, j * SIZE_TILES, i * SIZE_TILES, SIZE_TILES, SIZE_TILES);
 
 
 		//Рисуем текущую падующую фигуру
@@ -685,7 +200,7 @@ let view = {
 					[imgSmX, imgSmY] = [...[1 * SIZE_TILES, 1 * SIZE_TILES]];
 				else
 					[imgSmX, imgSmY] = [...[2 * SIZE_TILES, 1 * SIZE_TILES]];
-			// Показываем анимацию при движении вправо
+		// Показываем анимацию при движении вправо
 		else if (model.beetle.trafficX == "R" && model.beetle.trafficY == "0")
 			if (model.beetle.eat == 0)
 				[imgSmX, imgSmY] = [...[2 * SIZE_TILES, 0]];
@@ -694,9 +209,9 @@ let view = {
 					[imgSmX, imgSmY] = [...[1 * SIZE_TILES, 2 * SIZE_TILES]];
 				else
 					[imgSmX, imgSmY] = [...[2 * SIZE_TILES, 2 * SIZE_TILES]];
-			
-			
-			
+
+
+
 
 		else if (model.beetle.trafficX == "L" && (model.beetle.trafficY == "U" || model.beetle.trafficY == "UU"))
 			[imgSmX, imgSmY] = [...[0, 1 * SIZE_TILES]];
@@ -710,56 +225,40 @@ let view = {
 					[imgSmX, imgSmY] = [...[1 * SIZE_TILES, 3 * SIZE_TILES]];
 				else
 					[imgSmX, imgSmY] = [...[2 * SIZE_TILES, 3 * SIZE_TILES]];
-			
+
 
 		this.ctx.drawImage(this.imgBeetle, imgSmX, imgSmY, SIZE_TILES, SIZE_TILES, model.beetle.positionTile.x * SIZE_TILES + model.beetle.position.x, model.beetle.positionTile.y * SIZE_TILES + model.beetle.position.y, SIZE_TILES, SIZE_TILES);
 
 		//Обновляем
 		this.txtScores.innerHTML = String(model.scores).padStart(6, "0");
 
-		view.drawNextFigure();
+		display.drawNextFigure();
 	}
 };
 
-let controller = {
-	rightPressed: false,
-	leftPressed: false,
-	upPressed: false,
-	downPressed: false,
-
-	init() {
-		document.addEventListener("keydown", this.keyDownHandler, false);
-		document.addEventListener("keyup", this.keyUpHandler, false);
+class Controller {
+	pressed;
+	codes;
+	constructor(codes) {
 		//Задаем начальное значение падения
-		controller.rightPressed = false;
-		controller.upPressed = false;
-		controller.leftPressed = false;
-		controller.downPressed = false;
-	},
+		this.pressed = Object.create(null);
+		this.codes = codes;
 
-	keyDownHandler(e) {
-		switch (e.keyCode) {
-			case 39: controller.rightPressed = true; break;
-			case 38: controller.upPressed = true; break;
-			case 37: controller.leftPressed = true; break;
-			case 40: controller.downPressed = true; break;
+		document.addEventListener("keydown", this.handler);
+		document.addEventListener("keyup", this.handler);
+	};
+	handler = event => {
+		if (this.codes.hasOwnProperty(event.keyCode)) {
+			this.pressed[controller.codes[event.keyCode]] = event.type == "keydown";
+			event.preventDefault();
 		}
-	},
-
-	keyUpHandler(e) {
-		switch (e.keyCode) {
-			case 39: controller.rightPressed = false; break;
-			case 38: controller.upPressed = false; break;
-			case 37: controller.leftPressed = false; break;
-			case 40: controller.downPressed = false; break;
-		}
-	},
-
+	}
 };
 
 window.onload = function () {
-	view.init();
-	model.init();
+	display = new Display();
+	model = new Model();
+	controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 	setInterval(() => model.tick(), UPDATE_TIME);
 }
 
