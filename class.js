@@ -83,13 +83,18 @@ export class CurrentFigure extends Figure {
 	// Проверяем столкновение
 	isCollission(x, y) {
 		let positionTile = this.getPositionTile(x, y);
+		let result = false;
+		for (let i = 0; i < positionTile.length; i++) {
+			if (positionTile[i].x >= 0 && positionTile[i].x <= this.grid.width - 1
+				&& positionTile[i].y >= 0 && positionTile[i].y <= this.grid.height - 1)
+					if (this.grid.space[positionTile[i].y][positionTile[i].x].element !== 0) result=true;
+		}
+		if (result) return true;
 		for (let i = 0; i < positionTile.length; i++) {
 			if (positionTile[i].x < 0 || positionTile[i].x > this.grid.width - 1) return true;
-			if (positionTile[i].y < 0) return false;
 			if (positionTile[i].y > this.grid.height - 1) return true;
-			if (this.grid.space[positionTile[i].y][positionTile[i].x].element !== 0) return true;
 		}
-		return false;
+		return result;
 	};
 
 	//функция поворота фигуры
@@ -118,36 +123,34 @@ export class CurrentFigure extends Figure {
 	moveDown(stepY, context) {
 		let tY = Math.ceil(this.position.y / SIZE_TILES);
 		let kY = Math.ceil((this.position.y + stepY) / SIZE_TILES);
-		for (let y = tY; y <= kY; y++) {
-			if (this.isCollission(this.position.x, this.position.y + stepY) == false) {
+		let predel = kY;
+		let stop = false;
+		for (let y = tY; y <= kY; y++) 
+			if (this.isCollission(this.position.x, y * SIZE_TILES)) {
+				predel = y;
+				stop = true;
+				break;
+			}
+			
+			if (stepY < SIZE_TILES)
 				this.position.y += stepY;
-			} else {
-				let positionCells = this.getPositionTile(this.position.x, this.position.y + stepY);
-				let predel;
-				//!переработать алгоритм не всегда ложиться или проходит сквозь блоки
-				for (let i = Math.ceil(this.position.y / SIZE_TILES); i <= Math.ceil((this.position.y + stepY) / SIZE_TILES); i++) {
-					if (this.isCollission(this.position.x, i * SIZE_TILES)) {
-						predel = i;
-						break;
-					}
-				}
+			else
+				this.position.y += (predel - tY)*SIZE_TILES;
+
+			if (stop){
+				let positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
 				for (let i = 0; i < positionCells.length; i++) {
-					//! Условия проигрыша не полные иногда фигура ложится в существующую
 					if (positionCells[i].y - 1 < 0) {
-						document.localStorage.setItem('Record', model.scores);
-						document.alert("Вы проиграли");
-						document.model = new Model();
-						return;
+						return false;
 					}
 				}
-				positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
+				
 				for (let i = 0; i < positionCells.length; i++)
 					this.grid.space[positionCells[i].y - 1][positionCells[i].x].element = this.cell[i].view;
+				
+				return true;
 
-				context.deleteRow();
-				context.formCurrentFigure();
-			};
-		}
+			}
 	}
 }
 

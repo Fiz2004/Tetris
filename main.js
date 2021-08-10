@@ -104,9 +104,15 @@ class Model {
 		if (controller.pressed.right) this.currentFigure.moveRight();
 		if (controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-		this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO,this);
-
-
+		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === false) {
+			window.localStorage.setItem('Record', this.scores);
+			window.alert("Вы проиграли");
+			model = new Model();
+			return;
+		}	else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === true) {
+			this.deleteRow();
+			this.formCurrentFigure();
+		}
 
 		if (this.grid.space[this.beetle.positionTile.y][this.beetle.positionTile.x].element != 0 && this.beetle.eat == 0) {
 			console.log("!!!Вы проиграли!!!");
