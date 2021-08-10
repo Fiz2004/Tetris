@@ -105,8 +105,8 @@ class Model {
 		if (controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
 		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === false) {
-			window.localStorage.setItem('Record', this.scores);
-			window.alert("Вы проиграли");
+			localStorage.setItem('Record', this.scores);
+			alert("Вы проиграли");
 			model = new Model();
 			return;
 		}	else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === true) {
@@ -115,7 +115,6 @@ class Model {
 		}
 
 		if (this.grid.space[this.beetle.positionTile.y][this.beetle.positionTile.x].element != 0 && this.beetle.eat == 0) {
-			console.log("!!!Вы проиграли!!!");
 			localStorage.setItem('Record', model.scores);
 			alert("Вы проиграли");
 			model = new Model();
