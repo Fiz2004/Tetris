@@ -17,8 +17,8 @@ export class Grid{
 			Array.from({ length: this.width }).map(() =>
 				new Element(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS),0)));
 	};
-		isInside(point){
-			return point.x >= 0 && point.x < this.width && point.y >= 0 && point.x <= height;
+		isInside({x,y}){
+			return x >= 0 && x < this.width && y >= 0 && y < this.height;
 	};
 	get(point) {
 		return this.space[point.x][point.y];

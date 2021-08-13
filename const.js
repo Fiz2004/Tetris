@@ -14,12 +14,16 @@ export const STEP_MOVE_KEY_Y = 90;
 export const NUMBER_FIGURE_ELEMENTS = 4;
 // Число кадров движения
 export const NUMBER_FRAMES_BEEATLE = 10;
+// Число кадров движения налево и направо
+export const NUMBER_FRAMES_BEEATLE_MOVE = 5;
+// Число кадров движения при повороте
+export const NUMBER_FRAMES_BEEATLE_ROTATE = 1;
 // Количество Кадров при повреждении фигуры
 export const NUMBER_FRAMES_ELEMENTS = 4;
 // Вероятность того что жук будет есть блок
-export const PROBABILITY_EAT = 1;
+export const PROBABILITY_EAT = 20;
 // Директория где храняться картинки
-export const DIRECTORY_IMG = "/resurs/v2/";
+export const DIRECTORY_IMG = "/resurs/v3/";
 // Обозначение фигур, задаются координаты каждой ячейки
 export const FIGURE = [
 	[[0, 1], [1, 1], [2, 1], [3, 1]],

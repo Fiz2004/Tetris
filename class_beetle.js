@@ -1,278 +1,222 @@
 import { Element, Point, Figure, CurrentFigure } from './class.js';
 import {
 	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME,
-	 NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
+	NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE,
-	NAPRDVIG
+	NAPRDVIG, NUMBER_FRAMES_BEEATLE_MOVE, NUMBER_FRAMES_BEEATLE_ROTATE
 } from './const.js';
 
 // Класс для жука
 export class Beetle {
+	// Позиция относительно клетки
 	position;
+	// Позиция относительно сетки поля
 	positionTile;
-	trafficX;
-	trafficY;
+	// Текущее направление до конца анимации
+	direction
+	// Направление движения, массивом с указанием смещения
+	move;
+	// Текущий кадр анимации от 1 до NUMBER_FRAMES_BEEATLE
 	framesAnimation;
+	// Ест ли жук
 	eat;
+	// Выоота и ширина спрайта жука
+	width;
+	height;
+	// Вспомогательная сетка для ссылки на сетку
 	grid;
 	constructor(grid) {
 		this.grid = grid;
-		this.positionTile = new Point(Math.floor(Math.random() * this.grid.width), (this.grid.height) - 1);
-		this.position = new Point(0, 0);
+		//! Сделать определение ширины и высоты жука програмным, чтобы не зависит от вида картинки
+		this.width = 24;
+		this.height = 24;
+
+		this.position = new Point(Math.floor(Math.random() * this.grid.width) * SIZE_TILES, ((this.grid.height - 1) * SIZE_TILES));
+
+		//! Для отладки
+		console.log(`Стартовая позиция = ${JSON.stringify(this.position)}`);
+
 		//Установить случайное движение
-		this.trafficX = "L";
-		this.trafficY = "0";
+		this.direction = [0, 0];
+		this.move = [0, 0];
 		this.eat = 0;
-		this.getTrafficBeetle();
+
+		this.getTrafficBeetle()
 		this.framesAnimation = 0;
 	};
-	//Функция для определения направления движения жука по горизонтали
+	getPositionTile() {
+
+	}
+	//Функция для определения направления движения жука
 	getTrafficBeetle() {
-		function isCanNapr(napr) {
-			const Y = this.positionTile.y;
-			const X = this.positionTile.x;
-			const mY = this.grid.height;
-			const mX = this.grid.width;
-			//Определяем будет ли жук есть блок исходя из вероятности заданной константой
-			const randEat = Math.floor(Math.random() * 100) < PROBABILITY_EAT ? true : false;
-
-			switch (napr.x + napr.y) {
-				//Проверяем возможность пойти влево
-				case "L0":
-					//Если Жук находиться в крайней левой точке
-					if (X == 0) return false;
-					//Если слева препятствие
-					if (this.grid.space[Y][X - 1].element != 0) {
-						if (randEat) {
-							this.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-
-				case "R0":
-					//Если Жук находиться в крайней правой точке
-					if (X + 1 == mX) return false;
-					//Если справа препятствие
-					if (this.grid.space[Y][X + 1].element != 0) {
-						//?Забыл что проверяет, уточнить
-						//if (model.fieldBlocks[Y][X - 1].view != 0) return false;
-						if (randEat) {
-							this.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-				//Проверяем возможность пойти вниз
-				case "RD":
-				case "LD":
-					//Если Жук находиться на дне стакана
-					if (Y + 1 == mY) return false;
-					//Если внизу есть препятствие
-					if (this.grid.space[Y + 1][X].element != 0) {
-						//?Забыл что проверяет, уточнить
-						//if (model.fieldBlocks[Y][X - 1].view != 0) return false;
-						if (randEat) {
-							this.eat = 1;
-							return true;
-						}
-						else { return false; }
-					}
-					break;
-				//Проверяем возможность пойти верх
-				case "RU":
-				case "LU":
-					//Если Жук находиться на верху стакана
-					if (Y - 1 < 0) return false;
-					//Если сверху есть препятствие
-					if (this.grid.space[Y - 1][X].element != 0) return false;
-					switch (napr.x) {
-						case "L":
-							//Если Жук находиться в крайней левой точке
-							if (X == 0) return false;
-							//Если сверху слева есть препятствие
-							if (this.grid.space[Y - 1][X - 1].element != 0) return false;
-							//Проверить есть ли слева снизу блок
-							if (this.grid.space[Y][X - 1].element == 0) return false;
-							break;
-						case "R":
-							//Если Жук находиться в крайней правой точке
-							if (X + 1 == mX) return false;
-							//Если сверху справа есть препятствие
-							if (this.grid.space[Y - 1][X + 1].element != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли справа снизу блок
-							if (this.grid.space[Y][X + 1].element == 0) return false;
-							break;
-					}
-					break;
-				//Проверяем возможность пойти верх верх
-				case "RUU":
-				case "LUU":
-					//Если Жук находиться на верху стакана
-					if (Y - 2 < 0) return false;
-					//Если сверху есть препятствие
-					if (this.grid.space[Y - 1][X].element != 0) return false;
-					//Если сверху есть препятствие
-					if (this.grid.space[Y - 2][X].element != 0) return false;
-					switch (napr.x) {
-						case "L":
-							//Если Жук находиться в крайней левой точке
-							if (X == 0) return false;
-							//Если сверху слева есть препятствие
-							if (this.grid.space[Y - 2][X - 1].element != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
-							if (Y - 1 < mY && this.grid.space[Y - 1][X - 1].element == 0) return false;
-							break;
-						case "R":
-							//Если Жук находиться в крайней правой точке
-							if (X + 1 == mX) return false;
-							//Если сверху справа есть препятствие
-							if (this.grid.space[Y - 2][X + 1].element != 0) return false;
-							//Если Жук не на дне стакана то проверить есть ли слева снизу блок
-							if (Y - 1 < mY && this.grid.space[Y - 1][X + 1].element == 0) return false;
-							break;
-					}
-					break;
-				case "00":
-					break;
-				default:
-					console.log("Ошибка в блоке switch class_beetle.traffic (isCanNapr)= ", this.trafficX);
-					console.log("Ошибка в блоке switch class_beetle.traffic (isCanNapr)= ", this.trafficY);
-			}
-			return true;
+		console.log(`Меняем направление движения, текущая позиция = ${JSON.stringify(this.direction)} текущая цель ${this.move}`);
+		this.direction = [...this.move];
+		
+		if (this.move[0] === 0 && this.move[1] === 0) {
+			this.move = [-1, 0];
 		}
-
-		let naprDvig = [...NAPRDVIG[this.trafficX + this.trafficY]];
-		for (let i = 0; i < NAPRDVIG[this.trafficX + this.trafficY].length; i++) {
-			let napr = naprDvig.shift()
-			if (isCanNapr.call(this,napr)) {
-				this.trafficX = napr.x;
-				this.trafficY = napr.y;
-				return;
-			}
+		else if (this.move[0] === 1 && this.move[1] === 0) {
+			if (Math.floor(this.position.x / SIZE_TILES) === this.grid.width - 1)
+				this.move = [-1, 0];
 		}
-
-		this.trafficX = "0";
-		this.trafficY = "0";
-
-		/*
-		 * //Продолжаем движение в заданном направлении или шанс 1 из 10 что изменяем его на противоположноеж
-		 * let traffic = Math.floor(Math.random() * 10);
-		 * if (traffic == 0)
-		 *			return "L"
-		 *	else if (traffic == 1)
-		 *		return "R"
-		 *	else
-		 *			//if (this.trafficX != undefined)
-		 *			return this.trafficX;
-		 *		//else
-		 *	//return getTrafficBeetle();*/
-
+		if (this.move[0] === -1 && this.move[1] === 0) {
+			if (Math.floor(this.position.x / SIZE_TILES) === 0)
+				this.move = [1, 0];
+		}
+		console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${this.move}`);
 	};
 
 	//Метод движения жука
 	beetleAnimation() {
-		//Проверка перехода за край клетки
-		function examCoor(value) {
-			if (value.coor < 0) {
-				value.coorTiles -= 1;
-				value.coor = SIZE_TILES + value.coor;
-			}
-
-			if (value.coor >= SIZE_TILES) {
-				value.coorTiles += 1;
-				value.coor = value.coor - SIZE_TILES;
-			}
-
-			return [value.coor, value.coorTiles];
-		}
-
-		if (this.framesAnimation++ == NUMBER_FRAMES_BEEATLE) {
-			if (this.eat == 1) {
-				this.eat = 0;
-				this.grid.space[this.positionTile.y][this.positionTile.x].element = 0;
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.L = 0;
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.R = 0;
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.U = 0;
-			}
+		//Определяем текущий кадр
+		if (this.framesAnimation == NUMBER_FRAMES_BEEATLE - 1) {
 			this.getTrafficBeetle();
-			this.framesAnimation = 1;
+			this.framesAnimation = 0;
 		}
-
-		if (this.eat == 1 && (this.trafficX + this.trafficY) == "L0") {
-			if (this.framesAnimation <= 3)
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.R = 1;
-			if (this.framesAnimation > 3 && this.framesAnimation <= 6)
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.R = 2;
-			if (this.framesAnimation > 6 && this.framesAnimation <= 8)
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.R = 3;
-			if (this.framesAnimation > 6 && this.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.grid.space[this.positionTile.y][this.positionTile.x].status.R = 4;
+		else {
+			this.framesAnimation = (this.framesAnimation + 1);
 		}
-		if (this.eat == 1 && (this.trafficX + this.trafficY) == "R0") {
-			if (this.framesAnimation <= 3)
-				this.grid.space[this.positionTile.y][this.positionTile.x + 1].status.L = 1;
-			if (this.framesAnimation > 3 && this.framesAnimation <= 6)
-				this.grid.space[this.positionTile.y][this.positionTile.x + 1].status.L = 2;
-			if (this.framesAnimation > 6 && this.framesAnimation <= 8)
-				this.grid.space[this.positionTile.y][this.positionTile.x + 1].status.L = 3;
-			if (this.framesAnimation > 6 && this.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.grid.space[this.positionTile.y][this.positionTile.x + 1].status.L = 4;
+		if ((this.direction[0] === 0 && this.direction[1] === 0 &&
+			this.move[0] === 1 && this.move[1] === 0)
+			|| (this.direction[0] === 0 && this.direction[1] === 0 &&
+				this.move[0] === -1 && this.move[1] === 0)
+			|| (this.direction[0] === -1 && this.direction[1] === 0 &&
+				this.move[0] === 1 && this.move[1] === 0)
+			|| (this.direction[0] === 1 && this.direction[1] === 0 &&
+				this.move[0] === -1 && this.move[1] === 0)) {
+			
 		}
-		if (this.eat == 1 && ((this.trafficX + this.trafficY) == "RD" || (this.trafficX + this.trafficY) == "LD")) {
-			if (this.framesAnimation <= 3)
-				this.grid.space[this.positionTile.y + 1][this.positionTile.x].status.U = 1;
-			if (this.framesAnimation > 3 && this.framesAnimation <= 6)
-				this.grid.space[this.positionTile.y + 1][this.positionTile.x].status.U = 2;
-			if (this.framesAnimation > 6 && this.framesAnimation <= 8)
-				this.grid.space[this.positionTile.y + 1][this.positionTile.x].status.U = 3;
-			if (this.framesAnimation > 6 && this.framesAnimation <= NUMBER_FRAMES_BEEATLE)
-				this.grid.space[this.positionTile.y + 1][this.positionTile.x].status.U = 4;
+		else {
+			this.position.x += this.move[0] * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
+			this.position.y += this.move[1] * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
 		}
-
-		switch (this.trafficY) {
-			case "U":
-			case "UU":
-			case "D":
-				switch (this.trafficY) {
-					case "U":
-					case "UU":
-						this.position.y -= SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-						break;
-					case "D":
-						this.position.y += SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-						break;
-				}
-
-				[this.position.y, this.positionTile.y] = examCoor({ coor: this.position.y, coorTiles: this.positionTile.y });
-				break;
-			case "0":
-				break;
-			default:
-				console.log("Ошибка в блоке switch class_beetle.trafficY= ", this.trafficY);
-		}
-
-		if (this.trafficY == "0")
-			switch (this.trafficX) {
-				case "L":
-				case "R":
-					switch (this.trafficX) {
-						case "L":
-							this.position.x -= SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-							break;
-						case "R":
-							this.position.x += SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-							break;
-					}
-
-					[this.position.x, this.positionTile.x] = examCoor({ coor: this.position.x, coorTiles: this.positionTile.x });
-					break;
-				case "0":
-					break;
-				default:
-					console.log("Ошибка в блоке switch class_beetle.trafficX= ", this.trafficX);
-			}
+		console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
 	};
+
+	// Провермяем есть ли доступ к верху стакана
+	isBreath() {
+		return true;
+	};
+
+	// Исходя из данных определяе спрайт для рисования
+	getSprite() {
+		// Если поворачиваемся влево с 0,0
+		if (this.move[0] === -1 && this.move[1] === 0
+			&& this.direction[0] === 0 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [0, 0];
+			else {
+				return [7, 0];
+			}
+		// Если поворачиваемся вправо с 0,0
+		if (this.move[0] === 1 && this.move[1] === 0
+			&& this.direction[0] === 0 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [0, 0];
+			else {
+				return [1, 0];
+			}
+		// Если поворачиваемся вправо из позиции влево
+		if (this.move[0] === 1 && this.move[1] === 0
+			&& this.direction[0] === -1 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [2, 0];
+			else {
+				switch (Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_ROTATE))) {
+					case 1:
+						return [2, 0];
+					case 2:
+						return [1, 0];
+					case 3:
+						return [0, 0];
+					case 4:
+						return [7, 0];
+				}
+			}
+		// Если поворачиваемся влево из позиции вправо
+		if (this.move[0] === -1 && this.move[1] === 0
+			&& this.direction[0] === 1 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [6, 0];
+			else {
+				switch (Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_ROTATE))) {
+					case 1:
+						return [7, 0];
+					case 2:
+						return [0, 0];
+					case 3:
+						return [1, 0];
+					case 4:
+						return [2, 0];
+				}
+			}
+		// Если движемся влево
+		if (this.move[0] === -1 && this.move[1] === 0
+			&& this.direction[0] === -1 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [6, 0];
+			else {
+				return [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 2];
+			}
+		// Если движемся вправо
+		if (this.move[0] === 1 && this.move[1] === 0
+			&& this.direction[0] === 1 && this.direction[1] === 0)
+			if (this.framesAnimation == 0)
+				return [2, 0];
+			else {
+				console.log(`Текущий кадр анимации = ${Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE))} на кадре ${this.framesAnimation}`);
+				return [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 1];
+			}
+		return [0, 0];
+		/*
+				if (model.beetle.eat == 0) {
+			console.log(model.beetle.moveX + model.beetle.moveY);
+			switch (model.beetle.moveX + model.beetle.moveY) {
+				case "00":
+					[offsetX, offsetY] = model.beetle.getSprite();
+				case "L0":
+					[offsetX, offsetY] = [...[6, 0]]; break;
+				case "R0":
+					[offsetX, offsetY] = [...[2, 0]]; break;
+				default:
+					[offsetX, offsetY] = [...[9, 9]]; break;
+			}
+		} else {
+
+		}
+		
+		if (model.beetle.eat == 0 && (model.beetle.moveY == "0" || (model.beetle.framesAnimation % 2 == 0 && model.beetle.moveY != "U" && model.beetle.moveY != "UU")))
+			[offsetX, offsetY] = [...[0, 0]];
+		// Показываем анимацию при движении влево
+		else if (model.beetle.moveX == "L" && model.beetle.moveY == "0")
+			if (model.beetle.eat == 0)
+				[offsetX, offsetY] = [...[1 * SIZE_TILES, 0]];
+			else
+				if (model.beetle.framesAnimation % 2 == 0)
+					[offsetX, offsetY] = [...[1 * SIZE_TILES, 1 * SIZE_TILES]];
+				else
+					[offsetX, offsetY] = [...[2 * SIZE_TILES, 1 * SIZE_TILES]];
+		// Показываем анимацию при движении вправо
+		else if (model.beetle.moveX == "R" && model.beetle.moveY == "0")
+			if (model.beetle.eat == 0)
+				[offsetX, offsetY] = [...[2 * SIZE_TILES, 0]];
+			else
+				if (model.beetle.framesAnimation % 2 == 0)
+					[offsetX, offsetY] = [...[1 * SIZE_TILES, 2 * SIZE_TILES]];
+				else
+					[offsetX, offsetY] = [...[2 * SIZE_TILES, 2 * SIZE_TILES]];
+		else if (model.beetle.moveX == "L" && (model.beetle.moveY == "U" || model.beetle.moveY == "UU"))
+			[offsetX, offsetY] = [...[0, 1 * SIZE_TILES]];
+		else if (model.beetle.moveX == "R" && (model.beetle.moveY == "U" || model.beetle.moveY == "UU"))
+			[offsetX, offsetY] = [...[0, 2 * SIZE_TILES]];
+		else
+			if (model.beetle.eat == 0)
+				[offsetX, offsetY] = [...[3 * SIZE_TILES, 0]];
+			else
+				if (model.beetle.framesAnimation % 2 == 0)
+					[offsetX, offsetY] = [...[1 * SIZE_TILES, 3 * SIZE_TILES]];
+				else
+					[offsetX, offsetY] = [...[2 * SIZE_TILES, 3 * SIZE_TILES]];
+*/
+	}
 }

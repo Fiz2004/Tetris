@@ -14,11 +14,15 @@ export class Element {
 	constructor(background, valueElement) {
 		this.background = background;
 		this.element = valueElement;
+		//Показывает значение сьеденного элемента и направление
 		this.status = {
 			L: 0,
 			R: 0,
 			U: 0,
 		};
+	}
+	isStatusClear() {
+		return this.status.L === 0 && this.status.R === 0 && this.status.U === 0
 	}
 
 }
@@ -82,18 +86,18 @@ export class CurrentFigure extends Figure {
 
 	// Проверяем столкновение
 	isCollission(x, y) {
-		let positionTile = this.getPositionTile(x, y);
 		let result = false;
-		for (let i = 0; i < positionTile.length; i++) {
-			if (positionTile[i].x >= 0 && positionTile[i].x <= this.grid.width - 1
-				&& positionTile[i].y >= 0 && positionTile[i].y <= this.grid.height - 1)
-					if (this.grid.space[positionTile[i].y][positionTile[i].x].element !== 0) result=true;
-		}
+		// Проверяем есть ли в этой точке элемент
+		for (let point of this.getPositionTile(x, y)) 
+			if (this.grid.isInside(point)	&& this.grid.space[point.y][point.x].element !== 0)
+				result = true;
+		
 		if (result) return true;
-		for (let i = 0; i < positionTile.length; i++) {
-			if (positionTile[i].x < 0 || positionTile[i].x > this.grid.width - 1) return true;
-			if (positionTile[i].y > this.grid.height - 1) return true;
-		}
+
+		// Проверяем выходит ли точка за границы стакана
+		for (let { x: x1, y: y1 } of this.getPositionTile(x, y)) 
+			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1) return true;
+		
 		return result;
 	};
 
@@ -125,32 +129,32 @@ export class CurrentFigure extends Figure {
 		let kY = Math.ceil((this.position.y + stepY) / SIZE_TILES);
 		let predel = kY;
 		let stop = false;
-		for (let y = tY; y <= kY; y++) 
+		for (let y = tY; y <= kY; y++)
 			if (this.isCollission(this.position.x, y * SIZE_TILES)) {
 				predel = y;
 				stop = true;
 				break;
 			}
-			
-			if (stepY < SIZE_TILES)
-				this.position.y += stepY;
-			else
-				this.position.y += (predel - tY)*SIZE_TILES;
 
-			if (stop){
-				let positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
-				for (let i = 0; i < positionCells.length; i++) {
-					if (positionCells[i].y - 1 < 0) {
-						return false;
-					}
+		if (stepY < SIZE_TILES)
+			this.position.y += stepY;
+		else
+			this.position.y += (predel - tY) * SIZE_TILES;
+
+		if (stop) {
+			let positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
+			for (let i = 0; i < positionCells.length; i++) {
+				if (positionCells[i].y - 1 < 0) {
+					return false;
 				}
-				
-				for (let i = 0; i < positionCells.length; i++)
-					this.grid.space[positionCells[i].y - 1][positionCells[i].x].element = this.cell[i].view;
-				
-				return true;
-
 			}
+
+			for (let i = 0; i < positionCells.length; i++)
+				this.grid.space[positionCells[i].y - 1][positionCells[i].x].element = this.cell[i].view;
+
+			return true;
+
+		}
 	}
 }
 
