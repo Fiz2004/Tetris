@@ -30,6 +30,17 @@ class Model {
 	constructor() {
 		//Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
+
+		//?Временное для тестирования
+			this.grid.space[29][0].element = 2;
+		this.grid.space[29][1].element = 2;
+		this.grid.space[29][3].element = 2;
+		this.grid.space[29][4].element = 2;
+		this.grid.space[29][7].element = 2;
+		this.grid.space[29][8].element = 2;
+		this.grid.space[29][12].element = 2;
+		this.grid.space[29][13].element = 2;
+
 		//Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
@@ -41,19 +52,7 @@ class Model {
 		this.txtRecord = document.getElementById('record');
 		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
 
-		//?Временное для тестирования
-		this.grid.space[28][0].element = 1;
-		this.grid.space[28][1].element = 2;
-		this.grid.space[28][2].element = 3;
-		this.grid.space[28][3].element = 4;
-		this.grid.space[27][3].element = 4;
-		this.grid.space[26][3].element = 4;
-		this.grid.space[25][0].element = 4;
-		this.grid.space[25][1].element = 4;
-		this.grid.space[25][2].element = 4;
-		this.grid.space[25][3].element = 4;
-		for (let i = 0; i < display.canvas.width / SIZE_TILES - 1; i++)
-			this.grid.space[29][i].element = 2;
+
 	};
 
 	//Метод формирования текущей фигуры

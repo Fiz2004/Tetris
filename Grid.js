@@ -6,7 +6,7 @@ import {
 	NAPRDVIG
 } from './const.js';
 
-export class Grid{
+export class Grid {
 	space;
 	width;
 	height;
@@ -15,15 +15,18 @@ export class Grid{
 		this.height = height;
 		this.space = Array.from({ length: this.height }).map(() =>
 			Array.from({ length: this.width }).map(() =>
-				new Element(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS),0)));
+				new Element(Math.floor(Math.random() * NUMBER_BACKGROUND_ELEMENTS), 0)));
 	};
-		isInside({x,y}){
-			return x >= 0 && x < this.width && y >= 0 && y < this.height;
+	isInside({ x, y }) {
+		return x >= 0 && x < this.width && y >= 0 && y < this.height;
+	};
+	isFree({ x, y }) {
+		return this.space[y ][x].element===0;
 	};
 	get(point) {
-		return this.space[point.x][point.y];
+		return this.space[point.y][point.x];
 	}
 	set(point, value) {
-		this.space[point.x][point.y] = value;
+		this.space[point.y][point.x] = value;
 	}
 }
