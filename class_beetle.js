@@ -224,6 +224,11 @@ export class Beetle {
 		if (direction.x === 0 && direction.y === 0
 			&& move.x === 1 && move.y === 0)
 			return "0R"
+		
+		// Если поворачиваемся вправо с позиции вниз
+		if (direction.x === 0 && direction.y === 1
+			&& move.x === 1 && move.y === 0)
+			return "DR"
 
 		// Если движемся влево
 		if (direction.x === -1 && direction.y === 0
@@ -234,6 +239,21 @@ export class Beetle {
 		if (direction.x === 1 && direction.y === 0
 			&& move.x === 1 && move.y === 0)
 			return "RR"
+		
+		// Если движемся вправо а пошел вниз
+		if (direction.x === 1 && direction.y === 0
+			&& move.x === 1 && move.y === 0)
+			return "RD"
+		
+		// Если движемся вправо а пошел верх
+		if (direction.x === 1 && direction.y === 0
+			&& move.x === 0 && move.y === 1)
+			return "RU"
+		
+		// Если движемся вверх а пошел вправо
+		if (direction.x === 0 && direction.y === -1
+			&& move.x === 1 && move.y === 0)
+			return "UR"
 
 		// Если движемся вверх
 		if ((direction.x === 0 && direction.y === -1)
@@ -254,21 +274,39 @@ export class Beetle {
 		if (direction.x === 0 && direction.y === 0
 			&& move.x === 0 && move.y === 0)
 			return "00"
+		
+		throw new Error(`Функция getRotate не знает такого направления ${JSON.stringify(direction)} ${JSON.stringify(move)}`);
 	};
 
 	// Исходя из данных определяе спрайт для рисования
 	getSprite() {
 
 		//!Долбавить из вправо вниз
-		console.log(`При выблое спрайта ${this.getRotate(this.direction, this.move)}`);
+		//console.log(`При выборе спрайта ${this.getRotate(this.direction, this.move)}`);
 		// Если поворачиваемся влево с 0,0
 		if (this.getRotate(this.direction, this.move) === "0L")
 			return this.framesAnimation === 0 ? [0, 0] : [7, 0];
 
-		// Если поворачиваемся вправо с 0,0
+		// Если поворачиваемся вправо из позиции вниз
 		if (this.getRotate(this.direction, this.move) === "0R")
 			return this.framesAnimation === 0 ? [0, 0] : [1, 0];
-
+		
+		// Если поворачиваемся вниз из позиции вправо
+		if (this.getRotate(this.direction, this.move) === "RD")
+			return this.framesAnimation === 0 ? [1, 0] : [0, 0];
+		
+		// Если поворачиваемся вправо из позиции вверх
+		if (this.getRotate(this.direction, this.move) === "UR")
+			return this.framesAnimation === 0 ? [3, 0] : [2, 0];
+		
+		// Если поворачиваемся вправо из позиции вниз
+		if (this.getRotate(this.direction, this.move) === "DR")
+			return this.framesAnimation === 0 ? [1, 0] : [2, 0];
+		
+		// Если поворачиваемся из позиции право вверх
+		if (this.getRotate(this.direction, this.move) === "RU")
+			return this.framesAnimation === 0 ? [3, 0] : [4, 0];
+		
 		// Если поворачиваемся вправо из позиции влево
 		if (this.getRotate(this.direction, this.move) == "LR")
 			return [[6, 0], [7, 0], [0, 0], [1, 0], [2, 0]][this.framesAnimation];
