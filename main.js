@@ -32,15 +32,11 @@ class Model {
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
 		//?Временное для тестирования
-			this.grid.space[29][0].element = 2;
-		this.grid.space[29][1].element = 2;
-		this.grid.space[29][3].element = 2;
-		this.grid.space[29][4].element = 2;
-		this.grid.space[29][7].element = 2;
-		this.grid.space[29][8].element = 2;
-		this.grid.space[29][12].element = 2;
-		this.grid.space[29][13].element = 2;
-
+		for (let i = 0; i <= this.grid.width - 2; i++)
+			for (let j = this.grid.height-1; j > 25;j-- )
+				this.grid.space[j][i].element = 2;
+		this.grid.space[25][5].element = 1;
+		this.grid.space[24][5].element = 1;
 		//Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
@@ -85,6 +81,7 @@ class Model {
 				}
 
 				this.scores += 100;
+				this.beetle.deleteRow = 1;
 
 				//?Проверить как лучше чтобы жук падал сразу при исчезновании или двигался вниз
 				// if (this.beetle.positionTile.y < this.grid.indexOf(y))
