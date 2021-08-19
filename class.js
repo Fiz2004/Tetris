@@ -11,7 +11,7 @@ export class Element {
 	element;
 	//Показывает повреждения хранит свойства L,R,U со значениями от 0 до NUMBER_FRAMES_ELEMENTS
 	status;
-	constructor(background, valueElement) {
+	constructor(background, valueElement = 0) {
 		this.background = background;
 		this.element = valueElement;
 		//Показывает значение сьеденного элемента и направление
@@ -21,8 +21,15 @@ export class Element {
 			U: 0,
 		};
 	}
+
 	isStatusClear() {
 		return this.status.L === 0 && this.status.R === 0 && this.status.U === 0
+	}
+
+	//Установить в 0 все значения элемента
+	setZero() {
+		this.element = 0;
+		this.status = { L: 0, R: 0, U: 0 };
 	}
 
 }
@@ -88,16 +95,16 @@ export class CurrentFigure extends Figure {
 	isCollission(x, y) {
 		let result = false;
 		// Проверяем есть ли в этой точке элемент
-		for (let point of this.getPositionTile(x, y)) 
-			if (this.grid.isInside(point)	&& this.grid.space[point.y][point.x].element !== 0)
+		for (let point of this.getPositionTile(x, y))
+			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0)
 				result = true;
-		
+
 		if (result) return true;
 
 		// Проверяем выходит ли точка за границы стакана
-		for (let { x: x1, y: y1 } of this.getPositionTile(x, y)) 
+		for (let { x: x1, y: y1 } of this.getPositionTile(x, y))
 			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1) return true;
-		
+
 		return result;
 	};
 

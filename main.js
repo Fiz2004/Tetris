@@ -31,24 +31,18 @@ class Model {
 		//Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
-		//?Временное для тестирования
-		for (let i = 0; i <= this.grid.width - 2; i++)
-			for (let j = this.grid.height - 1; j > 25; j--)
-				this.grid.space[j][i].element = 2;
-		this.grid.space[25][5].element = 1;
-		this.grid.space[24][5].element = 1;
 		//Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
+
 		//Создаем жука
 		this.beetle = new Beetle(this.grid);
+
 		//Инициализируем очки и рекорд
 		this.scores = 0;
 		this.record = localStorage.getItem('Record');
 		this.txtRecord = document.getElementById('record');
 		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
-
-
 	};
 
 	//Метод формирования текущей фигуры
@@ -56,7 +50,7 @@ class Model {
 		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cell);
 		this.nextFigure = new Figure();
 
-		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисову в методе view.draw
+		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе view.draw
 		//view.drawNextFigure();
 	};
 
@@ -65,20 +59,17 @@ class Model {
 		//Проверяем удаление строки
 		this.grid.space.forEach((y) => {
 			if (y.every((x) => x.element !== 0)) {
-				for (let i = this.grid.space.indexOf(y); i > 0; i--)
-					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
-						this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
-						this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
-						this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
-						this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
-					}
+				let i = this.grid.space.indexOf(y);
+					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
+						this.grid.space[i][j] = new Element(this.grid.space[i][j].background);
 
-				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
-					this.grid.space[0][j].element = 0;
-					this.grid.space[0][j].status.L = 0;
-					this.grid.space[0][j].status.R = 0;
-					this.grid.space[0][j].status.U = 0;
-				}
+				/*this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
+				this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
+				this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
+				this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;*/
+
+				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
+					this.grid.space[0][j].setZero();
 
 				this.scores += 100;
 				this.beetle.deleteRow = 1;
