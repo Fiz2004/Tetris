@@ -79,10 +79,11 @@ export class Beetle {
 						x: Math.floor(this.position.x / SIZE_TILES) + TekX,
 						y: Math.floor(this.position.y / SIZE_TILES) + TekY
 					})) {
-						if (TekY != -1)
+						if (TekY === 0)
 							if (Math.random() * 100 < PROBABILITY_EAT) {
 								this.eat = 1;
-								directions.length=directions.indexOf(direction) + 1;
+								directions.length = directions.indexOf(direction) + 1;
+								console.log(`directions при определении начала еды = ${JSON.stringify(directions)}`);
 								return directions;
 							}
 						result = false;
@@ -117,8 +118,8 @@ export class Beetle {
 		DIRECTION["LU"] = [DIRECTION["U"], DIRECTION["L"]];
 		DIRECTION["RUU"] = [DIRECTION["U"], DIRECTION["U"], DIRECTION["R"]];
 		DIRECTION["LUU"] = [DIRECTION["U"], DIRECTION["U"], DIRECTION["L"]];
-		DIRECTION["LEFTDOWN"] = [ DIRECTION["0D"],DIRECTION["LD"], DIRECTION["RD"]];
-		DIRECTION["RIGHTDOWN"] = [ DIRECTION["0D"],DIRECTION["RD"], DIRECTION["LD"]];
+		DIRECTION["LEFTDOWN"] = [DIRECTION["0D"], DIRECTION["LD"], DIRECTION["RD"]];
+		DIRECTION["RIGHTDOWN"] = [DIRECTION["0D"], DIRECTION["RD"], DIRECTION["LD"]];
 		DIRECTION["LEFT"] = [DIRECTION["L0"], DIRECTION["LU"], DIRECTION["LUU"]];
 		DIRECTION["RIGHT"] = [DIRECTION["R0"], DIRECTION["RU"], DIRECTION["RUU"]];
 
@@ -179,11 +180,11 @@ export class Beetle {
 			if (offsetX === -1) offsetX = 0;
 			let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
-				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS))+1;
-			console.log(`Жук находится в позиции ${JSON.stringify(tile)}`);
-			console.log(`Текущий кадр ${this.framesAnimation}`);
-			console.log(`Ломаем элемент X=${tile.x + offsetX}, Y=${tile.y + offsetY}`);
-			console.log(`Значение= ${Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS))+1}`);
+				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+			//console.log(`Жук находится в позиции ${JSON.stringify(tile)}`);
+			//console.log(`Текущий кадр ${this.framesAnimation}`);
+			//console.log(`Ломаем элемент X=${tile.x + offsetX}, Y=${tile.y + offsetY}`);
+			//console.log(`Значение= ${Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1}`);
 		}
 
 		//Определяем текущий кадр
@@ -423,7 +424,7 @@ export class Beetle {
 			//!Для отладки если вдруг какое-то направление забыл
 			alert(`Функция getSprite не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)}`);
 
-		
+
 		}
 	}
 

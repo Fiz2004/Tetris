@@ -33,7 +33,7 @@ class Model {
 
 		//?Временное для тестирования
 		for (let i = 0; i <= this.grid.width - 2; i++)
-			for (let j = this.grid.height-1; j > 25;j-- )
+			for (let j = this.grid.height - 1; j > 25; j--)
 				this.grid.space[j][i].element = 2;
 		this.grid.space[25][5].element = 1;
 		this.grid.space[24][5].element = 1;
@@ -100,28 +100,35 @@ class Model {
 	};
 
 	tick() {
+		function lose() {
+			localStorage.setItem('Record', model.scores);
+			alert("Вы проиграли");
+			model = new Model();
+			controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+		};
+
 		// Проверяем нажатие клавиатуры и запускаем события
 		if (controller.pressed.left) this.currentFigure.moveLeft();
 		if (controller.pressed.right) this.currentFigure.moveRight();
 		if (controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
 		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === false) {
-			localStorage.setItem('Record', this.scores);
-			alert("Вы проиграли");
-			model = new Model();
+			lose();
 			return;
 		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === true) {
+			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+			if (this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) {
+				lose();
+				return;
+			}
 			this.fixation();
 			this.formCurrentFigure();
 		}
-/*
-		if (this.grid.space[this.beetle.positionTile.y][this.beetle.positionTile.x].element != 0 && this.beetle.eat == 0) {
-			localStorage.setItem('Record', model.scores);
-			alert("Вы проиграли");
-			model = new Model();
+		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+		if (this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) {
+			lose();
 			return;
 		}
-*/
 		this.beetle.beetleAnimation();
 		display.draw();
 	};
