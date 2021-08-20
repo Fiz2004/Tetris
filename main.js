@@ -12,52 +12,43 @@ let controller;
 
 //Объект в котором хранится вся модель игры
 class Model {
-	//Текущие очки
+	// Текущие очки
 	scores;
-	//Рекорд очков за все время
-	record;
 	// Массив со значениями сетки
 	grid;
-	//Текущая фигура
+	// Текущая фигура
 	currentFigure;
-	//Следующая фигура
+	// Следующая фигура
 	nextFigure;
-	//ID строки для вывода рекорда
-	txtRecord;
-	//Объект жука, с его координатами, направлением движения и кадром движения
+	// Объект жука, с его координатами, направлением движения и кадром движения
 	beetle;
 	// Показывает задыхаемся мы или нет
 	breath;
 	// Время которое прошло с момента нехватки дыхания
 	timeBreath;
-	//Инициализация модели игры
+	// Инициализация модели игры
 	constructor() {
-		//Инициализируем сетку с случайными числами фона и заданием элементов
+		// Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
-		for (let j = 1; j < display.canvas.width / SIZE_TILES; j++) {
-			this.grid.space[15][j].element = 1;
-			this.grid.space[14][j].element = 1;
-		}
-
-
-		//Создаем новую фигуру
+		// Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
 
-		//Создаем жука
+		// Создаем жука
 		this.beetle = new Beetle(this.grid);
+		// Задаем время для дыхания после истечения которого будет проигрыш
 		this.timeBreath = TIMES_BREATH_LOSE;
+		// С самого начала жук дышит
 		this.breath = false;
 
-		//Инициализируем очки и рекорд
+		// Инициализируем очки и рекорд
 		this.scores = 0;
-		this.record = localStorage.getItem('Record') || 0;
-		this.txtRecord = document.getElementById('record');
-		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
+		// Выводим рекорд на экран
+		document.getElementById('record').innerHTML = String(localStorage.getItem('Record') || 0).padStart(6, "0");
+		// Выводим секунды дыхания
 		let h1 = document.getElementById("Breath");
-		if (h1 !== null)
-			h1.parentNode.removeChild(h1);
+		if (h1)	h1.parentNode.removeChild(h1);
 	};
 
 	//Метод формирования текущей фигуры
