@@ -20,6 +20,8 @@ export const NUMBER_FRAMES_BEEATLE_MOVE = 5;
 export const NUMBER_FRAMES_BEEATLE_ROTATE = 1;
 // Количество Кадров при повреждении фигуры
 export const NUMBER_FRAMES_ELEMENTS = 4;
+// Время без дыхания для прогирыша
+export const TIMES_BREATH_LOSE = 30;
 // Вероятность того что жук будет есть блок
 export const PROBABILITY_EAT = 20;
 // Директория где храняться картинки

@@ -4,7 +4,7 @@ import { Beetle } from './class_beetle.js';
 import {
 	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME, STEP_MOVE_AUTO,
 	STEP_MOVE_KEY_Y, NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
-	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE
+	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE, TIMES_BREATH_LOSE
 } from './const.js';
 let display;
 let model;
@@ -26,14 +26,20 @@ class Model {
 	txtRecord;
 	//Объект жука, с его координатами, направлением движения и кадром движения
 	beetle;
+	// Показывает задыхаемся мы или нет
+	breath;
+	// Время которое прошло с момента нехватки дыхания
+	timeBreath;
 	//Инициализация модели игры
 	constructor() {
 		//Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
-		for (let i = (display.canvas.height / SIZE_TILES) - 1, j = (display.canvas.width / SIZE_TILES) - 1;
-			i > 15; i--, j--)
-			this.grid.space[i][j].element = 1;
+		for (let j = 1; j < display.canvas.width / SIZE_TILES; j++) {
+			this.grid.space[15][j].element = 1;
+			this.grid.space[14][j].element = 1;
+		}
+
 
 		//Создаем новую фигуру
 		this.nextFigure = new Figure();
@@ -41,12 +47,17 @@ class Model {
 
 		//Создаем жука
 		this.beetle = new Beetle(this.grid);
+		this.timeBreath = TIMES_BREATH_LOSE;
+		this.breath = false;
 
 		//Инициализируем очки и рекорд
 		this.scores = 0;
-		this.record = localStorage.getItem('Record');
+		this.record = localStorage.getItem('Record') || 0;
 		this.txtRecord = document.getElementById('record');
 		this.txtRecord.innerHTML = String(this.record).padStart(6, "0");
+		let h1 = document.getElementById("Breath");
+		if (h1 !== null)
+			h1.parentNode.removeChild(h1);
 	};
 
 	//Метод формирования текущей фигуры
@@ -63,20 +74,20 @@ class Model {
 		//Проверяем удаление строки
 		this.grid.space.forEach((y) => {
 			if (y.every((x) => x.element !== 0)) {
-				let i = this.grid.space.indexOf(y);
-				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
-					this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
-					this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
-					this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
-					this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
-				}
+				for (let i = this.grid.space.indexOf(y); i > 0; i--)
+					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
+						this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
+						this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
+						this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
+						this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
+					}
 
 				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
 					this.grid.space[0][j].setZero();
 
 				this.scores += 100;
 				this.beetle.deleteRow = 1;
-
+				controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 				//?Проверить как лучше чтобы жук падал сразу при исчезновании или двигался вниз
 				// if (this.beetle.positionTile.y < this.grid.indexOf(y))
 				// 	this.beetle.positionTile.y += 1;
@@ -91,14 +102,18 @@ class Model {
 			if (document.getElementById("Breath") === null) {
 				let h1 = document.createElement("H1");
 				h1.setAttribute("id", "Breath");
-				h1.innerHTML = "Задыхаемся\nОсталось секунд: " + 30;
+				h1.innerHTML = "Задыхаемся\nОсталось секунд: " + TIMES_BREATH_LOSE;
 				document.body.appendChild(h1);
+				this.breath = true;
 			}
 
 		}
 		else {
 			let h1 = document.getElementById("Breath");
-			document.removeChild(h1);
+			if (h1 !== null)
+				h1.parentNode.removeChild(h1);
+			this.timeBreath = TIMES_BREATH_LOSE;
+			this.breath = false;
 		}
 
 	};
@@ -128,8 +143,14 @@ class Model {
 			this.fixation();
 			this.formCurrentFigure();
 		}
+		if (this.breath) {
+			this.timeBreath -= UPDATE_TIME / 1000;
+			let h1 = document.getElementById("Breath");
+			h1.innerHTML = "Задыхаемся\nОсталось секунд: " + Math.floor(this.timeBreath);
+		}
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-		if (this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) {
+		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
+			this.timeBreath <= 0) {
 			lose();
 			return;
 		}

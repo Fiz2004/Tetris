@@ -210,17 +210,22 @@ export class Beetle {
 		let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 		let cash = [];
 		let prov = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }];
-		function go(tile, grid, cash, prov) {
+		let grid = this.grid;
+		function go(tile, cash) {
 			if (tile.y === 0) return true;
+			cash.push([tile.x, tile.y]);
 			for (let element of prov) {
-				cash.push([tile.x, tile.y]);
-				if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y }) && grid.space[tile.y + element.y][tile.x + element.x].element === 0 && cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0) {
-					return go(new Point(tile.x + element.x, tile.y + element.y), grid, cash, prov)
+				let filterCash = cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0;
+				if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
+					&& grid.space[tile.y + element.y][tile.x + element.x].element === 0
+					&& filterCash) {
+					if (go(new Point(tile.x + element.x, tile.y + element.y), cash))
+						return true;
 				}
 			}
 			return false;
 		}
-		return go(tile, this.grid, cash, prov);
+		return go(tile, cash);
 	};
 
 	getRotate(direction, move) {
