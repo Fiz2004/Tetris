@@ -207,7 +207,20 @@ export class Beetle {
 
 	// Проверяем есть ли доступ к верху стакана
 	isBreath() {
-		return true;
+		let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+		let cash = [];
+		let prov = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }];
+		function go(tile, grid, cash, prov) {
+			if (tile.y === 0) return true;
+			for (let element of prov) {
+				cash.push([tile.x, tile.y]);
+				if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y }) && grid.space[tile.y + element.y][tile.x + element.x].element === 0 && cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0) {
+					return go(new Point(tile.x + element.x, tile.y + element.y), grid, cash, prov)
+				}
+			}
+			return false;
+		}
+		return go(tile, this.grid, cash, prov);
 	};
 
 	getRotate(direction, move) {

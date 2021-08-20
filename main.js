@@ -31,6 +31,10 @@ class Model {
 		//Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
+		for (let i = (display.canvas.height / SIZE_TILES) - 1, j = (display.canvas.width / SIZE_TILES) - 1;
+			i > 15; i--, j--)
+			this.grid.space[i][j].element = 1;
+
 		//Создаем новую фигуру
 		this.nextFigure = new Figure();
 		this.formCurrentFigure();
@@ -60,13 +64,12 @@ class Model {
 		this.grid.space.forEach((y) => {
 			if (y.every((x) => x.element !== 0)) {
 				let i = this.grid.space.indexOf(y);
-					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
-						this.grid.space[i][j] = new Element(this.grid.space[i][j].background);
-
-				/*this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
-				this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
-				this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
-				this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;*/
+				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
+					this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
+					this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
+					this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
+					this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
+				}
 
 				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
 					this.grid.space[0][j].setZero();
@@ -83,9 +86,19 @@ class Model {
 			}
 		})
 
+		// Пишем код для того когда жук остался без воздуха
 		if (!this.beetle.isBreath()) {
-			alert("Задыхаемся");
-			// Пишем код для того когда жук остался без воздуха
+			if (document.getElementById("Breath") === null) {
+				let h1 = document.createElement("H1");
+				h1.setAttribute("id", "Breath");
+				h1.innerHTML = "Задыхаемся\nОсталось секунд: " + 30;
+				document.body.appendChild(h1);
+			}
+
+		}
+		else {
+			let h1 = document.getElementById("Breath");
+			document.removeChild(h1);
 		}
 
 	};
