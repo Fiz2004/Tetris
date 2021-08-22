@@ -2,27 +2,54 @@ body{
 	background-color: darkgray;
 }
 
-h1{
-
+header{
+    font-size:24px;
+    color:#FFFFFF;
+    background-color: #284b63;
+    padding: 20px 0;
+    text-align:center;
+    vertical-align: center;
+    width:100%;
 }
 
-h2{
-
+.fields{
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    font-size:20px;
 }
 
-#canvasId {
-    position: absolute;
-    top:0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin:auto;
+.scoresInfo{
+    flex-basis: 30%;
+    flex-grow:1;
+    background:#549DA0;
+    color:#FFFFFF; 
+}
+
+.canvas {
+    margin:0 auto
+}
+
+.info{
+    flex-basis: 30%;
+    flex-grow:1;
+    background:#FFFFFF;
+    color:#000000;
+    
+}
+
+footer{
+    background: #353535;
+    padding:20px 0;
+    text-align: center;
+    color:#868686;
+    position:absolute;
+    height:5%;
+    bottom:0;
+    width:100%;
 }
 
 #canvasNextFigureId {
-    position: relative;
-    top:0px;
-    left: 0px;
-    margin:auto;
     background-color: black
 }
+

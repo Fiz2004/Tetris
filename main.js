@@ -48,7 +48,7 @@ class Model {
 		document.getElementById('record').innerHTML = String(localStorage.getItem('Record') || 0).padStart(6, "0");
 		// Выводим секунды дыхания
 		let h1 = document.getElementById("Breath");
-		if (h1)	h1.parentNode.removeChild(h1);
+		if (h1) h1.parentNode.removeChild(h1);
 	};
 
 	//Метод формирования текущей фигуры
@@ -91,10 +91,8 @@ class Model {
 		// Пишем код для того когда жук остался без воздуха
 		if (!this.beetle.isBreath()) {
 			if (document.getElementById("Breath") === null) {
-				let h1 = document.createElement("H1");
-				h1.setAttribute("id", "Breath");
-				h1.innerHTML = "Задыхаемся\nОсталось секунд: " + TIMES_BREATH_LOSE;
-				document.body.appendChild(h1);
+				let h1 =`<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${TIMES_BREATH_LOSE}</h1>`
+				document.getElementsByClassName("info")[0].insertAdjacentHTML("beforeend",h1);
 				this.breath = true;
 			}
 
@@ -134,10 +132,11 @@ class Model {
 			this.fixation();
 			this.formCurrentFigure();
 		}
+		// Проверяем возможность дыхания
 		if (this.breath) {
 			this.timeBreath -= UPDATE_TIME / 1000;
 			let h1 = document.getElementById("Breath");
-			h1.innerHTML = "Задыхаемся\nОсталось секунд: " + Math.floor(this.timeBreath);
+			h1.outerHTML = `<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${Math.floor(this.timeBreath)}</h1>`;
 		}
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
 		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
@@ -145,6 +144,7 @@ class Model {
 			lose();
 			return;
 		}
+		// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
 		this.beetle.beetleAnimation();
 		display.draw();
 	};

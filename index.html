@@ -11,15 +11,27 @@
 </head>
 
 <body>
-	<h1>Количество очков:</h1>
-	<h2 id="scores">000000</h2>
-	<h1>Следующая фигура:</h1>
-	<canvas id="canvasNextFigureId" width="120" height="120"></canvas>
-	<h1>Рекорд:</h1>
-	<h1 id="record">000000</h1>
-	<canvas id="canvasId" width="450" height="900"></canvas>
-	<div id="result"></div>
-	<script src="main.js" type="module"></script>
+	<header>Это первая игра, написанная на изучаемом языке<br> Сейчас это Javascript</header>
+	<section class="fields">
+		<section class="scoresInfo">
+			<h1>Рекорд:</h1>
+			<h1 id="record">000000</h1>
+		</section>
+		<section class="canvas">
+			<canvas id="canvasId" width="300" height="570"></canvas>
+		</section>
+		<section class="info">
+			<h1>Количество очков:</h1>
+			<h2 id="scores">000000</h2>
+			<h1>Следующая фигура:</h1>
+			<canvas id="canvasNextFigureId" width="120" height="120"></canvas>
+		</section>
+		<script src="main.js" type="module"></script>
+	</section>
+	<footer>
+		Игра написана в 2021 году, со всеми предложениями и замечаниями можно обратиться на <a
+			href="fiz2004@Rambler.ru">fiz2004@Rambler.ru</a>
+	</footer>
 </body>
 
 </html

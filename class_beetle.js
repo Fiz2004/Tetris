@@ -36,10 +36,7 @@ export class Beetle {
 		this.width = 24;
 		this.height = 24;
 
-		this.position = new Point(Math.floor(Math.random() * this.grid.width) * SIZE_TILES, ((this.grid.height - 7) * SIZE_TILES));
-
-		//! Для отладки
-		console.log(`Стартовая позиция = ${JSON.stringify(this.position)}`);
+		this.position = new Point(Math.floor(Math.random() * this.grid.width) * SIZE_TILES, ((this.grid.height - 1) * SIZE_TILES));
 
 		//Установить случайное движение
 		this.direction = new Point(0, 0);
