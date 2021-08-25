@@ -26,6 +26,8 @@ class Model {
 	breath;
 	// Время которое прошло с момента нехватки дыхания
 	timeBreath;
+
+	divBreath;
 	// Инициализация модели игры
 	constructor() {
 		// Инициализируем сетку с случайными числами фона и заданием элементов
@@ -49,7 +51,15 @@ class Model {
 		// Выводим секунды дыхания
 		let h1 = document.getElementById("Breath");
 		if (h1) h1.parentNode.removeChild(h1);
+		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
+		this.divBreath = document.getElementById("infoID");
+		this.renderBreath();
 	};
+
+	renderBreath() {
+		let int = Math.floor(this.timeBreath) * 255 / TIMES_BREATH_LOSE;
+		this.divBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
+	}
 
 	//Метод формирования текущей фигуры
 	formCurrentFigure() {
@@ -91,8 +101,8 @@ class Model {
 		// Пишем код для того когда жук остался без воздуха
 		if (!this.beetle.isBreath()) {
 			if (document.getElementById("Breath") === null) {
-				let h1 =`<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${TIMES_BREATH_LOSE}</h1>`
-				document.getElementsByClassName("info")[0].insertAdjacentHTML("beforeend",h1);
+				let h1 = `<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${TIMES_BREATH_LOSE}</h1>`
+				document.getElementsByClassName("info")[0].insertAdjacentHTML("beforeend", h1);
 				this.breath = true;
 			}
 
@@ -137,6 +147,7 @@ class Model {
 			this.timeBreath -= UPDATE_TIME / 1000;
 			let h1 = document.getElementById("Breath");
 			h1.outerHTML = `<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${Math.floor(this.timeBreath)}</h1>`;
+			this.renderBreath();
 		}
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
 		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||

@@ -34,13 +34,13 @@ header{
 }
 
 .canvas{
-	display: table-cell;
-	padding: 0;
-	margin:0;
+
+	height:750px;
 }
 
 #canvasId{
 	margin:0;
+	border:0;
 }
 
 .info{
