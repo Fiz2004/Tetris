@@ -208,7 +208,7 @@ export class Beetle {
 		let cash = [];
 		let prov = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }];
 		let grid = this.grid;
-		function go(tile, cash) {
+		function findTree(tile, cash) {
 			if (tile.y === 0) return true;
 			cash.push([tile.x, tile.y]);
 			for (let element of prov) {
@@ -216,13 +216,13 @@ export class Beetle {
 				if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
 					&& grid.space[tile.y + element.y][tile.x + element.x].element === 0
 					&& filterCash) {
-					if (go(new Point(tile.x + element.x, tile.y + element.y), cash))
+					if (findTree(new Point(tile.x + element.x, tile.y + element.y), cash))
 						return true;
 				}
 			}
 			return false;
 		}
-		return go(tile, cash);
+		return findTree(tile, cash);
 	};
 
 	getRotate(direction, move) {

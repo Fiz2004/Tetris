@@ -1,9 +1,6 @@
 body{
 	background-color: darkgray;
 	
-	min-height: 100vh;
-  display: grid;
-  grid-template-rows: 1fr auto;
 	margin:0;
 }
 
@@ -11,57 +8,59 @@ header{
 	font-size:3vmin;
 	color:#FFFFFF;
 	background-color: #284b63;
-	padding: 2vmin 0;
+	padding: 3.4vmin 0;
 	text-align:center;
-	vertical-align: center;
+	border-radius: 15px;
+}
 
-	/*Привязываем к верху*/
-	grid-row-start: 0;
-	grid-row-end: 1;
+.row{
+	display: table-row;
 }
 
 .fields{
 	font-size:1.5vmin;
-	width:100vmax;
-	background-color: #000000;
-	
-  display: flex;
-  justify-content: center;
-}
-
-.scoresInfo{
-  flex-basis: 33vw;
-  flex-grow:1;
-  background:#549DA0;
-  color:#FFFFFF; 
-	text-align:center;
-}
-
-.canvas{
-	position: relative;
+	width:800px;
 	margin:auto;
 }
 
+.scoresInfo{
+  background:#549DA0;
+	border-radius: 15px 0px 0px 15px;
+  color:#FFFFFF; 
+	text-align:center;
+	display: table-cell;
+	width:30%;
+	vertical-align: top;
+}
+
+.canvas{
+	display: table-cell;
+	padding: 0;
+	margin:0;
+}
+
+#canvasId{
+	margin:0;
+}
+
 .info{
-	flex-basis: 33vw;
-	flex-grow:1;
-	background:#FFFFFF;
+	background:#ffffff;
 	color:#000000;
 	text-align:center;
+	border-radius: 0px 15px 15px 0px;
+	display: table-cell;
+	width:30%;
+	vertical-align: top;
 }
 
 footer{
+	border-radius: 15px;
 	font-size:2vmin;
   background: #353535;
 	color:#868686;
   padding:2vmin 0;
   text-align: center;
-	vertical-align: center;
-   
-	/*Привязываем к низу*/
-  grid-row-start: 2;
-  grid-row-end: 3;
-	}
+}
 
 #canvasNextFigureId {
   background-color: black
