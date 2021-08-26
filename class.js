@@ -1,13 +1,16 @@
 import {
-	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME, STEP_MOVE_KEY_X,
-	NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
+	SIZE_TILES, UPDATE_TIME, STEP_MOVE_KEY_X,
+	// Количество изображений для фигуры
+	NUMBER_IMAGES_FIGURE,
+	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE
 } from './const.js';
 
 // Класс для обозначения элементов на поле
 export class Element {
+	// Номер картинки для фона элемента от 0 до NUMBER_IMAGES_BACKGROUND
 	background;
-	//Показывает вид элемента от 0 до NUMBER_FIGURE_ELEMENTS
+	//Показывает вид элемента от 0 до NUMBER_IMAGES_FIGURE
 	element;
 	//Показывает повреждения хранит свойства L,R,U со значениями от 0 до NUMBER_FRAMES_ELEMENTS
 	status;
@@ -55,13 +58,18 @@ class Cell extends Point {
 
 // Класс для фигуры
 export class Figure {
+	// Ячейки в фигуре
 	cell = [];
+	// Количество изображений для фигуры
+	static numberCell = NUMBER_IMAGES_FIGURE;
+
 	constructor() {
 		//Задаем случайный номер для фигуры
 		let randNumber = Math.floor(Math.random() * FIGURE.length);
-		for (let i = 0; i < 4; i++) {
+		for (let i = 0; i < FIGURE[randNumber].length; i++) {
 			//Задаем случайный фон для ячейки
-			let randView = Math.floor(Math.random() * NUMBER_FIGURE_ELEMENTS) + 1;
+			let randView = Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1;
+			// Новая ячейка(координаты x и y и номер изображения фигуры)
 			this.cell[i] = new Cell(FIGURE[randNumber][i][0], FIGURE[randNumber][i][1], randView);
 		}
 	};

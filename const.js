@@ -1,7 +1,9 @@
 // Размер в пикселях элемента
 export const SIZE_TILES = 30;
-// Количество элементов фона
-export const NUMBER_BACKGROUND_ELEMENTS = 16;
+// Количество изображений для фона
+export const NUMBER_IMAGES_BACKGROUND = 16;
+// Количество изображений для фигуры
+export const NUMBER_IMAGES_FIGURE = 4;
 // Время в милисекундах одного движения
 export const UPDATE_TIME = 100;
 // Шаг движения блоков по умолчанию
@@ -10,8 +12,6 @@ export const STEP_MOVE_AUTO = 5;
 export const STEP_MOVE_KEY_X = 30;
 // Шаг движения блоков по вертикали
 export const STEP_MOVE_KEY_Y = 90;
-// Количество элементов фигур
-export const NUMBER_FIGURE_ELEMENTS = 4;
 // Число кадров движения
 export const NUMBER_FRAMES_BEEATLE = 10;
 // Число кадров движения налево и направо
@@ -21,7 +21,7 @@ export const NUMBER_FRAMES_BEEATLE_ROTATE = 1;
 // Количество Кадров при повреждении фигуры
 export const NUMBER_FRAMES_ELEMENTS = 4;
 // Время без дыхания для прогирыша
-export const TIMES_BREATH_LOSE = 30;
+export const TIMES_BREATH_LOSE = 60;
 // Вероятность того что жук будет есть блок
 export const PROBABILITY_EAT = 20;
 // Директория где храняться картинки

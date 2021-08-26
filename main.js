@@ -2,8 +2,8 @@ import { Element, Point, Figure, CurrentFigure } from './class.js';
 import { Grid } from './grid.js';
 import { Beetle } from './class_beetle.js';
 import {
-	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME, STEP_MOVE_AUTO,
-	STEP_MOVE_KEY_Y, NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
+	SIZE_TILES, UPDATE_TIME, STEP_MOVE_AUTO,
+	STEP_MOVE_KEY_Y, NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE, TIMES_BREATH_LOSE
 } from './const.js';
 let display;
@@ -22,52 +22,71 @@ class Model {
 	nextFigure;
 	// Объект жука, с его координатами, направлением движения и кадром движения
 	beetle;
-	// Показывает задыхаемся мы или нет
-	breath;
-	// Время которое прошло с момента нехватки дыхания
-	timeBreath;
-
-	divBreath;
+	// Элемент который меняет поведение при дыхании
+	elementDivBreath;
+	// Элемент который показывает секунды дыхания
+	elementTimeBreath;
 	// Инициализация модели игры
 	constructor() {
 		// Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
 		// Создаем новую фигуру
-		this.nextFigure = new Figure();
 		this.formCurrentFigure();
 
 		// Создаем жука
 		this.beetle = new Beetle(this.grid);
-		// Задаем время для дыхания после истечения которого будет проигрыш
-		this.timeBreath = TIMES_BREATH_LOSE;
-		// С самого начала жук дышит
-		this.breath = false;
 
 		// Инициализируем очки и рекорд
 		this.scores = 0;
 		// Выводим рекорд на экран
-		document.getElementById('record').innerHTML = String(localStorage.getItem('Record') || 0).padStart(6, "0");
-		// Выводим секунды дыхания
-		let h1 = document.getElementById("Breath");
-		if (h1) h1.parentNode.removeChild(h1);
+		document.querySelector('#record').textContent = String(localStorage.getItem('Record') || 0).padStart(6, "0");
+		// Обновляем интерфейс связанный с дыханием
+
 		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
-		this.divBreath = document.getElementById("infoID");
+		this.elementTimeBreath = document.querySelector("#Breath");
+		this.elementDivBreath = document.querySelector("#infoID");
 		this.renderBreath();
 	};
 
-	renderBreath() {
-		let int = Math.floor(this.timeBreath) * 255 / TIMES_BREATH_LOSE;
-		this.divBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
-	}
-
 	//Метод формирования текущей фигуры
 	formCurrentFigure() {
+		this.nextFigure = this.nextFigure || new Figure();
 		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cell);
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе view.draw
 		//view.drawNextFigure();
+	};
+
+	renderBreath() {
+		// Проверяем есть ли воздух у жука
+		if (!this.beetle.isBreath()) {
+			if (!this.elementTimeBreath) {
+				let element = document.createElement("h1");
+				element.id = "Breath";
+				element.innerHTML = `Задыхаемся <br/> Осталось секунд: ${TIMES_BREATH_LOSE}`;
+				document.querySelector("#infoID").append(element);;
+				this.elementTimeBreath = document.querySelector("#Breath");
+				this.beetle.breath = true;
+			}
+			else {
+				// Выводим секунды дыхания
+				this.beetle.timeBreath -= UPDATE_TIME / 1000;
+				this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.floor(this.beetle.timeBreath)}`;
+			}
+		}
+		else {
+			if (this.elementTimeBreath) {
+				this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
+				this.elementTimeBreath = null;
+			}
+			this.beetle.timeBreath = TIMES_BREATH_LOSE;
+			this.beetle.breath = false;
+		}
+		// Закрашиваем элемент связанный с дыханием
+		let int = Math.floor(this.beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
+		this.elementDivBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
 	};
 
 	//Фиксация фигуры
@@ -87,34 +106,11 @@ class Model {
 					this.grid.space[0][j].setZero();
 
 				this.scores += 100;
-				this.beetle.deleteRow = 1;
 				controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
-				//?Проверить как лучше чтобы жук падал сразу при исчезновании или двигался вниз
-				// if (this.beetle.positionTile.y < this.grid.indexOf(y))
-				// 	this.beetle.positionTile.y += 1;
-				// Тестирование при исчезновании строки, если жук запрыгивает на 2 клетки
-				//if (this.beetle.moveY === "U") this.beetle.moveY = "0";
-				//if (this.beetle.moveY === "UU") this.beetle.moveY = "U";
 			}
 		})
-
-		// Пишем код для того когда жук остался без воздуха
-		if (!this.beetle.isBreath()) {
-			if (document.getElementById("Breath") === null) {
-				let h1 = `<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${TIMES_BREATH_LOSE}</h1>`
-				document.getElementsByClassName("info")[0].insertAdjacentHTML("beforeend", h1);
-				this.breath = true;
-			}
-
-		}
-		else {
-			let h1 = document.getElementById("Breath");
-			if (h1 !== null)
-				h1.parentNode.removeChild(h1);
-			this.timeBreath = TIMES_BREATH_LOSE;
-			this.breath = false;
-		}
-
+		this.beetle.deleteRow = 1;
+		this.renderBreath();
 	};
 
 	tick() {
@@ -143,15 +139,11 @@ class Model {
 			this.formCurrentFigure();
 		}
 		// Проверяем возможность дыхания
-		if (this.breath) {
-			this.timeBreath -= UPDATE_TIME / 1000;
-			let h1 = document.getElementById("Breath");
-			h1.outerHTML = `<h1 id="Breath">Задыхаемся<br/>Осталось секунд: ${Math.floor(this.timeBreath)}</h1>`;
-			this.renderBreath();
-		}
+		this.renderBreath();
+
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
 		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
-			this.timeBreath <= 0) {
+			this.beetle.timeBreath <= 0) {
 			lose();
 			return;
 		}
@@ -171,14 +163,14 @@ class Display {
 	imgKv;
 	imgBeetle;
 	constructor() {
-		this.canvas = document.getElementById('canvasId');
+		this.canvas = document.querySelector('#canvasId');
 		this.ctx = this.canvas.getContext("2d");
-		this.canvasNextFigure = document.getElementById('canvasNextFigureId');
+		this.canvasNextFigure = document.querySelector('#canvasNextFigureId');
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
-		this.txtScores = document.getElementById('scores');
+		this.txtScores = document.querySelector('#scores');
 
 		//Формируем картинки для фигур
-		this.imgKv = new Array(NUMBER_FIGURE_ELEMENTS);
+		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
 		}

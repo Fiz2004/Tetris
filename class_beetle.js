@@ -1,9 +1,9 @@
 import { Element, Point, Figure, CurrentFigure } from './class.js';
 import {
-	SIZE_TILES, NUMBER_BACKGROUND_ELEMENTS, UPDATE_TIME,
-	NUMBER_FIGURE_ELEMENTS, NUMBER_FRAMES_BEEATLE,
+	SIZE_TILES, UPDATE_TIME,
+	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE,
-	NAPRDVIG, NUMBER_FRAMES_BEEATLE_MOVE, NUMBER_FRAMES_BEEATLE_ROTATE
+	NAPRDVIG, NUMBER_FRAMES_BEEATLE_MOVE, NUMBER_FRAMES_BEEATLE_ROTATE, TIMES_BREATH_LOSE
 } from './const.js';
 
 // Класс для жука
@@ -22,6 +22,11 @@ export class Beetle {
 	moves;
 	// Текущий кадр анимации от 1 до NUMBER_FRAMES_BEEATLE
 	framesAnimation;
+	// Показывает задыхаемся мы или нет
+	breath
+	// Время которое прошло с момента нехватки дыхания
+	timeBreath;
+	// Происходит ли удаление строки
 	deleteRow;
 	// Ест ли жук
 	eat;
@@ -46,6 +51,11 @@ export class Beetle {
 		this.eat = 0;
 		this.deleteRow = 0;
 		this.frames = NUMBER_FRAMES_BEEATLE;
+
+		// Задаем время для дыхания после истечения которого будет проигрыш
+		this.timeBreath = TIMES_BREATH_LOSE;
+		// С самого начала жук дышит
+		this.breath = false;
 
 		this.getTrafficBeetle()
 		this.framesAnimation = 0;
@@ -178,10 +188,6 @@ export class Beetle {
 			let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
 				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
-			//console.log(`Жук находится в позиции ${JSON.stringify(tile)}`);
-			//console.log(`Текущий кадр ${this.framesAnimation}`);
-			//console.log(`Ломаем элемент X=${tile.x + offsetX}, Y=${tile.y + offsetY}`);
-			//console.log(`Значение= ${Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1}`);
 		}
 
 		//Определяем текущий кадр
