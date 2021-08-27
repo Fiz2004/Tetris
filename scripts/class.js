@@ -1,9 +1,8 @@
 import {
-	SIZE_TILES, UPDATE_TIME, STEP_MOVE_KEY_X,
+	SIZE_TILES, STEP_MOVE_KEY_X,
 	// Количество изображений для фигуры
 	NUMBER_IMAGES_FIGURE,
-	NUMBER_FRAMES_BEEATLE,
-	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, DIRECTORY_IMG, FIGURE
+	FIGURE
 } from './const.js';
 
 // Класс для обозначения элементов на поле
