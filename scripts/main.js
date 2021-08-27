@@ -177,7 +177,7 @@ class Display {
 
 		this.imgFon = new Image();
 		//загружаем картинки фона
-		this.imgFon.src = DIRECTORY_IMG + 'fon.png';
+		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
 
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++)
