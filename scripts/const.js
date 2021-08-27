@@ -25,7 +25,7 @@ export const TIMES_BREATH_LOSE = 60;
 // Вероятность того что жук будет есть блок
 export const PROBABILITY_EAT = 20;
 // Директория где храняться картинки
-export const DIRECTORY_IMG = "/Resurs/v3/";
+export const DIRECTORY_IMG = "../Resurs/v3/";
 // Обозначение фигур, задаются координаты каждой ячейки
 export const FIGURE = [
 	[[0, 1], [1, 1], [2, 1], [3, 1]],
