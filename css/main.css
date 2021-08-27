@@ -1,16 +1,41 @@
 body{
-	background-color: darkgray;
-	
+	width: 100%;
+	height:100%;
+
 	margin:0;
+
+	background-color: darkgray;
+}
+
+header,footer{
+	width:100vmin;
+	height: 4vmin;
+
+	padding: 1vmin 0;
+	margin:auto;
+
+	font-size:1vmin;
+
+	color:#FFFFFF;
+	background-color: #284b63;
+	
+	text-align:center;
+	border-radius: 15px;
 }
 
 header{
-	font-size:3vmin;
 	color:#FFFFFF;
 	background-color: #284b63;
-	padding: 3.4vmin 0;
-	text-align:center;
-	border-radius: 15px;
+}
+
+header h1,footer h1{
+	margin:0;
+	margin-block: 0;
+	
+}
+
+footer h1{
+padding: 0.1vmin;
 }
 
 .row{
@@ -18,9 +43,12 @@ header{
 }
 
 .fields{
-	font-size:1.5vmin;
-	width:800px;
+	width:100vmin;;
+	height: auto !important;
+
 	margin:auto;
+
+	font-size:1.5vmin;
 }
 
 .scoresInfo{
@@ -29,18 +57,19 @@ header{
   color:#FFFFFF; 
 	text-align:center;
 	display: table-cell;
-	width:30%;
+	width:29.5vmin;
 	vertical-align: top;
 }
 
 .canvas{
-
-	height:750px;
+	height: 87.8vmin;
 }
 
 #canvasId{
 	margin:0;
 	border:0;
+	height: 87.8vmin;
+	width:41vmin ;
 }
 
 .info{
@@ -49,20 +78,18 @@ header{
 	text-align:center;
 	border-radius: 0px 15px 15px 0px;
 	display: table-cell;
-	width:30%;
+	width:29.5vmin;
 	vertical-align: top;
 }
 
 footer{
-	border-radius: 15px;
-	font-size:2vmin;
-  background: #353535;
+	background: #353535;
 	color:#868686;
-  padding:2vmin 0;
-  text-align: center;
 }
 
 #canvasNextFigureId {
-  background-color: black
+  background-color: black;
+	height: 12.8vmin;
+	width:12.8vmin ;
 }
 

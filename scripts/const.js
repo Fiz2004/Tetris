@@ -11,7 +11,7 @@ export const STEP_MOVE_AUTO = 5;
 // Шаг движения блоков по горизонтали
 export const STEP_MOVE_KEY_X = 30;
 // Шаг движения блоков по вертикали
-export const STEP_MOVE_KEY_Y = 90;
+export const STEP_MOVE_KEY_Y = 20;
 // Число кадров движения
 export const NUMBER_FRAMES_BEEATLE = 10;
 // Число кадров движения налево и направо
