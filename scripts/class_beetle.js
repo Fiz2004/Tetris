@@ -10,8 +10,6 @@ import {
 export class Beetle {
 	// Позиция относительно клетки
 	position;
-	// Позиция относительно сетки поля
-	positionTile;
 	// Текущее направление до конца анимации
 	direction;
 	// Направление движения, массивом с указанием смещения
@@ -90,7 +88,7 @@ export class Beetle {
 							if (Math.random() * 100 < PROBABILITY_EAT) {
 								this.eat = 1;
 								directions.length = directions.indexOf(direction) + 1;
-								console.log(`directions при определении начала еды = ${JSON.stringify(directions)}`);
+								//console.log(`directions при определении начала еды = ${JSON.stringify(directions)}`);
 								return directions;
 							}
 						result = false;
@@ -131,6 +129,12 @@ export class Beetle {
 		DIRECTION["RIGHT"] = [DIRECTION["R0"], DIRECTION["RU"], DIRECTION["RUU"]];
 
 		//console.log(`Меняем направление движения, текущая позиция = ${JSON.stringify(this.direction)} текущая цель ${JSON.stringify(this.move)}`);
+		// Проверяем свободен ли выбранный путь при фиксации фигуры
+		if (this.deleteRow == 1) {
+			if (this.moves == isCanMove([this.moves]))
+				this.deleteRow = 0;
+		}
+
 		if (this.moves.length === 0 || this.deleteRow == 1) {
 			this.deleteRow = 0;
 			let directions;
@@ -167,7 +171,6 @@ export class Beetle {
 
 		//console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${JSON.stringify(this.move)}`);
 	};
-
 	//Метод движения жука
 	beetleAnimation() {
 		// Если происходит поворот то не двигаемся
@@ -194,6 +197,8 @@ export class Beetle {
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
 				this.eat = 0;
+				//Вызываем функцию обработчика того что сьели
+				this.handleEat();
 				let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
 				this.grid.space[tile.y][tile.x].element = 0;
