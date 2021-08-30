@@ -116,7 +116,7 @@ class Model {
 	tick() {
 		function lose() {
 			localStorage.setItem('Record', model.scores);
-			alert("Вы проиграли");
+			//alert("Вы проиграли");
 			model = new Model();
 			controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 		};
@@ -273,7 +273,8 @@ class Controller {
 		this.touchStart = { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
 		this.touchPosition = { x: this.touchStart.x, y: this.touchStart.y };
 		console.log("start= ", this.touchStart.x, this.touchStart.y)
-
+		console.log(document.querySelector(".row").offsetLeft);
+		
 		if ((this.touchStart.x > document.documentElement.clientWidth * 0.295)
 			&& this.touchStart.x < document.documentElement.clientWidth - (document.documentElement.clientWidth * 0.295)) {
 			if (this.touchStart.y < document.documentElement.clientHeight * 0.5) {
