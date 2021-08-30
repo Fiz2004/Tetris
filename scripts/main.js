@@ -9,6 +9,7 @@ import {
 let display;
 let model;
 let controller;
+let timer;
 
 //Объект в котором хранится вся модель игры
 class Model {
@@ -39,6 +40,8 @@ class Model {
 
 		// Инициализируем очки и рекорд
 		this.scores = 0;
+
+		this.beetle.handleEat = function () { model.scores += 50 };
 		// Выводим рекорд на экран
 		document.querySelector('#record').textContent = String(localStorage.getItem('Record') || 0).padStart(6, "0");
 		// Обновляем интерфейс связанный с дыханием
@@ -91,6 +94,7 @@ class Model {
 
 	//Фиксация фигуры
 	fixation() {
+		let count = 0;
 		//Проверяем удаление строки
 		this.grid.space.forEach((y) => {
 			if (y.every((x) => x.element !== 0)) {
@@ -105,10 +109,13 @@ class Model {
 				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
 					this.grid.space[0][j].setZero();
 
-				this.scores += 100;
+				count++;
+
 				controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 			}
 		})
+		for (let i = 1; i <= count; i++)
+			this.scores += i * 100;
 		this.beetle.deleteRow = 1;
 		this.renderBreath();
 	};
@@ -116,27 +123,37 @@ class Model {
 	tick() {
 		function lose() {
 			localStorage.setItem('Record', model.scores);
-			//alert("Вы проиграли");
-			model = new Model();
-			controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+			newgame();
 		};
-
 		// Проверяем нажатие клавиатуры и запускаем события
 		if (controller.pressed.left) this.currentFigure.moveLeft();
 		if (controller.pressed.right) this.currentFigure.moveRight();
 		if (controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === false) {
+		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO) === false) {
+			// Стакан заполнен игра окончена
 			lose();
 			return;
-		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO, this) === true) {
+		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO)) {
+			this.fixation();
+			this.formCurrentFigure();
+		} else {
+			// Фигура достигла препятствия
 			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-			if (this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) {
+			let array = this.currentFigure.getPositionTile();
+			let res = false;
+			for (let elem of array) {
+				if (elem.x == tile.x && elem.y == tile.y) {
+					res = true;
+					break;
+				}
+			}
+
+			if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0)
+				|| res) {
 				lose();
 				return;
 			}
-			this.fixation();
-			this.formCurrentFigure();
 		}
 		// Проверяем возможность дыхания
 		this.renderBreath();
@@ -238,7 +255,7 @@ class Display {
 		//Обновляем
 		this.txtScores.innerHTML = String(model.scores).padStart(6, "0");
 
-		display.drawNextFigure();
+		this.drawNextFigure();
 	}
 };
 
@@ -262,6 +279,8 @@ class Controller {
 		document.addEventListener("touchmove", this.touchMove);
 		document.addEventListener("touchend", this.touchEnd);
 		document.addEventListener("touchcancel", this.touchEnd);
+		document.getElementById("new_game").onclick = newgame;
+		document.getElementById("pause").onclick = pause;
 	};
 	handler = event => {
 		if (this.codes.hasOwnProperty(event.keyCode)) {
@@ -272,9 +291,8 @@ class Controller {
 	touchStarts = event => {
 		this.touchStart = { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
 		this.touchPosition = { x: this.touchStart.x, y: this.touchStart.y };
-		console.log("start= ", this.touchStart.x, this.touchStart.y)
-		console.log(document.querySelector(".row").offsetLeft);
-		
+		//console.log("start= ", this.touchStart.x, this.touchStart.y)
+
 		if ((this.touchStart.x > document.documentElement.clientWidth * 0.295)
 			&& this.touchStart.x < document.documentElement.clientWidth - (document.documentElement.clientWidth * 0.295)) {
 			if (this.touchStart.y < document.documentElement.clientHeight * 0.5) {
@@ -391,12 +409,29 @@ class Controller {
 
 };
 
-window.onload = function () {
+function newgame() {
 	display = new Display();
 	model = new Model();
 	controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 	display.draw();
-	setInterval(() => model.tick(), UPDATE_TIME);
+	clearInterval(timer);
+	timer = setInterval(() => model.tick(), UPDATE_TIME);
+	document.getElementById("pause").innerHTML = "Пауза";
+};
+
+function pause() {
+	if (document.getElementById("pause").innerHTML == "Пауза") {
+		document.getElementById("pause").innerHTML = "Продолжить";
+		clearInterval(timer);
+	}
+	else {
+		document.getElementById("pause").innerHTML = "Пауза";
+		timer = setInterval(() => model.tick(), UPDATE_TIME);
+	}
+}
+
+window.onload = function () {
+	newgame();
 }
 
 

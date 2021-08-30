@@ -137,12 +137,18 @@ export class CurrentFigure extends Figure {
 			this.position.x += STEP_MOVE_KEY_X;
 	}
 
-	//Метод движения вниз
-	moveDown(stepY, context) {
+	//Метод движения вниз возвращает 3 значения true (Фигура достигла какого то препятствия), false (Игра окончена, стакан заполнен) и другое (Перемещаем фигуру на заданное расстояние)
+	moveDown(stepY) {
+		// Переменные для удобства
+		// Текущая позиция по Y
 		let tY = Math.ceil(this.position.y / SIZE_TILES);
+		// Конечная позиция по Y при шаге stepY
 		let kY = Math.ceil((this.position.y + stepY) / SIZE_TILES);
+		// Запоминаем конечную пощицию еще в одну переменную
 		let predel = kY;
+		// Создаем флаг для понимания что ниже двигатся нельзя
 		let stop = false;
+		// Просматриваем все Y между начальной и конечной позицицей
 		for (let y = tY; y <= kY; y++)
 			if (this.isCollission(this.position.x, y * SIZE_TILES)) {
 				predel = y;
@@ -150,11 +156,15 @@ export class CurrentFigure extends Figure {
 				break;
 			}
 
+
 		if (stepY < SIZE_TILES)
+			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
 			this.position.y += stepY;
 		else
+			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
 			this.position.y += (predel - tY) * SIZE_TILES;
 
+		// Если движение возмонжо просто выходим, если нет то смотрим условия
 		if (stop) {
 			let positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
 			for (let i = 0; i < positionCells.length; i++) {

@@ -88,6 +88,7 @@ line-height:  4vmin;
 footer{
 	background: #353535;
 	color:#868686;
+	line-height: 4vmin ;
 }
 
 #canvasNextFigureId {
