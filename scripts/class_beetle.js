@@ -1,8 +1,8 @@
 import { Point } from './class.js';
 import {
 	SIZE_TILES,
-	NUMBER_FRAMES_BEEATLE,
-	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT, FIGURE,
+	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE,
+	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT,
 	NUMBER_FRAMES_BEEATLE_MOVE, TIMES_BREATH_LOSE
 } from './const.js';
 
@@ -100,10 +100,13 @@ export class Beetle {
 			}
 			return [{ x: 0, y: 0 }];
 		};
+
 		function isRotate(direction, move) {
 			// !Добавить если с 0 поворачиваемся на лево или направо, а также если в 0
 			if (direction.x === move.x && direction.y === move.y)
 				return NUMBER_FRAMES_BEEATLE;
+			else if (direction.x === 0 && direction.y === 0)
+				return NUMBER_FRAMES_BEEATLE_ROTATE;
 			else
 				return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
 		};

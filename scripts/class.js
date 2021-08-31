@@ -23,11 +23,18 @@ export class Element {
 			U: 0,
 		};
 	}
+	// Получить статус элемента, поврежден ли он или целый
+	getSpaceStatus() {
+		if (this.status.L !== 0)
+			return "L"
+		if (this.status.R !== 0)
+			return "R"
+		if (this.status.U !== 0)
+			return "U"
 
-	isStatusClear() {
-		return this.status.L === 0 && this.status.R === 0 && this.status.U === 0
+		return "0"
+
 	}
-
 	//Установить в 0 все значения элемента
 	setZero() {
 		this.element = 0;
@@ -90,12 +97,12 @@ export class CurrentFigure extends Figure {
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
-		let positionTile = [];
-		this.cell.forEach((cell) => positionTile.push(new Point(
+		let result = [];
+		this.cell.forEach((cell) => result.push(new Point(
 			cell.x + Math.ceil(x / SIZE_TILES),
 			cell.y + Math.ceil(y / SIZE_TILES)
 		)));
-		return positionTile;
+		return result;
 	};
 
 	// Проверяем столкновение
