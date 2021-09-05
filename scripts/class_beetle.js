@@ -182,6 +182,7 @@ export class Beetle {
 				this.position.x += this.move.x * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
 			this.position.y += this.move.y * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
 		}
+
 		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
 			&& this.framesAnimation !== this.frames - 1) {
 			let offsetX = this.move.x;
@@ -302,159 +303,159 @@ export class Beetle {
 		alert(`Функция getRotate не знает такого направления ${JSON.stringify(direction)} ${JSON.stringify(move)}`);
 	};
 
-	// Исходя из данных определяе спрайт для рисования
+	// Получить напарвления движения
+	getDirectionMovement() {
+		return "" + [this.direction.x, this.direction.y, this.move.x, this.move.y].join("");
+	}
+
+	// Проверяем ест ли жук сейчас
+	isEatingNow() {
+		return this.eat === 1 && this.frames !== NUMBER_FRAMES_BEEATLE - 1
+			&& (this.direction.x === this.move.x && this.direction.y === this.move.y);
+	}
+
+	// Получить Спрайт если жук ест
+	getSpriteEatingNow(directionMovement) {
+		// Поворот Лево->Лево
+		if (directionMovement === "-10-10")
+			return this.framesAnimation === 0
+				? [6, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 6];
+
+		// Поворот Вниз->Вниз
+		if (directionMovement === "0101")
+			return this.framesAnimation === 0
+				? [0, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 8];
+
+		// Поворот Направо->Направо
+		if (directionMovement === "1010")
+			return this.framesAnimation === 0
+				? [2, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 5];
+
+		//!Для отладки если вдруг какое-то направление забыл
+		alert(`Функция getSprite при еде не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)} `);
+	}
+
+	getSpriteNoEatingNow(directionMovement) {
+		// Поворот Лево->Лево
+		if (directionMovement === "-10-10")
+			return this.framesAnimation === 0
+				? [6, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 2];
+
+		// Поворот Лево->0
+		if (directionMovement === "-1000")
+			return this.framesAnimation === 0 ? [6, 0] : [7, 0];
+
+		// Поворот Лево->Направо
+		if (directionMovement === "-1010")
+			return [[6, 0], [7, 0], [0, 0], [1, 0], [2, 0]][this.framesAnimation];
+
+		// Поворот Лево->Наверх
+		if (directionMovement === "-100-1")
+			return this.framesAnimation === 0 ? [6, 0] : [5, 0];
+
+		// Поворот Лево->Вниз
+		if (directionMovement === "-1001")
+			return this.framesAnimation === 0 ? [6, 0] : [7, 0];
+
+		// Поворот Наверх->Налево
+		if (directionMovement === "0-1-10")
+			return this.framesAnimation === 0 ? [4, 0] : [5, 0];
+
+		// Поворот Наверх->0
+		if (directionMovement === "0-100")
+			return [[4, 0], [3, 0], [2, 0], [1, 0], [0, 0]][this.framesAnimation];
+
+		// Поворот Наверх->Направо
+		if (directionMovement === "0-110")
+			return this.framesAnimation === 0 ? [4, 0] : [3, 0];
+
+		// Поворот Наверх->Наверх
+		if (directionMovement === "0-10-1")
+			return this.framesAnimation === 0
+				? [4, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 3];
+
+		// Поворот Наверх->Вниз
+		if (directionMovement === "0-101")
+			return [[4, 0], [3, 0], [2, 0], [1, 0], [0, 0]][this.framesAnimation];
+
+		// Поворот 0->Налево
+		if (directionMovement === "00-10")
+			return this.framesAnimation === 0 ? [0, 0] : [7, 0];
+
+		// Поворот 0->Налево
+		if (directionMovement === "0000")
+			return [0, 0];
+
+		// Поворот 0->Направо
+		if (directionMovement === "0010")
+			return this.framesAnimation === 0 ? [0, 0] : [1, 0];
+
+		// Поворот 0->Наверх
+		if (directionMovement === "000-1")
+			return [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]][this.framesAnimation];
+
+		// Поворот 0->Вниз
+		if (directionMovement === "0001")
+			return [0, 0];
+
+		// Поворот Вниз->Наверх
+		if (directionMovement === "010-1")
+			return [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]][this.framesAnimation];
+
+		// Поворот Вниз->0
+		if (directionMovement === "0100")
+			return [0, 0];
+
+		// Поворот Вниз->Вниз
+		if (directionMovement === "0101")
+			return this.framesAnimation === 0
+				? [0, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 4];
+
+		// Поворот Вниз->Налево
+		if (directionMovement === "01-10")
+			return this.framesAnimation === 0 ? [0, 0] : [7, 0];
+
+		// Поворот Вниз->Направо
+		if (directionMovement === "0110")
+			return this.framesAnimation === 0 ? [0, 0] : [1, 0];
+
+		// Поворот Направо->Наверх
+		if (directionMovement === "100-1")
+			return this.framesAnimation === 0 ? [3, 0] : [4, 0];
+
+		// Поворот Направо->0
+		if (directionMovement === "1000")
+			return this.framesAnimation === 0 ? [1, 0] : [0, 0];
+
+		// Поворот Направо->Вниз
+		if (directionMovement === "1001")
+			return this.framesAnimation === 0 ? [1, 0] : [0, 0];
+
+		// Поворот Направо->Налево
+		if (directionMovement === "10-10")
+			return [[2, 0], [1, 0], [0, 0], [7, 0], [6, 0]][this.framesAnimation];
+
+		// Поворот Направо->Направо
+		if (directionMovement === "1010")
+			return this.framesAnimation === 0
+				? [2, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 1];
+
+		//!Для отладки если вдруг какое-то направление забыл
+		alert(`Функция getSprite не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)} `);
+	}
+
+	// Исходя из данных определяет спрайт для рисования
 	getSprite() {
-		//console.log(`При выборе спрайта ${this.getRotate(this.direction, this.move)}`);
-
-		let code = "" + [this.direction.x, this.direction.y, this.move.x, this.move.y].join("");
-		if (this.eat === 1 && this.frames !== NUMBER_FRAMES_BEEATLE - 1
-			&& (this.direction.x === this.move.x && this.direction.y === this.move.y)) {
-			// Если жук ест
-			switch (code) {
-				// Поворот Лево->Лево
-				case "-10-10":
-					return this.framesAnimation === 0
-						? [6, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 6];
-					break;
-
-				// Поворот Вниз->Вниз
-				case "0101":
-					return this.framesAnimation === 0
-						? [0, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 8]; break;
-
-				// Поворот Направо->Направо
-				case "1010":
-					return this.framesAnimation === 0
-						? [2, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 5];
-					break;
-			}
-
-			//!Для отладки если вдруг какое-то направление забыл
-			alert(`Функция getSprite при еде не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)}`);
-		} else {
-			switch (code) {
-				// Поворот Лево->Лево
-				case "-10-10":
-					return this.framesAnimation === 0
-						? [6, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 2];
-					break;
-				// Поворот Лево->0
-				case "-1000":
-					return this.framesAnimation === 0 ? [6, 0] : [7, 0];
-					break;
-				// Поворот Лево->Направо
-				case "-1010":
-					return [[6, 0], [7, 0], [0, 0], [1, 0], [2, 0]][this.framesAnimation];
-					break;
-				// Поворот Лево->Наверх
-				case "-100-1":
-					return this.framesAnimation === 0 ? [6, 0] : [5, 0];
-					break;
-				// Поворот Лево->Вниз
-				case "-1001":
-					return this.framesAnimation === 0 ? [6, 0] : [7, 0];
-					break;
-
-				// Поворот Наверх->Налево
-				case "0-1-10":
-					return this.framesAnimation === 0 ? [4, 0] : [5, 0];
-					break;
-				// Поворот Наверх->0
-				case "0-100":
-					return [[4, 0], [3, 0], [2, 0], [1, 0], [0, 0]][this.framesAnimation];
-					break;
-				// Поворот Наверх->Направо
-				case "0-110":
-					return this.framesAnimation === 0 ? [4, 0] : [3, 0];
-					break;
-				// Поворот Наверх->Наверх
-				case "0-10-1":
-					return this.framesAnimation === 0
-						? [4, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 3];
-					break;
-				// Поворот Наверх->Вниз
-				case "0-101":
-					return [[4, 0], [3, 0], [2, 0], [1, 0], [0, 0]][this.framesAnimation];
-					break;
-
-				// Поворот 0->Налево
-				case "00-10":
-					return this.framesAnimation === 0 ? [0, 0] : [7, 0];
-					break;
-				// Поворот 0->Налево
-				case "0000": return "00";
-					return [0, 0];
-					break;
-				// Поворот 0->Направо
-				case "0010":
-					return this.framesAnimation === 0 ? [0, 0] : [1, 0];
-					break;
-				// Поворот 0->Наверх
-				case "000-1":
-					return [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]][this.framesAnimation];
-					break;
-				// Поворот 0->Вниз
-				case "0001":
-					return [0, 0];
-					break;
-
-
-				// Поворот Вниз->Наверх
-				case "010-1":
-					return [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]][this.framesAnimation];
-					break;
-				// Поворот Вниз->0
-				case "0100":
-					return [0, 0];
-					break;
-				// Поворот Вниз->Вниз
-				case "0101":
-					return this.framesAnimation === 0
-						? [0, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 4];; break;
-				// Поворот Вниз->Налево
-				case "01-10":
-					return this.framesAnimation === 0 ? [0, 0] : [7, 0];
-					break;
-				// Поворот Вниз->Направо
-				case "0110":
-					return this.framesAnimation === 0 ? [0, 0] : [1, 0];
-					break;
-
-				// Поворот Направо->Наверх
-				case "100-1":
-					return this.framesAnimation === 0 ? [3, 0] : [4, 0];
-					break;
-				// Поворот Направо->0
-				case "1000":
-					return this.framesAnimation === 0 ? [1, 0] : [0, 0];
-					break;
-				// Поворот Направо->Вниз
-				case "1001":
-					return this.framesAnimation === 0 ? [1, 0] : [0, 0];
-					break;
-				// Поворот Направо->Налево
-				case "10-10":
-					return [[2, 0], [1, 0], [0, 0], [7, 0], [6, 0]][this.framesAnimation];
-					break;
-				// Поворот Направо->Направо
-				case "1010":
-					return this.framesAnimation === 0
-						? [2, 0]
-						: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 1];
-					break;
-			}
-
-			//!Для отладки если вдруг какое-то направление забыл
-			alert(`Функция getSprite не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)}`);
-
-
-		}
+		// Если жук ест
+		if (this.isEatingNow()) return this.getSpriteEatingNow(this.getDirectionMovement());
+		else return this.getSpriteNoEatingNow(this.getDirectionMovement());
 	}
 
 }

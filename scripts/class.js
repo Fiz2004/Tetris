@@ -25,15 +25,10 @@ export class Element {
 	}
 	// Получить статус элемента, поврежден ли он или целый
 	getSpaceStatus() {
-		if (this.status.L !== 0)
-			return "L"
-		if (this.status.R !== 0)
-			return "R"
-		if (this.status.U !== 0)
-			return "U"
-
+		if (this.status.L !== 0) return "L"
+		if (this.status.R !== 0) return "R"
+		if (this.status.U !== 0) return "U"
 		return "0"
-
 	}
 	//Установить в 0 все значения элемента
 	setZero() {
@@ -41,6 +36,10 @@ export class Element {
 		this.status = { L: 0, R: 0, U: 0 };
 	}
 
+	setElement(element) {
+		this.element = element.element;
+		this.status = { L: element.status.L, R: element.status.R, U: element.status.U };
+	}
 }
 
 // Класс для обзначения координат x и y
@@ -65,19 +64,14 @@ class Cell extends Point {
 // Класс для фигуры
 export class Figure {
 	// Ячейки в фигуре
-	cell = [];
+	cells;
 	// Количество изображений для фигуры
 	static numberCell = NUMBER_IMAGES_FIGURE;
-
 	constructor() {
-		//Задаем случайный номер для фигуры
-		let randNumber = Math.floor(Math.random() * FIGURE.length);
-		for (let i = 0; i < FIGURE[randNumber].length; i++) {
-			//Задаем случайный фон для ячейки
-			let randView = Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1;
+		this.cells = [];
+		for (let cell of FIGURE[Math.floor(Math.random() * FIGURE.length)])
 			// Новая ячейка(координаты x и y и номер изображения фигуры)
-			this.cell[i] = new Cell(FIGURE[randNumber][i][0], FIGURE[randNumber][i][1], randView);
-		}
+			this.cells.push(new Cell(cell[0], cell[1], Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1));
 	};
 }
 
@@ -88,17 +82,17 @@ export class CurrentFigure extends Figure {
 	constructor(grid, newCell) {
 		super();
 		this.grid = grid;
-		this.cell = [...newCell];
+		this.cells = [...newCell];
 		//Задаем стартовую позицию
-		let width = this.cell.reduce((a, b) => a.x > b.x ? a : b).x;
-		let height = this.cell.reduce((a, b) => a.y > b.y ? a : b).y;
+		let width = this.cells.reduce((a, b) => a.x > b.x ? a : b).x;
+		let height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
 		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
 	};
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
 		let result = [];
-		this.cell.forEach((cell) => result.push(new Point(
+		this.cells.forEach((cell) => result.push(new Point(
 			cell.x + Math.ceil(x / SIZE_TILES),
 			cell.y + Math.ceil(y / SIZE_TILES)
 		)));
@@ -124,23 +118,23 @@ export class CurrentFigure extends Figure {
 
 	//функция поворота фигуры
 	rotate() {
-		this.cell.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+		this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
 		if (this.isCollission(this.position.x, this.position.y)) {
-			this.cell.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-			this.cell.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-			this.cell.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
 		}
 	};
 
 	//Метод движения влево
 	moveLeft() {
-		if (this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y) == false)
+		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
 			this.position.x -= STEP_MOVE_KEY_X;
 	}
 
 	//Метод движения вправо
 	moveRight() {
-		if (this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y) == false)
+		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
 			this.position.x += STEP_MOVE_KEY_X;
 	}
 
@@ -163,7 +157,6 @@ export class CurrentFigure extends Figure {
 				break;
 			}
 
-
 		if (stepY < SIZE_TILES)
 			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
 			this.position.y += stepY;
@@ -171,17 +164,15 @@ export class CurrentFigure extends Figure {
 			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
 			this.position.y += (predel - tY) * SIZE_TILES;
 
-		// Если движение возмонжо просто выходим, если нет то смотрим условия
+		// Если движение возможно просто выходим, если нет то смотрим условия
 		if (stop) {
 			let positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
-			for (let i = 0; i < positionCells.length; i++) {
-				if (positionCells[i].y - 1 < 0) {
-					return false;
-				}
-			}
+			for (let cell of positionCells)
+				if (cell.y - 1 < 0) return false;
 
-			for (let i = 0; i < positionCells.length; i++)
-				this.grid.space[positionCells[i].y - 1][positionCells[i].x].element = this.cell[i].view;
+			let i = 0;
+			for (let cell of positionCells)
+				this.grid.space[cell.y - 1][cell.x].element = this.cells[i++].view;
 
 			return true;
 

@@ -40,29 +40,20 @@ export class Display {
 	};
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
-		for (let i = 0; i < nextFigure.cell.length; i++) {
-			this.ctxNextFigure.drawImage(this.imgKv[nextFigure.cell[i].view - 1],
+		for (let cell of nextFigure.cells) {
+			this.ctxNextFigure.drawImage(this.imgKv[cell.view - 1],
 				0, 0, SIZE_TILES, SIZE_TILES,
-				(nextFigure.cell[i].x * SIZE_TILES), (nextFigure.cell[i].y * SIZE_TILES), SIZE_TILES, SIZE_TILES);
+				(cell.x * SIZE_TILES), (cell.y * SIZE_TILES), SIZE_TILES, SIZE_TILES);
 		}
 	};
 	// Получить смещение по тайлам в зависимости от статуса элемента
 	getOffset(element) {
-		switch (element.getSpaceStatus()) {
-			case "R":
-				return [(element.status.R - 1) * SIZE_TILES, 1 * SIZE_TILES];
-				break;
-			case "L":
-				return [(element.status.L - 1) * SIZE_TILES, 2 * SIZE_TILES];
-				break;
-			case "U":
-				return [(element.status.U - 1) * SIZE_TILES, 3 * SIZE_TILES];
-				break;
-			default:
-				return [0, 0];
-		}
-
+		if (element.getSpaceStatus() == "R") return [(element.status.R - 1) * SIZE_TILES, 1 * SIZE_TILES];
+		if (element.getSpaceStatus() == "L") return [(element.status.L - 1) * SIZE_TILES, 2 * SIZE_TILES];
+		if (element.getSpaceStatus() == "U") return [(element.status.U - 1) * SIZE_TILES, 3 * SIZE_TILES]
+		return [0, 0];
 	}
+
 	drawGridElements(grid) {
 		let offsetX, offsetY;
 		for (let i = 0; i < this.canvas.height / SIZE_TILES; i++)
@@ -87,10 +78,10 @@ export class Display {
 		this.drawGridElements(grid)
 
 		//Рисуем текущую падующую фигуру
-		for (let i = 0; i < currentFigure.cell.length; i++) {
-			this.ctx.drawImage(this.imgKv[currentFigure.cell[i].view - 1],
+		for (let i = 0; i < currentFigure.cells.length; i++) {
+			this.ctx.drawImage(this.imgKv[currentFigure.cells[i].view - 1],
 				0, 0, SIZE_TILES, SIZE_TILES,
-				(currentFigure.cell[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cell[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
+				(currentFigure.cells[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cells[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
 		//Рисуем бегующего жука

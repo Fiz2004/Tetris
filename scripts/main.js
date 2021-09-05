@@ -64,7 +64,7 @@ class Model {
 	//Метод формирования текущей фигуры
 	formCurrentFigure() {
 		this.nextFigure = this.nextFigure || new Figure();
-		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cell);
+		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cells);
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе display.draw
@@ -104,27 +104,10 @@ class Model {
 	//Фиксация фигуры
 	fixation() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
-		let count = 0;
-		//Проверяем удаление строки
-		this.grid.space.forEach((y) => {
-			if (y.every((x) => x.element !== 0)) {
-				for (let i = this.grid.space.indexOf(y); i > 0; i--)
-					for (let j = 0; j < display.canvas.width / SIZE_TILES; j++) {
-						this.grid.space[i][j].element = this.grid.space[i - 1][j].element;
-						this.grid.space[i][j].status.L = this.grid.space[i - 1][j].status.L;
-						this.grid.space[i][j].status.R = this.grid.space[i - 1][j].status.R;
-						this.grid.space[i][j].status.U = this.grid.space[i - 1][j].status.U;
-					}
+		let countRowFull = this.grid.getCountRowFull();
+		if (countRowFull != 0) controller.refresh;
 
-				for (let j = 0; j < display.canvas.width / SIZE_TILES; j++)
-					this.grid.space[0][j].setZero();
-
-				count++;
-
-				controller.refresh;
-			}
-		})
-		for (let i = 1; i <= count; i++)
+		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
 
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения
