@@ -20,6 +20,8 @@ export class Display {
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
 		this.txtScores = document.querySelector('#scores');
 
+		const numberImg = 1+this.imgKv.length  + 1;
+
 		//Формируем картинки для фигур
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {

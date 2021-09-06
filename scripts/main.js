@@ -71,31 +71,37 @@ class Model {
 		//display.drawNextFigure();
 	};
 
+	ifNotBreath() {
+		if (this.elementTimeBreath) {
+			// Выводим секунды дыхания
+			this.beetle.timeBreath -= UPDATE_TIME / 1000;
+		}
+		else {
+			let element = document.createElement("h1");
+			element.id = "Breath";
+			document.querySelector("#infoID").append(element);;
+			this.elementTimeBreath = document.querySelector("#Breath");
+			this.beetle.breath = true;
+		}
+		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.ceil(this.beetle.timeBreath)}`;
+	}
+	ifBreath() {
+		if (this.elementTimeBreath) {
+			this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
+			this.elementTimeBreath = null;
+		}
+		this.beetle.timeBreath = TIMES_BREATH_LOSE;
+		this.beetle.breath = false;
+	}
+
 	// Обновление элементов связанных с дыханием
 	renderBreath() {
 		// Проверяем есть ли воздух у жука
-		if (!this.beetle.isBreath()) {
-			if (!this.elementTimeBreath) {
-				let element = document.createElement("h1");
-				element.id = "Breath";
-				document.querySelector("#infoID").append(element);;
-				this.elementTimeBreath = document.querySelector("#Breath");
-				this.beetle.breath = true;
-			}
-			else {
-				// Выводим секунды дыхания
-				this.beetle.timeBreath -= UPDATE_TIME / 1000;
-			}
-			this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.ceil(this.beetle.timeBreath)}`;
-		}
-		else {
-			if (this.elementTimeBreath) {
-				this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
-				this.elementTimeBreath = null;
-			}
-			this.beetle.timeBreath = TIMES_BREATH_LOSE;
-			this.beetle.breath = false;
-		}
+		if (!this.beetle.isBreath())
+			this.ifNotBreath();
+		else
+			this.ifBreath();
+
 		// Закрашиваем элемент связанный с дыханием
 		let int = Math.floor(this.beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
 		this.elementDivBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
@@ -114,12 +120,13 @@ class Model {
 		this.beetle.deleteRow = 1;
 		this.renderBreath();
 	};
+	lose() {
+		localStorage.setItem('Record', model.scores);
+		model.newGame();
+	};
 
 	tick() {
-		function lose() {
-			localStorage.setItem('Record', model.scores);
-			model.newGame();
-		};
+
 		// Проверяем нажатие клавиатуры и запускаем события
 		if (controller.pressed.left) this.currentFigure.moveLeft();
 		if (controller.pressed.right) this.currentFigure.moveRight();
@@ -127,7 +134,7 @@ class Model {
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
 		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO) === false) {
 			// Стакан заполнен игра окончена
-			lose();
+			this.lose();
 			return;
 		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO)) {
 			this.fixation();
@@ -135,20 +142,13 @@ class Model {
 		} else {
 			// Фигура достигла препятствия
 			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-			let array = this.currentFigure.getPositionTile();
-			let res = false;
-			for (let elem of array) {
-				if (elem.x == tile.x && elem.y == tile.y) {
-					res = true;
-					break;
+			for (let elem of this.currentFigure.getPositionTile())
+				if ((elem.x == tile.x && elem.y == tile.y)
+					|| (this.grid.space[tile.y][tile.x].element != 0
+						&& this.beetle.eat == 0)) {
+					this.lose();
+					return;
 				}
-			}
-
-			if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0)
-				|| res) {
-				lose();
-				return;
-			}
 		}
 		// Проверяем возможность дыхания
 		this.renderBreath();
@@ -156,7 +156,7 @@ class Model {
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
 		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
 			this.beetle.timeBreath <= 0) {
-			lose();
+			this.lose();
 			return;
 		}
 		// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
