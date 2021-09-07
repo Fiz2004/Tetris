@@ -68,7 +68,7 @@ class Model {
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе display.draw
-		//display.drawNextFigure();
+		//display.drawNextFigure(this.nextFigure);
 	};
 
 	ifNotBreath() {
@@ -165,18 +165,36 @@ class Model {
 	};
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
-		//this = new Model();
-		model = new Model();
-		display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
-		clearInterval(timer);
-		timer = setInterval(() => model.tick(), UPDATE_TIME);
-		document.getElementById("pause").innerHTML = "Пауза";
+		controller.newgame = () => {
+			model = new Model();
+			display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
+			clearInterval(timer);
+			timer = setInterval(() => model.tick(), UPDATE_TIME);
+			document.getElementById("pause").innerHTML = "Пауза";
+		}
+		controller.pause = () => {
+			if (document.getElementById("pause").innerHTML == "Пауза") {
+				document.getElementById("pause").innerHTML = "Продолжить";
+				clearInterval(timer);
+			}
+			else {
+				document.getElementById("pause").innerHTML = "Пауза";
+				timer = setInterval(() => model.tick(), UPDATE_TIME);
+			}
+		}
+		document.getElementById("new_game").onclick = controller.newgame;
+		document.getElementById("pause").onclick = controller.pause;
+		controller.newgame();
 	}
 };
 
 
 window.onload = function () {
 	display = new Display();
-	model = new Model();
-	model.newGame();
+	display.onload = () => {
+		model = new Model();
+
+		model.newGame();
+	}
+	display.load();
 }

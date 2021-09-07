@@ -20,7 +20,7 @@ header,footer{
 	background-color: #284b63;
 	
 	text-align:center;
-	border-radius: 15px;
+	border-radius: 2vmin;
 	
 }
 
@@ -41,7 +41,7 @@ line-height:  4vmin;
 }
 
 .row{
-	border-spacing: 0px;
+	border-spacing: 0vmin;
 	display: table-row;
 }
 
@@ -63,7 +63,7 @@ line-height:  4vmin;
 
 .scoresInfo{
   background:#5b26af;
-	border-radius: 15px 0px 0px 15px;
+	border-radius: 2vmin 0vmin 0vmin 2vmin;
   color:#FFFFFF; 
 	
 }
@@ -79,10 +79,16 @@ line-height:  4vmin;
 	width:41vmin ;
 }
 
+.button{
+	width:30vmin;
+	height:7vmin;
+	font-size:3vmin;
+}
+
 .info{
 	background:#ffffff;
 	color:#000000;
-	border-radius: 0px 15px 15px 0px;
+	border-radius: 0vmin 2vmin 2vmin 0vmin;
 }
 
 footer{

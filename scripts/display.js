@@ -19,27 +19,42 @@ export class Display {
 		this.canvasNextFigure = document.querySelector('#canvasNextFigureId');
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
 		this.txtScores = document.querySelector('#scores');
-
-		const numberImg = 1+this.imgKv.length  + 1;
+	};
+	load() {
+		// Переменные для отслеживания загрузки изображений
+		this.numberImg = 1 + Figure.numberCell + 1;
+		this.currentImg = 0;
 
 		//Формируем картинки для фигур
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
+			this.imgKv[i].onload = this.loadImage.call(this);
 		}
-
-		this.imgFon = new Image();
-		//загружаем картинки фона
-		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
-
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++)
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 
+		this.imgFon = new Image();
+		this.imgFon.onload = this.loadImage.call(this);
+		//загружаем картинки фона
+		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
+		this.imgBeetle.onload = this.loadImage.call(this);
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
-	};
+	}
+
+	loadImage() {
+		this.currentImg++;
+		if (this.currentImg === this.numberImg) {
+			this.onload();
+		}
+	}
+	onload() { };
+
+
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (let cell of nextFigure.cells) {
