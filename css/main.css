@@ -20,7 +20,8 @@ header,footer{
 	background-color: #284b63;
 	
 	text-align:center;
-	border-radius: 15px;
+	border-radius: 2vmin;
+	
 }
 
 header{
@@ -36,29 +37,35 @@ header h1,footer h1{
 
 footer h1{
 padding: 0.1vmin;
+line-height:  4vmin;
 }
 
 .row{
+	border-spacing: 0vmin;
 	display: table-row;
 }
 
 .fields{
 	width:100vmin;;
-	height: auto !important;
+	height: auto;
 
 	margin:auto;
 
 	font-size:1.5vmin;
 }
 
-.scoresInfo{
-  background:#5b26af;
-	border-radius: 15px 0px 0px 15px;
-  color:#FFFFFF; 
+.scoresInfo,.info{
 	text-align:center;
 	display: table-cell;
 	width:29.5vmin;
 	vertical-align: top;
+}
+
+.scoresInfo{
+  background:#5b26af;
+	border-radius: 2vmin 0vmin 0vmin 2vmin;
+  color:#FFFFFF; 
+	
 }
 
 .canvas{
@@ -72,24 +79,65 @@ padding: 0.1vmin;
 	width:41vmin ;
 }
 
+.button{
+	width:30vmin;
+	height:7vmin;
+	font-size:3vmin;
+}
+
 .info{
 	background:#ffffff;
 	color:#000000;
-	text-align:center;
-	border-radius: 0px 15px 15px 0px;
-	display: table-cell;
-	width:29.5vmin;
-	vertical-align: top;
+	border-radius: 0vmin 2vmin 2vmin 0vmin;
 }
 
 footer{
 	background: #353535;
 	color:#868686;
+	line-height: 4vmin ;
 }
 
 #canvasNextFigureId {
   background-color: black;
 	height: 12.8vmin;
 	width:12.8vmin ;
+}
+
+@media screen and (max-width: 390px){
+	header,footer{
+		display:none;
+	}
+	.row{
+		display: flex;
+		flex-direction: column;
+		
+	}
+
+
+.info,.scoresInfo{
+	width:100%;
+	height:14vmin;
+	}
+
+	.info{
+	order: 2;
+	display: flex;
+	align-items:center;
+	justify-content:space-around;
+}
+	.canvas{
+	order: 3;
+	width:100%;
+}
+	.scoresInfo{
+	order: 1;
+	height:7vmin;
+	display: flex;
+	justify-content:center;
+}
+	#canvasId{
+	height: 192%;
+	width:100% ;
+}
 }
 
