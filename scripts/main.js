@@ -14,8 +14,8 @@ let display;
 let model;
 // Экземпляр объекта Controller, для взаимодействия
 let controller;
-// Таймер для движения игры
-let timer;
+// Хранит время предыдущего обновления
+let lastTime;
 
 //Класс в котором хранится вся модель игры
 class Model {
@@ -28,7 +28,7 @@ class Model {
 	// Следующая фигура
 	nextFigure;
 	// Объект жука, с его координатами, направлением движения и кадром движения
-	beetle;
+	beetle = [];
 	// Элемент который меняет поведение при дыхании
 	elementDivBreath;
 	// Элемент который показывает секунды дыхания
@@ -42,7 +42,8 @@ class Model {
 		this.formCurrentFigure();
 
 		// Создаем жука
-		this.beetle = new Beetle(this.grid);
+		for (let i = 0; i < 5; i++)
+			this.beetle[i] = new Beetle(this.grid);
 
 		// Инициализируем очки
 		this.scores = 0;
@@ -51,14 +52,17 @@ class Model {
 		document.querySelector('#record').textContent = String(localStorage.getItem('Record') || 0).padStart(6, "0");
 
 		// Задаем функцию для жука что при еде увеличить количество очков
-		this.beetle.handleEat = function () { model.scores += 50 };
+		// !!!Переписать чтобы обновлялось внутри жука
+		this.beetle.forEach((beetle) =>
+			beetle.handleEat = function () { model.scores += 50 }
+		)
 
 		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
 		this.elementTimeBreath = document.querySelector("#Breath");
 		this.elementDivBreath = document.querySelector("#infoID");
 
-		// Обновляем интерфейс связанный с дыханием
-		this.renderBreath();
+		this.isPause = false;
+		//this.renderBreath();
 	};
 
 	//Метод формирования текущей фигуры
@@ -71,7 +75,7 @@ class Model {
 		//display.drawNextFigure(this.nextFigure);
 	};
 
-	ifNotBreath() {
+	ifNotBreath(beetle) {
 		if (this.elementTimeBreath) {
 			// Выводим секунды дыхания
 			this.beetle.timeBreath -= UPDATE_TIME / 1000;
@@ -81,29 +85,29 @@ class Model {
 			element.id = "Breath";
 			document.querySelector("#infoID").append(element);;
 			this.elementTimeBreath = document.querySelector("#Breath");
-			this.beetle.breath = true;
+			beetle.breath = true;
 		}
 		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.ceil(this.beetle.timeBreath)}`;
 	}
-	ifBreath() {
+	ifBreath(beetle) {
 		if (this.elementTimeBreath) {
 			this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
 			this.elementTimeBreath = null;
 		}
-		this.beetle.timeBreath = TIMES_BREATH_LOSE;
-		this.beetle.breath = false;
+		beetle.timeBreath = TIMES_BREATH_LOSE;
+		beetle.breath = false;
 	}
 
 	// Обновление элементов связанных с дыханием
-	renderBreath() {
+	renderBreath(deltaTime, beetle) {
 		// Проверяем есть ли воздух у жука
-		if (!this.beetle.isBreath())
-			this.ifNotBreath();
+		if (!(beetle.isBreath()))
+			this.ifNotBreath(beetle);
 		else
-			this.ifBreath();
+			this.ifBreath(beetle);
 
 		// Закрашиваем элемент связанный с дыханием
-		let int = Math.floor(this.beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
+		let int = Math.floor(beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
 		this.elementDivBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
 	};
 
@@ -117,74 +121,74 @@ class Model {
 			this.scores += i * 100;
 
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения
-		this.beetle.deleteRow = 1;
-		this.renderBreath();
+		this.beetle.forEach((beetle) => {
+			beetle.deleteRow = 1;
+			this.renderBreath(0, beetle);
+		})
 	};
 	lose() {
 		localStorage.setItem('Record', model.scores);
-		model.newGame();
+		model.clickNewGame();
 	};
-
-	tick() {
-
+	update(deltaTime) {
 		// Проверяем нажатие клавиатуры и запускаем события
-		if (controller.pressed.left) this.currentFigure.moveLeft();
-		if (controller.pressed.right) this.currentFigure.moveRight();
-		if (controller.pressed.up) this.currentFigure.rotate();
+		if (controller.pressed.left) this.currentFigure.moveLeft(deltaTime);
+		if (controller.pressed.right) this.currentFigure.moveRight(deltaTime);
+		if (controller.pressed.up) this.currentFigure.rotate(deltaTime);
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO) === false) {
+		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y * deltaTime : STEP_MOVE_AUTO * deltaTime) === false) {
 			// Стакан заполнен игра окончена
 			this.lose();
 			return;
-		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO)) {
+		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y * deltaTime : STEP_MOVE_AUTO * deltaTime)) {
 			this.fixation();
 			this.formCurrentFigure();
 		} else {
 			// Фигура достигла препятствия
-			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-			for (let elem of this.currentFigure.getPositionTile())
-				if ((elem.x == tile.x && elem.y == tile.y)
-					|| (this.grid.space[tile.y][tile.x].element != 0
-						&& this.beetle.eat == 0)) {
-					this.lose();
-					return;
-				}
+			this.beetle.forEach((beetle) => {
+				let tile = new Point(Math.ceil(beetle.position.x / SIZE_TILES), Math.ceil(beetle.position.y / SIZE_TILES));
+				for (let elem of this.currentFigure.getPositionTile())
+					if ((elem.x == tile.x && elem.y == tile.y)
+						|| (this.grid.space[tile.y][tile.x].element != 0
+							&& beetle.eat == 0)) {
+						this.lose();
+						return;
+					}
+			})
 		}
 		// Проверяем возможность дыхания
-		this.renderBreath();
 
-		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
-			this.beetle.timeBreath <= 0) {
-			this.lose();
-			return;
-		}
-		// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
-		this.beetle.beetleAnimation();
-		display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
-	};
+		this.beetle.forEach((beetle) => {
+			this.renderBreath(deltaTime, beetle);
+
+			let tile = new Point(Math.floor(beetle.position.x / SIZE_TILES), Math.floor(beetle.position.y / SIZE_TILES));
+			if ((this.grid.space[tile.y][tile.x].element != 0 && beetle.eat == 0) ||
+				beetle.timeBreath <= 0) {
+				this.lose();
+				return;
+			}
+			// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
+			beetle.beetleAnimation(deltaTime);
+		})
+	}
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
-		controller.newgame = () => {
-			model = new Model();
-			display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
-			clearInterval(timer);
-			timer = setInterval(() => model.tick(), UPDATE_TIME);
+		document.getElementById("new_game").onclick = this.clickNewGame;
+		document.getElementById("pause").onclick = this.clickPause;
+	}
+	clickNewGame = () => {
+		model = new Model();
+		document.getElementById("pause").innerHTML = "Пауза";
+	}
+	clickPause = () => {
+		if (document.getElementById("pause").innerHTML == "Пауза") {
+			document.getElementById("pause").innerHTML = "Продолжить";
+			model.isPause = true;
+		}
+		else {
 			document.getElementById("pause").innerHTML = "Пауза";
+			model.isPause = false;
 		}
-		controller.pause = () => {
-			if (document.getElementById("pause").innerHTML == "Пауза") {
-				document.getElementById("pause").innerHTML = "Продолжить";
-				clearInterval(timer);
-			}
-			else {
-				document.getElementById("pause").innerHTML = "Пауза";
-				timer = setInterval(() => model.tick(), UPDATE_TIME);
-			}
-		}
-		document.getElementById("new_game").onclick = controller.newgame;
-		document.getElementById("pause").onclick = controller.pause;
-		controller.newgame();
 	}
 };
 
@@ -195,6 +199,20 @@ window.onload = function () {
 		model = new Model();
 
 		model.newGame();
+		main();
 	}
 	display.load();
+}
+
+function main() {
+	let now = Date.now();
+	let deltaTime = (now - lastTime) / 1000 || 0;
+
+	if (!model.isPause) {
+		model.update(deltaTime);
+		display.render(model.grid, model.currentFigure, model.beetle, model.scores, model.nextFigure);
+	}
+	lastTime = now;
+
+	window.requestAnimationFrame(main);
 }

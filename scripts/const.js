@@ -10,13 +10,15 @@ export const NUMBER_IMAGES_BACKGROUND = 16;
 // Количество изображений для фигуры
 export const NUMBER_IMAGES_FIGURE = 4;
 // Время в милисекундах одного движения
-export const UPDATE_TIME = 100;
+export const UPDATE_TIME = 1000;
 // Шаг движения блоков по умолчанию
-export const STEP_MOVE_AUTO = 3;
+export const STEP_MOVE_AUTO = 50;
 // Шаг движения блоков по горизонтали
 export const STEP_MOVE_KEY_X = 30;
 // Шаг движения блоков по вертикали
-export const STEP_MOVE_KEY_Y = 20;
+export const STEP_MOVE_KEY_Y = 300;
+
+export const TIME_ROTATE = 0.1;
 // Число кадров движения
 export const NUMBER_FRAMES_BEEATLE = 10;
 // Число кадров движения налево и направо

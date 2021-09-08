@@ -175,12 +175,12 @@ export class Beetle {
 		//console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${JSON.stringify(this.move)}`);
 	};
 	//Метод движения жука
-	beetleAnimation() {
+	beetleAnimation(deltaTime) {
 		// Если происходит поворот то не двигаемся
 		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
 			if (this.move.y === 0)
-				this.position.x += this.move.x * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
-			this.position.y += this.move.y * SIZE_TILES / NUMBER_FRAMES_BEEATLE;
+				this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE) ;
+			this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE) ;
 		}
 
 		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
@@ -328,11 +328,18 @@ export class Beetle {
 				? [0, 0]
 				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 8];
 
+		// Поворот Вверх->Вверх
+		if (directionMovement === "0-10-1")
+			return this.framesAnimation === 0
+				? [4, 0]
+				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 7];
+
 		// Поворот Направо->Направо
 		if (directionMovement === "1010")
 			return this.framesAnimation === 0
 				? [2, 0]
 				: [Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_BEEATLE_MOVE)), 5];
+
 
 		//!Для отладки если вдруг какое-то направление забыл
 		alert(`Функция getSprite при еде не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)} `);
