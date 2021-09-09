@@ -3,7 +3,6 @@ import {
 	// Количество изображений для фигуры
 	NUMBER_IMAGES_FIGURE,
 	FIGURE,
-	TIME_ROTATE
 } from './const.js';
 
 // Класс для обозначения элементов на поле
@@ -94,17 +93,10 @@ export class CurrentFigure extends Figure {
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
 		let result = [];
-		this.cells.forEach((cell) => {
-			let f;
-			if (x < 0)
-				f = Math.floor;
-			else
-				f = Math.ceil;
-			result.push(new Point(
-				f(cell.x + (x / SIZE_TILES)),
-				f(cell.y + (y / SIZE_TILES))
-			))
-		});
+		this.cells.forEach((cell) => result.push(new Point(
+			cell.x + Math.ceil(x / SIZE_TILES),
+			cell.y + Math.ceil(y / SIZE_TILES)
+		)));
 		return result;
 	};
 
@@ -126,39 +118,26 @@ export class CurrentFigure extends Figure {
 	};
 
 	//функция поворота фигуры
-	rotate(deltaTime) {
-		if (this.deltaTime > TIME_ROTATE) {
+	rotate() {
+		this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+		if (this.isCollission(this.position.x, this.position.y)) {
 			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-			if (this.isCollission(this.position.x, this.position.y)) {
-				this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-				this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-				this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
-			}
-			this.deltaTime = 0;
+			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
+			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
 		}
-		this.deltaTime += deltaTime
 	};
 
 	//Метод движения влево
-	moveLeft(deltaTime) {
-		if (this.deltaTime > TIME_ROTATE) {
-			if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X , this.position.y)) 
-					this.position.x -= STEP_MOVE_KEY_X ;
-			 this.deltaTime = 0;
-		}
-		this.deltaTime += deltaTime
-	}
-
+	moveLeft() {
+		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
+			this.position.x -= STEP_MOVE_KEY_X;
+	};
 
 	//Метод движения вправо
-	moveRight(deltaTime) {
-		if (this.deltaTime > TIME_ROTATE) {
-			if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X , this.position.y))
-				this.position.x += STEP_MOVE_KEY_X;
-			this.deltaTime = 0;
-		}
-		this.deltaTime += deltaTime
-	}
+	moveRight() {
+		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
+			this.position.x += STEP_MOVE_KEY_X;
+	};
 
 	//Метод движения вниз возвращает 3 значения true (Фигура достигла какого то препятствия), false (Игра окончена, стакан заполнен) и другое (Перемещаем фигуру на заданное расстояние)
 	moveDown(stepY) {

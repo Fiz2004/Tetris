@@ -1,11 +1,9 @@
 import { Point } from './class.js';
 import {
 	SIZE_TILES,
-	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE_0,
-	NUMBER_FRAMES_BEEATLE_ROTATE,
+	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT,
-	NUMBER_FRAMES_BEEATLE_MOVE, TIMES_BREATH_LOSE,
-	TIME_ROTATE
+	NUMBER_FRAMES_BEEATLE_MOVE, TIMES_BREATH_LOSE
 } from './const.js';
 
 // Класс для жука
@@ -105,14 +103,15 @@ export class Beetle {
 			return [{ x: 0, y: 0 }];
 		};
 
-		function getGrameRotate(direction, move) {
+		function getFrameRotate(direction, move) {
 			// !Добавить если с 0 поворачиваемся на лево или направо, а также если в 0
 			if (direction.x === move.x && direction.y === move.y)
 				return NUMBER_FRAMES_BEEATLE;
 			else if (direction.x === 0 && direction.y === 0)
-				return NUMBER_FRAMES_BEEATLE_ROTATE_0;
-			else
 				return NUMBER_FRAMES_BEEATLE_ROTATE;
+			else
+				//?? При изменении кадров надо задавать другое значение
+				return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
 		};
 
 		const DIRECTION = {};
@@ -173,14 +172,13 @@ export class Beetle {
 		else {
 			this.move = this.moves[0];
 		}
-		this.frames = getGrameRotate({ ...startMove }, this.move)
+		this.frames = getFrameRotate({ ...startMove }, this.move)
 		this.direction = { ...startMove };
 
 		//console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${JSON.stringify(this.move)}`);
 	};
 	//Метод движения жука
-	beetleAnimation(deltaTime) {
-		if (this.deltaTime > TIME_ROTATE) {
+	beetleAnimation() {
 			// Если происходит поворот то не двигаемся
 			if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
 				if (this.move.y === 0)
@@ -220,9 +218,6 @@ export class Beetle {
 			}
 
 			//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
-			this.deltaTime = 0;
-		}
-		this.deltaTime += deltaTime
 	};
 
 	// Проверяем есть ли доступ к верху стакана
@@ -354,8 +349,6 @@ export class Beetle {
 	}
 
 	getSpriteNoEatingNow(directionMovement) {
-
-		console.log(`directionMovement=${directionMovement} this.framesAnimation=${this.framesAnimation}`)
 		// Поворот Лево->Лево
 		if (directionMovement === "-10-10")
 			return this.framesAnimation === 0
