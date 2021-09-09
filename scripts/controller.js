@@ -18,14 +18,9 @@ export class Controller {
 		document.addEventListener("touchmove", this.touchMove);
 		document.addEventListener("touchend", this.touchEnd);
 		document.addEventListener("touchcancel", this.touchEnd);
-		document.addEventListener("contextmenu", this.contextMenu);
-
 	};
 	refresh() {
 		this.pressed = null;
-	}
-	contextMenu = event => {
-		event.preventDefault();
 	}
 	handler = event => {
 		if (this.codes.hasOwnProperty(event.keyCode)) {
@@ -151,5 +146,4 @@ export class Controller {
 		this.touchStart = null;
 		this.touchPosition = null;
 	};
-
 };

@@ -2,7 +2,7 @@ import {
 	SIZE_TILES, STEP_MOVE_KEY_X,
 	// Количество изображений для фигуры
 	NUMBER_IMAGES_FIGURE,
-	FIGURE
+	FIGURE,
 } from './const.js';
 
 // Класс для обозначения элементов на поле
@@ -87,6 +87,7 @@ export class CurrentFigure extends Figure {
 		let width = this.cells.reduce((a, b) => a.x > b.x ? a : b).x;
 		let height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
 		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
+		this.deltaTime = 0;
 	};
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
@@ -130,13 +131,13 @@ export class CurrentFigure extends Figure {
 	moveLeft() {
 		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
 			this.position.x -= STEP_MOVE_KEY_X;
-	}
+	};
 
 	//Метод движения вправо
 	moveRight() {
 		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
 			this.position.x += STEP_MOVE_KEY_X;
-	}
+	};
 
 	//Метод движения вниз возвращает 3 значения true (Фигура достигла какого то препятствия), false (Игра окончена, стакан заполнен) и другое (Перемещаем фигуру на заданное расстояние)
 	moveDown(stepY) {

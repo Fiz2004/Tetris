@@ -22,39 +22,33 @@ export class Display {
 	};
 	load() {
 		// Переменные для отслеживания загрузки изображений
-		this.numberImg = 1 + Figure.numberCell + 1;
-		this.currentImg = 0;
+		const numberImg = 1 + Figure.numberCell + 1;
+		let currentImg = 0;
+
+		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
 
 		//Формируем картинки для фигур
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
-			this.imgKv[i].onload = this.loadImage.call(this);
 		}
-		//загружаем картинки фигур
-		for (let i = 0; i < this.imgKv.length; i++)
-			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 
+		//загружаем картинки фигур
+		for (let i = 0; i < this.imgKv.length; i++) {
+			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+			this.imgKv[i].onload = loadImage;
+		}
 		this.imgFon = new Image();
-		this.imgFon.onload = this.loadImage.call(this);
 		//загружаем картинки фона
 		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+		this.imgFon.onload = loadImage;
 
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
-		this.imgBeetle.onload = this.loadImage.call(this);
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+		this.imgBeetle.onload = loadImage;
 	}
-
-	loadImage() {
-		this.currentImg++;
-		if (this.currentImg === this.numberImg) {
-			this.onload();
-		}
-	}
-	onload() { };
-
-
+	
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (let cell of nextFigure.cells) {
@@ -89,7 +83,7 @@ export class Display {
 			}
 	}
 
-	draw(grid, currentFigure, beetle, scores, nextFigure) {
+	render(grid, currentFigure, beetle, scores, nextFigure) {
 		let offsetX, offsetY;
 		//Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid)
@@ -101,11 +95,12 @@ export class Display {
 				(currentFigure.cells[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cells[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
-		//Рисуем бегующего жука
+		//Рисуем бегающего жука
 		[offsetX, offsetY] = beetle.getSprite();
 		this.ctx.drawImage(this.imgBeetle,
 			offsetX * SIZE_TILES, offsetY * SIZE_TILES, SIZE_TILES, SIZE_TILES,
 			beetle.position.x, beetle.position.y, SIZE_TILES, SIZE_TILES);
+
 
 		//Обновляем Очки
 		this.txtScores.innerHTML = String(scores).padStart(6, "0");
