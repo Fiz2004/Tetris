@@ -76,30 +76,27 @@ class Model {
 	};
 
 	ifNotBreath() {
-		if (this.elementTimeBreath) {
-			// Выводим секунды дыхания
-			this.beetle.timeBreath -= TIME_UPDATE_CONTROLLER;
-		}
-		else {
+		let sec = TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000);
+		if (!this.elementTimeBreath) {
 			let element = document.createElement("h1");
 			element.id = "Breath";
 			document.querySelector("#infoID").append(element);;
 			this.elementTimeBreath = document.querySelector("#Breath");
 			this.beetle.breath = true;
 		}
-		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.ceil(this.beetle.timeBreath)}`;
+		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${sec}`;
 	}
 	ifBreath() {
 		if (this.elementTimeBreath) {
 			this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
 			this.elementTimeBreath = null;
 		}
-		this.beetle.timeBreath = TIMES_BREATH_LOSE;
+		this.beetle.timeBreath = Date.now();
 		this.beetle.breath = false;
 	}
 
 	// Обновление элементов связанных с дыханием
-	renderBreath(deltaTime) {
+	renderBreath() {
 		// Проверяем есть ли воздух у жука
 		if (!(this.beetle.isBreath()))
 			this.ifNotBreath();
@@ -107,8 +104,9 @@ class Model {
 			this.ifBreath();
 
 		// Закрашиваем элемент связанный с дыханием
-		let int = Math.floor(this.beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
-		this.elementDivBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
+		let sec = Math.ceil((Date.now() - this.beetle.timeBreath) / 1000);
+		let int = Math.floor(sec) * 255 / TIMES_BREATH_LOSE;
+		this.elementDivBreath.style.backgroundColor = `rgb(255, ${255 - int}, ${255 - int})`;
 	};
 
 	//Фиксация фигуры
@@ -127,7 +125,8 @@ class Model {
 
 	lose() {
 		localStorage.setItem('Record', model.scores);
-		this.clickNewgame();
+		model = new Model();
+		this.newGame();
 	};
 
 	update(deltaTime) {
@@ -162,7 +161,7 @@ class Model {
 
 			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
 			if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
-				this.beetle.timeBreath <= 0) {
+				TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000) <= 0) {
 				this.lose();
 				return;
 			}
@@ -179,17 +178,16 @@ class Model {
 	}
 	clickNewgame = () => {
 		model = new Model();
-		model.game()
 		document.getElementById("pause").textContent = "Пауза";
 	}
 	clickPause = () => {
 		if (document.getElementById("pause").textContent == "Пауза") {
 			document.getElementById("pause").textContent = "Продолжить";
-			this.pause = true;
+			model.pause = true;
 		}
 		else {
 			document.getElementById("pause").textContent = "Пауза";
-			this.pause = false;
+			model.pause = false;
 		}
 	}
 	game = () => {
@@ -201,7 +199,7 @@ class Model {
 
 		this.lastTime = now;
 
-		requestAnimationFrame(this.game);
+		requestAnimationFrame(model.game);
 	}
 };
 
@@ -211,6 +209,7 @@ window.onload = function () {
 	display.onload = () => {
 		model = new Model();
 		model.newGame();
+		model.game()
 	}
 	display.load();
 }

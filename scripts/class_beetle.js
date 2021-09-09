@@ -51,7 +51,7 @@ export class Beetle {
 		this.frames = NUMBER_FRAMES_BEEATLE;
 
 		// Задаем время для дыхания после истечения которого будет проигрыш
-		this.timeBreath = TIMES_BREATH_LOSE;
+		this.timeBreath = Date.now();
 		// С самого начала жук дышит
 		this.breath = false;
 
@@ -179,45 +179,45 @@ export class Beetle {
 	};
 	//Метод движения жука
 	beetleAnimation() {
-			// Если происходит поворот то не двигаемся
-			if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
-				if (this.move.y === 0)
-					this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
-				this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
-			}
+		// Если происходит поворот то не двигаемся
+		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
+			if (this.move.y === 0)
+				this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+			this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+		}
 
-			if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
-				&& this.framesAnimation !== this.frames - 1) {
-				let offsetX = this.move.x;
-				let offsetY = this.move.y;
-				let direction;
-				if (offsetX === -1 && offsetY === 0) direction = "R";
-				if (offsetX === 1 && offsetY === 0) direction = "L";
-				if (offsetX === 0 && offsetY === 1) direction = "U";
-				if (offsetX === -1) offsetX = 0;
+		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
+			&& this.framesAnimation !== this.frames - 1) {
+			let offsetX = this.move.x;
+			let offsetY = this.move.y;
+			let direction;
+			if (offsetX === -1 && offsetY === 0) direction = "R";
+			if (offsetX === 1 && offsetY === 0) direction = "L";
+			if (offsetX === 0 && offsetY === 1) direction = "U";
+			if (offsetX === -1) offsetX = 0;
+			let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
+				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+		}
+
+		//Определяем текущий кадр
+		if (this.framesAnimation === this.frames - 1) {
+			if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
+				this.eat = 0;
+				//Вызываем функцию обработчика того что сьели
+				this.handleEat();
 				let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-				this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
-					= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
+				this.grid.space[tile.y][tile.x].element = 0;
 			}
+			this.getTrafficBeetle();
+			this.framesAnimation = 0;
+		}
+		else {
+			this.framesAnimation = (this.framesAnimation + 1);
+		}
 
-			//Определяем текущий кадр
-			if (this.framesAnimation === this.frames - 1) {
-				if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
-					this.eat = 0;
-					//Вызываем функцию обработчика того что сьели
-					this.handleEat();
-					let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-					this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
-					this.grid.space[tile.y][tile.x].element = 0;
-				}
-				this.getTrafficBeetle();
-				this.framesAnimation = 0;
-			}
-			else {
-				this.framesAnimation = (this.framesAnimation + 1);
-			}
-
-			//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
+		//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
 	};
 
 	// Проверяем есть ли доступ к верху стакана
