@@ -21,8 +21,10 @@ header,footer{
 	
 	text-align:center;
 	border-radius: 2vmin;
-	
+	box-shadow: 0 0.3vmin 0 black ;
 }
+
+
 
 header{
 	color:#FFFFFF;
@@ -64,8 +66,7 @@ line-height:  4vmin;
 .scoresInfo{
   background:#5b26af;
 	border-radius: 2vmin 0vmin 0vmin 2vmin;
-  color:#FFFFFF; 
-	
+  color:#FFFFFF; 	
 }
 
 .canvas{
@@ -80,9 +81,15 @@ line-height:  4vmin;
 }
 
 .button{
-	width:30vmin;
-	height:7vmin;
+	width:25vmin;
+	height:6vmin;
 	font-size:3vmin;
+	border-radius: 3vmin;
+	display: inline-block;
+	margin-bottom: 1vmin;
+	color:white;
+	background-color: black;
+	box-shadow: 0 0.3vmin 0 black ;
 }
 
 .info{
@@ -101,6 +108,8 @@ footer{
   background-color: black;
 	height: 12.8vmin;
 	width:12.8vmin ;
+	border-radius: 3vmin;
+	box-shadow: 0.3vmin 0.3vmin rgb(75, 69, 69) ;
 }
 
 @media screen and (max-width: 390px){

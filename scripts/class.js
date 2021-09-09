@@ -142,9 +142,9 @@ export class CurrentFigure extends Figure {
 	//Метод движения влево
 	moveLeft(deltaTime) {
 		if (this.deltaTime > TIME_ROTATE) {
-			if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X * deltaTime, this.position.y))
-				this.position.x -= STEP_MOVE_KEY_X;
-			this.deltaTime = 0;
+			if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X , this.position.y)) 
+					this.position.x -= STEP_MOVE_KEY_X ;
+			 this.deltaTime = 0;
 		}
 		this.deltaTime += deltaTime
 	}
@@ -153,7 +153,7 @@ export class CurrentFigure extends Figure {
 	//Метод движения вправо
 	moveRight(deltaTime) {
 		if (this.deltaTime > TIME_ROTATE) {
-			if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X * deltaTime, this.position.y))
+			if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X , this.position.y))
 				this.position.x += STEP_MOVE_KEY_X;
 			this.deltaTime = 0;
 		}

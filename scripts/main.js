@@ -28,7 +28,7 @@ class Model {
 	// Следующая фигура
 	nextFigure;
 	// Объект жука, с его координатами, направлением движения и кадром движения
-	beetle = [];
+	beetle;
 	// Элемент который меняет поведение при дыхании
 	elementDivBreath;
 	// Элемент который показывает секунды дыхания
@@ -42,8 +42,7 @@ class Model {
 		this.formCurrentFigure();
 
 		// Создаем жука
-		for (let i = 0; i < 5; i++)
-			this.beetle[i] = new Beetle(this.grid);
+		this.beetle = new Beetle(this.grid);
 
 		// Инициализируем очки
 		this.scores = 0;
@@ -53,9 +52,7 @@ class Model {
 
 		// Задаем функцию для жука что при еде увеличить количество очков
 		// !!!Переписать чтобы обновлялось внутри жука
-		this.beetle.forEach((beetle) =>
-			beetle.handleEat = function () { model.scores += 50 }
-		)
+		this.beetle.handleEat = function () { model.scores += 50 }
 
 		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
 		this.elementTimeBreath = document.querySelector("#Breath");
@@ -75,7 +72,7 @@ class Model {
 		//display.drawNextFigure(this.nextFigure);
 	};
 
-	ifNotBreath(beetle) {
+	ifNotBreath() {
 		if (this.elementTimeBreath) {
 			// Выводим секунды дыхания
 			this.beetle.timeBreath -= UPDATE_TIME / 1000;
@@ -85,29 +82,29 @@ class Model {
 			element.id = "Breath";
 			document.querySelector("#infoID").append(element);;
 			this.elementTimeBreath = document.querySelector("#Breath");
-			beetle.breath = true;
+			this.beetle.breath = true;
 		}
 		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${Math.ceil(this.beetle.timeBreath)}`;
 	}
-	ifBreath(beetle) {
+	ifBreath() {
 		if (this.elementTimeBreath) {
 			this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
 			this.elementTimeBreath = null;
 		}
-		beetle.timeBreath = TIMES_BREATH_LOSE;
-		beetle.breath = false;
+		this.beetle.timeBreath = TIMES_BREATH_LOSE;
+		this.beetle.breath = false;
 	}
 
 	// Обновление элементов связанных с дыханием
-	renderBreath(deltaTime, beetle) {
+	renderBreath(deltaTime) {
 		// Проверяем есть ли воздух у жука
-		if (!(beetle.isBreath()))
-			this.ifNotBreath(beetle);
+		if (!(this.beetle.isBreath()))
+			this.ifNotBreath();
 		else
-			this.ifBreath(beetle);
+			this.ifBreath();
 
 		// Закрашиваем элемент связанный с дыханием
-		let int = Math.floor(beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
+		let int = Math.floor(this.beetle.timeBreath) * 255 / TIMES_BREATH_LOSE;
 		this.elementDivBreath.style.backgroundColor = `rgb(255, ${int}, ${int})`;
 	};
 
@@ -120,11 +117,9 @@ class Model {
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
 
-		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения
-		this.beetle.forEach((beetle) => {
-			beetle.deleteRow = 1;
-			this.renderBreath(0, beetle);
-		})
+		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
+		this.beetle.deleteRow = 1;
+		this.renderBreath(0, this.beetle);
 	};
 	lose() {
 		localStorage.setItem('Record', model.scores);
@@ -145,31 +140,27 @@ class Model {
 			this.formCurrentFigure();
 		} else {
 			// Фигура достигла препятствия
-			this.beetle.forEach((beetle) => {
-				let tile = new Point(Math.ceil(beetle.position.x / SIZE_TILES), Math.ceil(beetle.position.y / SIZE_TILES));
-				for (let elem of this.currentFigure.getPositionTile())
-					if ((elem.x == tile.x && elem.y == tile.y)
-						|| (this.grid.space[tile.y][tile.x].element != 0
-							&& beetle.eat == 0)) {
-						this.lose();
-						return;
-					}
-			})
+			let tile = new Point(Math.ceil(this.beetle.position.x / SIZE_TILES), Math.ceil(this.beetle.position.y / SIZE_TILES));
+			for (let elem of this.currentFigure.getPositionTile())
+				if ((elem.x == tile.x && elem.y == tile.y)
+					|| (this.grid.space[tile.y][tile.x].element != 0
+						&& this.beetle.eat == 0)) {
+					this.lose();
+					return;
+				}
 		}
 		// Проверяем возможность дыхания
 
-		this.beetle.forEach((beetle) => {
-			this.renderBreath(deltaTime, beetle);
+		this.renderBreath(deltaTime, this.beetle);
 
-			let tile = new Point(Math.floor(beetle.position.x / SIZE_TILES), Math.floor(beetle.position.y / SIZE_TILES));
-			if ((this.grid.space[tile.y][tile.x].element != 0 && beetle.eat == 0) ||
-				beetle.timeBreath <= 0) {
-				this.lose();
-				return;
-			}
-			// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
-			beetle.beetleAnimation(deltaTime);
-		})
+		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
+			this.beetle.timeBreath <= 0) {
+			this.lose();
+			return;
+		}
+		// !Добавить проверку дыхания вдруг жук сломал клетку и освободил
+		this.beetle.beetleAnimation(deltaTime);
 	}
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });

@@ -1,9 +1,11 @@
 import { Point } from './class.js';
 import {
 	SIZE_TILES,
-	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE,
+	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE_0,
+	NUMBER_FRAMES_BEEATLE_ROTATE,
 	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT,
-	NUMBER_FRAMES_BEEATLE_MOVE, TIMES_BREATH_LOSE
+	NUMBER_FRAMES_BEEATLE_MOVE, TIMES_BREATH_LOSE,
+	TIME_ROTATE
 } from './const.js';
 
 // Класс для жука
@@ -57,6 +59,8 @@ export class Beetle {
 
 		this.getTrafficBeetle()
 		this.framesAnimation = 0;
+
+		this.deltaTime = 0;
 	};
 	getPositionTile() {
 
@@ -101,14 +105,14 @@ export class Beetle {
 			return [{ x: 0, y: 0 }];
 		};
 
-		function isRotate(direction, move) {
+		function getGrameRotate(direction, move) {
 			// !Добавить если с 0 поворачиваемся на лево или направо, а также если в 0
 			if (direction.x === move.x && direction.y === move.y)
 				return NUMBER_FRAMES_BEEATLE;
 			else if (direction.x === 0 && direction.y === 0)
-				return NUMBER_FRAMES_BEEATLE_ROTATE;
+				return NUMBER_FRAMES_BEEATLE_ROTATE_0;
 			else
-				return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
+				return NUMBER_FRAMES_BEEATLE_ROTATE;
 		};
 
 		const DIRECTION = {};
@@ -169,52 +173,56 @@ export class Beetle {
 		else {
 			this.move = this.moves[0];
 		}
-		this.frames = isRotate({ ...startMove }, this.move)
+		this.frames = getGrameRotate({ ...startMove }, this.move)
 		this.direction = { ...startMove };
 
 		//console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${JSON.stringify(this.move)}`);
 	};
 	//Метод движения жука
 	beetleAnimation(deltaTime) {
-		// Если происходит поворот то не двигаемся
-		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
-			if (this.move.y === 0)
-				this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE) ;
-			this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE) ;
-		}
-
-		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
-			&& this.framesAnimation !== this.frames - 1) {
-			let offsetX = this.move.x;
-			let offsetY = this.move.y;
-			let direction;
-			if (offsetX === -1 && offsetY === 0) direction = "R";
-			if (offsetX === 1 && offsetY === 0) direction = "L";
-			if (offsetX === 0 && offsetY === 1) direction = "U";
-			if (offsetX === -1) offsetX = 0;
-			let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
-				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
-		}
-
-		//Определяем текущий кадр
-		if (this.framesAnimation === this.frames - 1) {
-			if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
-				this.eat = 0;
-				//Вызываем функцию обработчика того что сьели
-				this.handleEat();
-				let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
-				this.grid.space[tile.y][tile.x].element = 0;
+		if (this.deltaTime > TIME_ROTATE) {
+			// Если происходит поворот то не двигаемся
+			if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
+				if (this.move.y === 0)
+					this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+				this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
 			}
-			this.getTrafficBeetle();
-			this.framesAnimation = 0;
-		}
-		else {
-			this.framesAnimation = (this.framesAnimation + 1);
-		}
 
-		//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
+			if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
+				&& this.framesAnimation !== this.frames - 1) {
+				let offsetX = this.move.x;
+				let offsetY = this.move.y;
+				let direction;
+				if (offsetX === -1 && offsetY === 0) direction = "R";
+				if (offsetX === 1 && offsetY === 0) direction = "L";
+				if (offsetX === 0 && offsetY === 1) direction = "U";
+				if (offsetX === -1) offsetX = 0;
+				let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+				this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
+					= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+			}
+
+			//Определяем текущий кадр
+			if (this.framesAnimation === this.frames - 1) {
+				if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
+					this.eat = 0;
+					//Вызываем функцию обработчика того что сьели
+					this.handleEat();
+					let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+					this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
+					this.grid.space[tile.y][tile.x].element = 0;
+				}
+				this.getTrafficBeetle();
+				this.framesAnimation = 0;
+			}
+			else {
+				this.framesAnimation = (this.framesAnimation + 1);
+			}
+
+			//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
+			this.deltaTime = 0;
+		}
+		this.deltaTime += deltaTime
 	};
 
 	// Проверяем есть ли доступ к верху стакана
@@ -346,6 +354,8 @@ export class Beetle {
 	}
 
 	getSpriteNoEatingNow(directionMovement) {
+
+		console.log(`directionMovement=${directionMovement} this.framesAnimation=${this.framesAnimation}`)
 		// Поворот Лево->Лево
 		if (directionMovement === "-10-10")
 			return this.framesAnimation === 0

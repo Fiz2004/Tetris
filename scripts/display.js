@@ -94,14 +94,12 @@ export class Display {
 				(currentFigure.cells[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cells[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
-		//Рисуем бегующего жука
-		beetle.forEach((beetle) => {
-			[offsetX, offsetY] = beetle.getSprite();
-			this.ctx.drawImage(this.imgBeetle,
-				offsetX * SIZE_TILES, offsetY * SIZE_TILES, SIZE_TILES, SIZE_TILES,
-				beetle.position.x, beetle.position.y, SIZE_TILES, SIZE_TILES);
-		})
-		
+		//Рисуем бегающего жука
+		[offsetX, offsetY] = beetle.getSprite();
+		this.ctx.drawImage(this.imgBeetle,
+			offsetX * SIZE_TILES, offsetY * SIZE_TILES, SIZE_TILES, SIZE_TILES,
+			beetle.position.x, beetle.position.y, SIZE_TILES, SIZE_TILES);
+
 
 		//Обновляем Очки
 		this.txtScores.innerHTML = String(scores).padStart(6, "0");
