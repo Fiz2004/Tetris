@@ -20,12 +20,17 @@ export class Display {
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
 		this.txtScores = document.querySelector('#scores');
 <<<<<<< HEAD
+<<<<<<< HEAD
 	};
 	load() {
 		// Переменные для отслеживания загрузки изображений
 		const numberImg = 1 + Figure.numberCell + 1;
 		let currentImg = 0;
 		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
+=======
+
+		const numberImg = 1+this.imgKv.length  + 1;
+>>>>>>> parent of 3e101cc (small Fix)
 =======
 
 		const numberImg = 1+this.imgKv.length  + 1;
@@ -37,11 +42,14 @@ export class Display {
 			this.imgKv[i] = new Image();
 		}
 <<<<<<< HEAD
+<<<<<<< HEAD
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 			this.imgKv[i].onload = loadImage;
 		}
+=======
+>>>>>>> parent of 3e101cc (small Fix)
 =======
 >>>>>>> parent of 3e101cc (small Fix)
 
@@ -54,13 +62,21 @@ export class Display {
 		for (let i = 0; i < this.imgKv.length; i++)
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 
+		//загружаем картинки фигур
+		for (let i = 0; i < this.imgKv.length; i++)
+			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
 <<<<<<< HEAD
+<<<<<<< HEAD
 		this.imgBeetle.onload = loadImage;
 	}
 
+=======
+	};
+>>>>>>> parent of 3e101cc (small Fix)
 =======
 	};
 >>>>>>> parent of 3e101cc (small Fix)

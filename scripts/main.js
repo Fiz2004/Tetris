@@ -165,6 +165,7 @@ class Model {
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 <<<<<<< HEAD
+<<<<<<< HEAD
 		document.getElementById("new_game").onclick = this.clickNewGame;
 		document.getElementById("pause").onclick = this.clickPause;
 	}
@@ -182,12 +183,17 @@ class Model {
 			model.isPause = false;
 		}
 =======
+=======
+>>>>>>> parent of 3e101cc (small Fix)
 		//this = new Model();
 		model = new Model();
 		display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
 		clearInterval(timer);
 		timer = setInterval(() => model.tick(), UPDATE_TIME);
 		document.getElementById("pause").innerHTML = "Пауза";
+<<<<<<< HEAD
+>>>>>>> parent of 3e101cc (small Fix)
+=======
 >>>>>>> parent of 3e101cc (small Fix)
 	}
 };
@@ -195,6 +201,7 @@ class Model {
 
 window.onload = function () {
 	display = new Display();
+<<<<<<< HEAD
 <<<<<<< HEAD
 	display.onload = () => {
 		model = new Model();
@@ -216,6 +223,10 @@ function main() {
 	lastTime = now;
 
 	window.requestAnimationFrame(main);
+=======
+	model = new Model();
+	model.newGame();
+>>>>>>> parent of 3e101cc (small Fix)
 =======
 	model = new Model();
 	model.newGame();
