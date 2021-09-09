@@ -22,38 +22,33 @@ export class Display {
 	};
 	load() {
 		// Переменные для отслеживания загрузки изображений
-		this.numberImg = 1 + Figure.numberCell + 1;
-		this.currentImg = 0;
+		const numberImg = 1 + Figure.numberCell + 1;
+		let currentImg = 0;
+
+		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
 
 		//Формируем картинки для фигур
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
-			this.imgKv[i].onload = this.loadImage.call(this);
+
 		}
 		//загружаем картинки фигур
-		for (let i = 0; i < this.imgKv.length; i++)
+		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+			this.imgKv[i].onload = loadImage;
+		}
 
 		this.imgFon = new Image();
-		this.imgFon.onload = this.loadImage.call(this);
 		//загружаем картинки фона
 		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+		this.imgFon.onload = loadImage;
 
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
-		this.imgBeetle.onload = this.loadImage.call(this);
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+		this.imgBeetle.onload = loadImage;
 	}
-
-	loadImage() {
-		this.currentImg++;
-		if (this.currentImg === this.numberImg) {
-			this.onload();
-		}
-	}
-	onload() { };
-
 
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
@@ -89,7 +84,7 @@ export class Display {
 			}
 	}
 
-	draw(grid, currentFigure, beetle, scores, nextFigure) {
+	render(grid, currentFigure, beetle, scores, nextFigure) {
 		let offsetX, offsetY;
 		//Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid)

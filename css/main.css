@@ -80,9 +80,15 @@ line-height:  4vmin;
 }
 
 .button{
-	width:30vmin;
-	height:7vmin;
-	font-size:3vmin;
+	width:22vmin;
+	height:4.5vmin;
+	font-size:2.5vmin;
+	border-radius: 3vmin;
+	display: inline-block;
+	margin-bottom: 1vmin;
+	color:white;
+	background-color: black;
+	box-shadow: 0 0.3vmin 0 black ;
 }
 
 .info{
