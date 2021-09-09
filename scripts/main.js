@@ -202,26 +202,6 @@ class Model {
 		this.lastTime = now;
 
 		requestAnimationFrame(this.game);
-		this.beetle.beetleAnimation(deltaTime);
-	}
-	newGame() {
-		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
-		document.getElementById("new_game").onclick = this.clickNewGame;
-		document.getElementById("pause").onclick = this.clickPause;
-	}
-	clickNewGame = () => {
-		model = new Model();
-		document.getElementById("pause").innerHTML = "Пауза";
-	}
-	clickPause = () => {
-		if (document.getElementById("pause").innerHTML == "Пауза") {
-			document.getElementById("pause").innerHTML = "Продолжить";
-			model.isPause = true;
-		}
-		else {
-			document.getElementById("pause").innerHTML = "Пауза";
-			model.isPause = false;
-		}
 	}
 };
 
