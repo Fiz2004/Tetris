@@ -18,14 +18,11 @@ export class Controller {
 		document.addEventListener("touchmove", this.touchMove);
 		document.addEventListener("touchend", this.touchEnd);
 		document.addEventListener("touchcancel", this.touchEnd);
-		document.addEventListener("contextmenu", this.contextMenu);
-
+		document.getElementById("new_game").onclick = this.newgame;
+		document.getElementById("pause").onclick = this.pause;
 	};
 	refresh() {
 		this.pressed = null;
-	}
-	contextMenu = event => {
-		event.preventDefault();
 	}
 	handler = event => {
 		if (this.codes.hasOwnProperty(event.keyCode)) {
@@ -151,5 +148,22 @@ export class Controller {
 		this.touchStart = null;
 		this.touchPosition = null;
 	};
+	newgame() {
+		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+		display.draw(model.grid, model.currentFigure);
+		clearInterval(timer);
+		timer = setInterval(() => model.tick(), UPDATE_TIME);
+		document.getElementById("pause").innerHTML = "Пауза";
+	};
 
+	pause() {
+		if (document.getElementById("pause").innerHTML == "Пауза") {
+			document.getElementById("pause").innerHTML = "Продолжить";
+			clearInterval(timer);
+		}
+		else {
+			document.getElementById("pause").innerHTML = "Пауза";
+			timer = setInterval(() => model.tick(), UPDATE_TIME);
+		}
+	}
 };

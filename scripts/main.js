@@ -69,7 +69,7 @@ class Model {
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе display.draw
-		//display.drawNextFigure(this.nextFigure);
+		//display.drawNextFigure();
 	};
 
 	ifNotBreath() {
@@ -164,6 +164,7 @@ class Model {
 	}
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+<<<<<<< HEAD
 		document.getElementById("new_game").onclick = this.clickNewGame;
 		document.getElementById("pause").onclick = this.clickPause;
 	}
@@ -180,12 +181,21 @@ class Model {
 			document.getElementById("pause").innerHTML = "Пауза";
 			model.isPause = false;
 		}
+=======
+		//this = new Model();
+		model = new Model();
+		display.draw(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
+		clearInterval(timer);
+		timer = setInterval(() => model.tick(), UPDATE_TIME);
+		document.getElementById("pause").innerHTML = "Пауза";
+>>>>>>> parent of 3e101cc (small Fix)
 	}
 };
 
 
 window.onload = function () {
 	display = new Display();
+<<<<<<< HEAD
 	display.onload = () => {
 		model = new Model();
 
@@ -206,4 +216,8 @@ function main() {
 	lastTime = now;
 
 	window.requestAnimationFrame(main);
+=======
+	model = new Model();
+	model.newGame();
+>>>>>>> parent of 3e101cc (small Fix)
 }

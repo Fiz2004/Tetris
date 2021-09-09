@@ -20,8 +20,13 @@ header,footer{
 	background-color: #284b63;
 	
 	text-align:center;
+<<<<<<< HEAD
 	border-radius: 2vmin;
 	box-shadow: 0 0.3vmin 0 black ;
+=======
+	border-radius: 15px;
+	
+>>>>>>> parent of 3e101cc (small Fix)
 }
 
 
@@ -43,7 +48,7 @@ line-height:  4vmin;
 }
 
 .row{
-	border-spacing: 0vmin;
+	border-spacing: 0px;
 	display: table-row;
 }
 
@@ -65,8 +70,14 @@ line-height:  4vmin;
 
 .scoresInfo{
   background:#5b26af;
+<<<<<<< HEAD
 	border-radius: 2vmin 0vmin 0vmin 2vmin;
   color:#FFFFFF; 	
+=======
+	border-radius: 15px 0px 0px 15px;
+  color:#FFFFFF; 
+	
+>>>>>>> parent of 3e101cc (small Fix)
 }
 
 .canvas{
@@ -80,6 +91,7 @@ line-height:  4vmin;
 	width:41vmin ;
 }
 
+<<<<<<< HEAD
 .button{
 	width:25vmin;
 	height:6vmin;
@@ -92,10 +104,12 @@ line-height:  4vmin;
 	box-shadow: 0 0.3vmin 0 black ;
 }
 
+=======
+>>>>>>> parent of 3e101cc (small Fix)
 .info{
 	background:#ffffff;
 	color:#000000;
-	border-radius: 0vmin 2vmin 2vmin 0vmin;
+	border-radius: 0px 15px 15px 0px;
 }
 
 footer{

@@ -19,35 +19,51 @@ export class Display {
 		this.canvasNextFigure = document.querySelector('#canvasNextFigureId');
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
 		this.txtScores = document.querySelector('#scores');
+<<<<<<< HEAD
 	};
 	load() {
 		// Переменные для отслеживания загрузки изображений
 		const numberImg = 1 + Figure.numberCell + 1;
 		let currentImg = 0;
 		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
+=======
+
+		const numberImg = 1+this.imgKv.length  + 1;
+>>>>>>> parent of 3e101cc (small Fix)
 
 		//Формируем картинки для фигур
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
 		}
+<<<<<<< HEAD
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 			this.imgKv[i].onload = loadImage;
 		}
+=======
+>>>>>>> parent of 3e101cc (small Fix)
 
 		this.imgFon = new Image();
 		//загружаем картинки фона
 		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
 		this.imgFon.onload = loadImage;
 
+		//загружаем картинки фигур
+		for (let i = 0; i < this.imgKv.length; i++)
+			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+<<<<<<< HEAD
 		this.imgBeetle.onload = loadImage;
 	}
 
+=======
+	};
+>>>>>>> parent of 3e101cc (small Fix)
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (let cell of nextFigure.cells) {
