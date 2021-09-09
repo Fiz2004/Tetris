@@ -14,8 +14,8 @@ let display;
 let model;
 // Экземпляр объекта Controller, для взаимодействия
 let controller;
-// Таймер для движения игры
-let timer;
+// Хранит время предыдущего обновления
+let lastTime;
 
 //Класс в котором хранится вся модель игры
 class Model {
@@ -51,7 +51,8 @@ class Model {
 		document.querySelector('#record').textContent = String(localStorage.getItem('Record') || 0).padStart(6, "0");
 
 		// Задаем функцию для жука что при еде увеличить количество очков
-		this.beetle.handleEat = function () { model.scores += 50 };
+		// !!!Переписать чтобы обновлялось внутри жука
+		this.beetle.handleEat = function () { model.scores += 50 }
 
 		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
 		this.elementTimeBreath = document.querySelector("#Breath");
@@ -72,7 +73,7 @@ class Model {
 		this.nextFigure = new Figure();
 
 		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе display.draw
-		//display.drawNextFigure(this.nextFigure);
+		//display.drawNextFigure();
 	};
 
 	ifNotBreath() {
@@ -99,9 +100,9 @@ class Model {
 	}
 
 	// Обновление элементов связанных с дыханием
-	renderBreath() {
+	renderBreath(deltaTime) {
 		// Проверяем есть ли воздух у жука
-		if (!this.beetle.isBreath())
+		if (!(this.beetle.isBreath()))
 			this.ifNotBreath();
 		else
 			this.ifBreath();
@@ -120,13 +121,13 @@ class Model {
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
 
-		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения
+		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
 		this.beetle.deleteRow = 1;
-		this.renderBreath();
+		this.renderBreath(0, this.beetle);
 	};
 	lose() {
 		localStorage.setItem('Record', model.scores);
-		model.newGame();
+		model.clickNewGame();
 	};
 
 	update(deltaTime) {
@@ -201,6 +202,26 @@ class Model {
 		this.lastTime = now;
 
 		requestAnimationFrame(this.game);
+		this.beetle.beetleAnimation(deltaTime);
+	}
+	newGame() {
+		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+		document.getElementById("new_game").onclick = this.clickNewGame;
+		document.getElementById("pause").onclick = this.clickPause;
+	}
+	clickNewGame = () => {
+		model = new Model();
+		document.getElementById("pause").innerHTML = "Пауза";
+	}
+	clickPause = () => {
+		if (document.getElementById("pause").innerHTML == "Пауза") {
+			document.getElementById("pause").innerHTML = "Продолжить";
+			model.isPause = true;
+		}
+		else {
+			document.getElementById("pause").innerHTML = "Пауза";
+			model.isPause = false;
+		}
 	}
 };
 

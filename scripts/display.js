@@ -31,14 +31,13 @@ export class Display {
 		this.imgKv = new Array(Figure.numberCell);
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
-
 		}
+
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
 			this.imgKv[i].onload = loadImage;
 		}
-
 		this.imgFon = new Image();
 		//загружаем картинки фона
 		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
@@ -49,7 +48,7 @@ export class Display {
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
 		this.imgBeetle.onload = loadImage;
 	}
-
+	
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (let cell of nextFigure.cells) {
@@ -96,11 +95,12 @@ export class Display {
 				(currentFigure.cells[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cells[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
-		//Рисуем бегующего жука
+		//Рисуем бегающего жука
 		[offsetX, offsetY] = beetle.getSprite();
 		this.ctx.drawImage(this.imgBeetle,
 			offsetX * SIZE_TILES, offsetY * SIZE_TILES, SIZE_TILES, SIZE_TILES,
 			beetle.position.x, beetle.position.y, SIZE_TILES, SIZE_TILES);
+
 
 		//Обновляем Очки
 		this.txtScores.innerHTML = String(scores).padStart(6, "0");

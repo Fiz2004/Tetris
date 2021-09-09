@@ -9,7 +9,7 @@ export const UPDATE_TIME = 1000 / 60;
 // Шаг движения блоков по умолчанию
 export const STEP_MOVE_AUTO = 0.3;
 // Шаг движения блоков по горизонтали
-export const STEP_MOVE_KEY_X = 30;
+export const STEP_MOVE_KEY_X = SIZE_TILES;
 // Шаг движения блоков по вертикали
 export const STEP_MOVE_KEY_Y = 10;
 // Число кадров движения
@@ -18,6 +18,7 @@ export const NUMBER_FRAMES_BEEATLE = 10;
 export const NUMBER_FRAMES_BEEATLE_MOVE = 5;
 // Число кадров движения при повороте
 export const NUMBER_FRAMES_BEEATLE_ROTATE = 1;
+export const NUMBER_FRAMES_BEEATLE_ROTATE_0 = 5;
 // Количество Кадров при повреждении фигуры
 export const NUMBER_FRAMES_ELEMENTS = 4;
 // Время без дыхания для проигрыша
