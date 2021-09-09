@@ -6,6 +6,8 @@ export const NUMBER_IMAGES_BACKGROUND = 16;
 export const NUMBER_IMAGES_FIGURE = 4;
 // Время в милисекундах одного движения
 export const UPDATE_TIME = 1000 / 60;
+// Время в секундах, как часто обновляем контроллер
+export const TIME_UPDATE_CONTROLLER = 0.08;
 // Шаг движения блоков по умолчанию
 export const STEP_MOVE_AUTO = 0.3;
 // Шаг движения блоков по горизонтали
@@ -26,7 +28,7 @@ export const TIMES_BREATH_LOSE = 60;
 // Вероятность того что жук будет есть блок
 export const PROBABILITY_EAT = 20;
 // Директория где храняться картинки
-export const DIRECTORY_IMG = 'Resurs/v3/';
+export const DIRECTORY_IMG = 'Resurs/v1/';
 // Обозначение фигур, задаются координаты каждой ячейки
 export const FIGURE = [
 	[[0, 1], [1, 1], [2, 1], [3, 1]],

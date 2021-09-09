@@ -4,9 +4,10 @@ import { Beetle } from './class_beetle.js';
 import { Controller } from './controller.js';
 import { Display } from './display.js';
 import {
-	SIZE_TILES, UPDATE_TIME, STEP_MOVE_AUTO,
+	SIZE_TILES, STEP_MOVE_AUTO,
 	STEP_MOVE_KEY_Y,
-	TIMES_BREATH_LOSE
+	TIMES_BREATH_LOSE,
+	TIME_UPDATE_CONTROLLER,
 } from './const.js';
 // Экземпляр объекта Display, для вывода на экран
 let display;
@@ -14,8 +15,6 @@ let display;
 let model;
 // Экземпляр объекта Controller, для взаимодействия
 let controller;
-// Хранит время предыдущего обновления
-let lastTime;
 
 //Класс в котором хранится вся модель игры
 class Model {
@@ -79,7 +78,7 @@ class Model {
 	ifNotBreath() {
 		if (this.elementTimeBreath) {
 			// Выводим секунды дыхания
-			this.beetle.timeBreath -= 80 / 1000;
+			this.beetle.timeBreath -= TIME_UPDATE_CONTROLLER;
 		}
 		else {
 			let element = document.createElement("h1");
@@ -125,15 +124,16 @@ class Model {
 		this.beetle.deleteRow = 1;
 		this.renderBreath(0, this.beetle);
 	};
+
 	lose() {
 		localStorage.setItem('Record', model.scores);
-		model.clickNewGame();
+		this.clickNewgame();
 	};
 
 	update(deltaTime) {
 		this.deltaTime += deltaTime;
 
-		if (this.deltaTime > 0.08) {
+		if (this.deltaTime > TIME_UPDATE_CONTROLLER) {
 			// Проверяем нажатие клавиатуры и запускаем события
 			if (controller.pressed.left) this.currentFigure.moveLeft();
 			if (controller.pressed.right) this.currentFigure.moveRight();
@@ -166,7 +166,7 @@ class Model {
 				this.lose();
 				return;
 			}
-			
+
 			this.beetle.beetleAnimation();
 			this.deltaTime = 0;
 		}
@@ -179,7 +179,7 @@ class Model {
 	}
 	clickNewgame = () => {
 		model = new Model();
-		this.game()
+		model.game()
 		document.getElementById("pause").textContent = "Пауза";
 	}
 	clickPause = () => {
