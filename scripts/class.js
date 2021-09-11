@@ -92,6 +92,26 @@ export class CurrentFigure extends Figure {
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
+		let resultSet = [];
+		this.cells.forEach((cell) => {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0)
+				resultSet.push(new Point(
+					cell.x + Math.floor(x / SIZE_TILES),
+					cell.y + Math.floor(y / SIZE_TILES)));
+			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0)
+				resultSet.push(new Point(
+					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
+					cell.y + Math.floor(y / SIZE_TILES)));
+			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0)
+				resultSet.push(new Point(
+					cell.x + Math.floor(x / SIZE_TILES),
+					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0)
+				resultSet.push(new Point(
+					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
+					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+		});
+
 		let result = [];
 		this.cells.forEach((cell) => result.push(new Point(
 			cell.x + Math.ceil(x / SIZE_TILES),

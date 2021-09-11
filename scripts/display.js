@@ -104,7 +104,6 @@ export class Display {
 
 		//Обновляем Очки
 		this.txtScores.innerHTML = String(scores).padStart(6, "0");
-		//Рисуем следующую фигуру
-		this.drawNextFigure(nextFigure);
+		
 	}
 };
