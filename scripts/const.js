@@ -9,7 +9,9 @@ export const UPDATE_TIME = 1000 / 60;
 // Время в секундах, как часто обновляем контроллер
 export const TIME_UPDATE_CONTROLLER = 0.08;
 // Шаг движения блоков по умолчанию
-export const STEP_MOVE_AUTO = 0.3;
+export const START_STEP_MOVE_AUTO = 0.3;
+
+export const PLUS_STEP_MOVE_AUTO = 0.1;
 // Шаг движения блоков по горизонтали
 export const STEP_MOVE_KEY_X = SIZE_TILES;
 // Шаг движения блоков по вертикали

@@ -4,9 +4,10 @@ import { Beetle } from './class_beetle.js';
 import { Controller } from './controller.js';
 import { Display } from './display.js';
 import {
-	SIZE_TILES, STEP_MOVE_AUTO,
+	SIZE_TILES, START_STEP_MOVE_AUTO,
 	STEP_MOVE_KEY_Y,
 	TIMES_BREATH_LOSE,
+	PLUS_STEP_MOVE_AUTO,
 	TIME_UPDATE_CONTROLLER,
 } from './const.js';
 // Экземпляр объекта Display, для вывода на экран
@@ -39,6 +40,7 @@ class Model {
 
 		// Создаем новую фигуру
 		this.formCurrentFigure();
+		this.stepMoveAuto = START_STEP_MOVE_AUTO;
 
 		// Создаем жука
 		this.beetle = new Beetle(this.grid);
@@ -71,8 +73,8 @@ class Model {
 		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cells);
 		this.nextFigure = new Figure();
 
-		//?Почему то не показывает с самого начала первую фигуру, если убрать отрисовку в методе display.draw
-		//display.drawNextFigure();
+		//Рисуем следующую фигуру
+		display.drawNextFigure(this.nextFigure);
 	};
 
 	ifNotBreath() {
@@ -118,13 +120,24 @@ class Model {
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
 
+		this.stepMoveAuto = PLUS_STEP_MOVE_AUTO * Math.ceil(this.scores / 300);
+		this.ifRecord();
+
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
 		this.beetle.deleteRow = 1;
 		this.renderBreath(0, this.beetle);
 	};
 
+	ifRecord() {
+		let record = localStorage.getItem('Record') || 0;
+		if (this.scores > record) {
+			document.querySelector('#record').textContent = String(this.scores).padStart(6, "0");
+			localStorage.setItem('Record', this.scores);
+		}
+	}
+
 	lose() {
-		localStorage.setItem('Record', model.scores);
+		model.ifRecord();
 		model = new Model();
 		this.newGame();
 	};
@@ -138,11 +151,11 @@ class Model {
 			if (controller.pressed.right) this.currentFigure.moveRight();
 			if (controller.pressed.up) this.currentFigure.rotate();
 			// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-			if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO) === false) {
+			if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto) === false) {
 				// Стакан заполнен игра окончена
 				this.lose();
 				return;
-			} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : STEP_MOVE_AUTO)) {
+			} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto)) {
 				this.fixation();
 				this.formCurrentFigure();
 			} else {
