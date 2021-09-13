@@ -65,6 +65,7 @@ class Model {
 		this.lastTime = Date.now();
 		this.deltaTime = 0;
 		this.pause = false;
+		this.pauseTime = null;
 	};
 
 	//Метод формирования текущей фигуры
@@ -197,10 +198,12 @@ class Model {
 		if (document.getElementById("pause").textContent == "Пауза") {
 			document.getElementById("pause").textContent = "Продолжить";
 			model.pause = true;
+			model.pauseTime = Date.now();
 		}
 		else {
 			document.getElementById("pause").textContent = "Пауза";
 			model.pause = false;
+			model.beetle.timeBreath += Date.now() - model.pauseTime;
 		}
 	}
 	game = () => {
