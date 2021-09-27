@@ -29,19 +29,13 @@ export class Grid {
 		return this.space[y][x].element === 0;
 	};
 
-	deleteRow(row) {
-		for (let i = this.space.indexOf(row); i > 0; i--)
-			for (let j = 0; j < this.width; j++)
-				this.space[i][j].setElement(this.space[i - 1][j]);
-	};
-
 	getCountRowFull() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		let count = 0;
 		//Проверяем удаление строки
-		this.space.forEach((row) => {
+		this.space.forEach((row, rowIndex) => {
 			if (row.every((x) => x.element !== 0)) {
-				this.deleteRow(row);
+				this.deleteRow(rowIndex);
 
 				// Добавляем верхнюю строку
 				this.space[0].forEach((x) => x.setZero());
@@ -53,4 +47,9 @@ export class Grid {
 		return count;
 	};
 
+	deleteRow(rowIndex) {
+		for (let i = rowIndex; i > 0; i--)
+			for (let j = 0; j < this.width; j++)
+				this.space[i][j].setElement(this.space[i - 1][j]);
+	};
 }

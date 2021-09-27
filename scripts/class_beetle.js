@@ -60,9 +60,6 @@ export class Beetle {
 
 		this.deltaTime = 0;
 	};
-	getPositionTile() {
-
-	}
 	//Функция для определения направления движения жука
 	getTrafficBeetle() {
 		let isCanMove = (arrayDirectionses) => {
@@ -133,8 +130,6 @@ export class Beetle {
 		DIRECTION["RIGHTDOWN"] = [DIRECTION["0D"], DIRECTION["RD"], DIRECTION["LD"]];
 		DIRECTION["LEFT"] = [DIRECTION["L0"], DIRECTION["LU"], DIRECTION["LUU"]];
 		DIRECTION["RIGHT"] = [DIRECTION["R0"], DIRECTION["RU"], DIRECTION["RUU"]];
-
-		//console.log(`Меняем направление движения, текущая позиция = ${JSON.stringify(this.direction)} текущая цель ${JSON.stringify(this.move)}`);
 		// Проверяем свободен ли выбранный путь при фиксации фигуры
 		if (this.deleteRow == 1) {
 			if (this.moves == isCanMove([this.moves]))
@@ -174,8 +169,6 @@ export class Beetle {
 		}
 		this.frames = getFrameRotate({ ...startMove }, this.move)
 		this.direction = { ...startMove };
-
-		//console.log(`Меняем направление движения, занятая позиция = ${JSON.stringify(this.direction)} Выбранная цель ${JSON.stringify(this.move)}`);
 	};
 	//Метод движения жука
 	beetleAnimation() {
@@ -199,8 +192,11 @@ export class Beetle {
 			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
 				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
-
-		//Определяем текущий кадр
+		
+		this.getCurrentFramesAnimation();
+	};
+	//Определяем текущий кадр
+	getCurrentFramesAnimation() {
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
 				this.eat = 0;
@@ -216,9 +212,7 @@ export class Beetle {
 		else {
 			this.framesAnimation = (this.framesAnimation + 1);
 		}
-
-		//console.log(`Текущая позиция = ${JSON.stringify(this.position)} на кадре ${this.framesAnimation}`);
-	};
+	}
 
 	// Проверяем есть ли доступ к верху стакана
 	isBreath() {
