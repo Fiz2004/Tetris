@@ -17,13 +17,15 @@ describe("Проверяем функцию beetleAnimation", function () {
 	beforeEach(() => {
 		grid = new Grid(5, 5);
 		beetle = new Beetle(grid);
-		beetle.position.x = 2;
-		beetle.position.y = 4;
+		beetle.position.x = 2 * SIZE_TILES;
+		beetle.position.y = 4 * SIZE_TILES;
 	});
 
 	it("Проверяем движение вправо", function () {
-		for (let i = 0; i < NUMBER_FRAMES_BEEATLE; i++)
+		console.log(beetle.position.x);
+		for (let i = 0; i <= NUMBER_FRAMES_BEEATLE; i++)
 			beetle.beetleAnimation();
+		console.log(beetle.position.x);
 		assert.equal(Math.floor(beetle.position.x / SIZE_TILES), 3);
 	});
 
