@@ -86,7 +86,10 @@ export class Beetle {
 				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
 
-		//Определяем текущий кадр
+		this.getCurrentFramesAnimation();
+	};
+	//Определяем текущий кадр
+	getCurrentFramesAnimation() {
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames == NUMBER_FRAMES_BEEATLE) {
 				this.eat = 0;
@@ -278,7 +281,7 @@ export class Beetle {
 		alert(`Функция getSprite при еде не знает такого направления ${JSON.stringify(this.direction)} ${JSON.stringify(this.move)} `);
 	}
 
-	
+
 	getSpriteNoEatingNow(directionMovement) {
 		// Поворот Лево->Лево
 		if (directionMovement === "-10-10")
