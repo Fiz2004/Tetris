@@ -121,7 +121,7 @@ class Model {
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
 
-		this.stepMoveAuto = PLUS_STEP_MOVE_AUTO * Math.ceil(this.scores / 300);
+		this.stepMoveAuto = PLUS_STEP_MOVE_AUTO + PLUS_STEP_MOVE_AUTO * Math.ceil(this.scores / 300);
 		this.ifRecord();
 
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
