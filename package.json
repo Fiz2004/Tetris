@@ -5,9 +5,11 @@
 	"version": "1.0.0",
 	"main": "pathToMain",
 	"type": "module",
-	"dependencies": {},
+	"dependencies": {
+		"nyc": "^15.1.0"
+	},
 	"scripts": {
-		"test": "mocha ./tests/*.test.js"
+		"test": "nyc mocha ./tests/*.test.js"
 	},
 	"devDependencies": {
 		"mocha": "*"
