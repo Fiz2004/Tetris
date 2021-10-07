@@ -220,12 +220,12 @@ class Model {
 };
 
 
-window.onload = function () {
+window.onload = async function () {
 	display = new Display();
-	display.onload = () => {
-		model = new Model();
-		model.newGame();
-		model.game()
-	}
-	display.load();
+
+	await display.load();
+
+	model = new Model();
+	model.newGame();
+	model.game()
 }
