@@ -74,7 +74,7 @@ export class Display {
 			}
 	}
 
-	render(grid, currentFigure, beetle, scores, nextFigure) {
+	render({ grid, currentFigure, beetle, scores }) {
 		let offsetX, offsetY;
 		//Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid)

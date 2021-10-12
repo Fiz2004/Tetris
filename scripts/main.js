@@ -13,47 +13,32 @@ import {
 // Экземпляр объекта Display, для вывода на экран
 let display;
 // Экземпляр объекта Model, для внутренней структуры игры
-let model;
+export let model;
 // Экземпляр объекта Controller, для взаимодействия
 let controller;
 
 //Класс в котором хранится вся модель игры
 class Model {
-	// Текущие очки
 	scores;
-	// Массив со значениями сетки
 	grid;
-	// Текущая фигура
 	currentFigure;
-	// Следующая фигура
 	nextFigure;
-	// Объект жука, с его координатами, направлением движения и кадром движения
 	beetle;
 	// Элемент который меняет поведение при дыхании
 	elementDivBreath;
 	// Элемент который показывает секунды дыхания
 	elementTimeBreath;
-	// Инициализация модели игры
 	constructor() {
-		// Инициализируем сетку с случайными числами фона и заданием элементов
 		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
 
-		// Создаем новую фигуру
-		this.formCurrentFigure();
+		this.createCurrentFigure();
 		this.stepMoveAuto = START_STEP_MOVE_AUTO;
 
-		// Создаем жука
-		this.beetle = new Beetle(this.grid);
+		this.beetle = new Beetle(this.grid, this.scores);
 
-		// Инициализируем очки
 		this.scores = 0;
 
-		// Выводим рекорд на экран
 		document.querySelector('#record').textContent = String(localStorage.getItem('Record') || 0).padStart(6, "0");
-
-		// Задаем функцию для жука что при еде увеличить количество очков
-		// !!!Переписать чтобы обновлялось внутри жука
-		this.beetle.handleEat = function () { model.scores += 50 }
 
 		// Задаем элемент разметки для окраски в зависимости от стадии дыхания
 		this.elementTimeBreath = document.querySelector("#Breath");
@@ -68,13 +53,11 @@ class Model {
 		this.pauseTime = null;
 	};
 
-	//Метод формирования текущей фигуры
-	formCurrentFigure() {
+	createCurrentFigure() {
 		this.nextFigure = this.nextFigure || new Figure();
 		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cells);
 		this.nextFigure = new Figure();
 
-		//Рисуем следующую фигуру
 		display.drawNextFigure(this.nextFigure);
 	};
 
@@ -87,13 +70,16 @@ class Model {
 			this.elementTimeBreath = document.querySelector("#Breath");
 			this.beetle.breath = true;
 		}
+
 		this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${sec}`;
 	}
+
 	ifBreath() {
 		if (this.elementTimeBreath) {
 			this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
 			this.elementTimeBreath = null;
 		}
+
 		this.beetle.timeBreath = Date.now();
 		this.beetle.breath = false;
 	}
@@ -141,91 +127,103 @@ class Model {
 		model.ifRecord();
 		model = new Model();
 		this.newGame();
+		this.clickNewgame();
 	};
 
 	update(deltaTime) {
 		this.deltaTime += deltaTime;
 
 		if (this.deltaTime > TIME_UPDATE_CONTROLLER) {
-			// Проверяем нажатие клавиатуры и запускаем события
-			if (controller.pressed.left) this.currentFigure.moveLeft();
-			if (controller.pressed.right) this.currentFigure.moveRight();
-			if (controller.pressed.up) this.currentFigure.rotate();
-			// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-			if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto) === false) {
-				// Стакан заполнен игра окончена
-				this.lose();
-				return;
-			} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto)) {
-				this.fixation();
-				this.formCurrentFigure();
-			} else {
-				// Фигура достигла препятствия
-				let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-				for (let elem of this.currentFigure.getPositionTile())
-					if ((elem.x == tile.x && elem.y == tile.y)
-						|| (this.grid.space[tile.y][tile.x].element != 0
-							&& this.beetle.eat == 0)) {
-						this.lose();
-						return;
-					}
-			}
+			this.actionsControl();
 			// Проверяем возможность дыхания
-			this.renderBreath();
-
-			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-			if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
-				TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000) <= 0) {
-				this.lose();
-				return;
-			}
+			if (this.renderBreath() || this.checkLose()) return;
 
 			this.beetle.beetleAnimation();
 			this.deltaTime = 0;
 		}
-	};
+	}
+
+	checkLose() {
+		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
+			TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000) <= 0) {
+			this.lose();
+			return true;
+		}
+
+		return false;
+	}
+
+	actionsControl() {
+		if (controller.pressed.left) this.currentFigure.moveLeft();
+		if (controller.pressed.right) this.currentFigure.moveRight();
+		if (controller.pressed.up) this.currentFigure.rotate();
+		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
+		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto) === false) {
+			// Стакан заполнен игра окончена
+			this.lose();
+			return true;
+		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto)) {
+			this.fixation();
+			this.createCurrentFigure();
+		} else {
+			// Фигура достигла препятствия
+			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+			for (let elem of this.currentFigure.getPositionTile())
+				if ((elem.x == tile.x && elem.y == tile.y)
+					|| (this.grid.space[tile.y][tile.x].element != 0
+						&& this.beetle.eat == 0)) {
+					this.lose();
+					return true;
+				}
+		}
+
+		return false;
+	}
+
+
 	newGame() {
 		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 		document.getElementById("new_game").onclick = this.clickNewgame;
 		document.getElementById("pause").onclick = this.clickPause;
-		this.clickNewgame();
 	}
-	clickNewgame = () => {
+
+	clickNewgame() {
 		model = new Model();
 		document.getElementById("pause").textContent = "Пауза";
 	}
-	clickPause = () => {
+
+	clickPause() {
 		if (document.getElementById("pause").textContent == "Пауза") {
 			document.getElementById("pause").textContent = "Продолжить";
 			model.pause = true;
 			model.pauseTime = Date.now();
-		}
-		else {
+		} else {
 			document.getElementById("pause").textContent = "Пауза";
 			model.pause = false;
 			model.beetle.timeBreath += Date.now() - model.pauseTime;
 		}
 	}
-	game = () => {
-		let now = Date.now();
-		let deltaTime = (now - this.lastTime) / 1000.0;
-
-		!this.pause && this.update(deltaTime);
-		display.render(this.grid, this.currentFigure, this.beetle, this.scores, this.nextFigure);
-
-		this.lastTime = now;
-
-		requestAnimationFrame(model.game);
-	}
 };
+
+function game() {
+	let now = Date.now();
+	let deltaTime = (now - model.lastTime ?? 0) / 1000.0;
+
+	!model.pause && model.update(deltaTime);
+	display.render(model);
+
+	model.lastTime = now;
+
+	requestAnimationFrame(game);
+}
 
 
 window.onload = async function () {
 	display = new Display();
-
 	await display.load();
 
 	model = new Model();
 	model.newGame();
-	model.game()
+	game();
 }

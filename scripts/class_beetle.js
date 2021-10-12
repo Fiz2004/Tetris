@@ -1,4 +1,5 @@
 import { Point } from './class.js';
+import { model } from './main.js';
 import {
 	SIZE_TILES,
 	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE,
@@ -59,6 +60,8 @@ export class Beetle {
 		this.framesAnimation = 0;
 
 		this.deltaTime = 0;
+
+		this.handleEat = function () { model.scores += 50 }
 	};
 	getPositionTile() {
 
