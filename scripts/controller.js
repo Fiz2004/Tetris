@@ -2,8 +2,8 @@ export class Controller {
 	pressed;
 	codes;
 	//Точка начала касания
-	touchStart; 
-	 //Текущая позиция
+	touchStart;
+	//Текущая позиция
 	touchPosition;
 	constructor(codes) {
 		//Задаем начальное значение падения
@@ -11,7 +11,7 @@ export class Controller {
 		this.codes = codes;
 		//Точка начала касания
 		this.touchStart = null;
-		 //Текущая позиция
+		//Текущая позиция
 		this.touchPosition = null;
 
 		document.addEventListener("keydown", this.handler);
@@ -20,16 +20,19 @@ export class Controller {
 		document.addEventListener("touchmove", this.touchMove);
 		document.addEventListener("touchend", this.touchEnd);
 		document.addEventListener("touchcancel", this.touchEnd);
-	};
+	}
+
 	refresh() {
 		this.pressed = null;
 	}
+
 	handler = event => {
 		if (this.codes.hasOwnProperty(event.keyCode)) {
-			this.pressed[this.codes[event.keyCode]] = event.type == "keydown";
+			this.pressed[this.codes[event.keyCode]] = (event.type === "keydown");
 			event.preventDefault();
 		}
-	};
+	}
+
 	touchStarts = event => {
 		this.touchStart = { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
 		this.touchPosition = { x: this.touchStart.x, y: this.touchStart.y };
@@ -41,8 +44,7 @@ export class Controller {
 				this.pressed["up"] = true;
 				this.pressed["right"] = false;
 				this.pressed["down"] = false;
-			}
-			else {
+			} else {
 				this.pressed["left"] = false;
 				this.pressed["up"] = false;
 				this.pressed["right"] = false;
@@ -62,10 +64,8 @@ export class Controller {
 			this.pressed["down"] = false;
 		}
 
-	};
-	touchMove = event => {
+	}
 
-	};
 	touchEnd = event => {
 		this.pressed["left"] = false;
 		this.pressed["up"] = false;
@@ -74,5 +74,5 @@ export class Controller {
 
 		this.touchStart = null;
 		this.touchPosition = null;
-	};
-};
+	}
+}

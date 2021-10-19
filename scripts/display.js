@@ -1,4 +1,4 @@
-import { Figure, } from './class.js';
+import { Figure } from './class.js';
 import {
 	SIZE_TILES,
 	DIRECTORY_IMG,
@@ -19,10 +19,16 @@ export class Display {
 		this.canvasNextFigure = document.querySelector('#canvasNextFigureId');
 		this.ctxNextFigure = this.canvasNextFigure.getContext("2d");
 		this.txtScores = document.querySelector('#scores');
-	};
-	async load() {
+	}
+
+	load() {
+		// Переменные для отслеживания загрузки изображений
+		const numberImg = 1 + Figure.numberCell + 1;
+		let currentImg = 0;
+
+		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
 		//Формируем картинки для фигур
-		this.imgKv = new Array(Figure.numberCell);
+		this.imgKv = Array.from({ length: Figure.numberCell });
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
 		}
@@ -30,14 +36,17 @@ export class Display {
 		//загружаем картинки фигур
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+			this.imgKv[i].onload = loadImage;
 		}
 
 		this.imgFon = new Image();
 		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+		this.imgFon.onload = loadImage;
 
 		//загружаем картинки жука
 		this.imgBeetle = new Image();
 		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+		this.imgBeetle.onload = loadImage;
 	}
 
 	drawNextFigure(nextFigure) {
@@ -47,12 +56,13 @@ export class Display {
 				0, 0, SIZE_TILES, SIZE_TILES,
 				(cell.x * SIZE_TILES), (cell.y * SIZE_TILES), SIZE_TILES, SIZE_TILES);
 		}
-	};
+	}
+
 	// Получить смещение по тайлам в зависимости от статуса элемента
 	getOffset(element) {
-		if (element.getSpaceStatus() == "R") return [(element.status.R - 1) * SIZE_TILES, 1 * SIZE_TILES];
-		if (element.getSpaceStatus() == "L") return [(element.status.L - 1) * SIZE_TILES, 2 * SIZE_TILES];
-		if (element.getSpaceStatus() == "U") return [(element.status.U - 1) * SIZE_TILES, 3 * SIZE_TILES]
+		if (element.getSpaceStatus() === "R") return [(element.status.R - 1) * SIZE_TILES, 1 * SIZE_TILES];
+		if (element.getSpaceStatus() === "L") return [(element.status.L - 1) * SIZE_TILES, 2 * SIZE_TILES];
+		if (element.getSpaceStatus() === "U") return [(element.status.U - 1) * SIZE_TILES, 3 * SIZE_TILES]
 		return [0, 0];
 	}
 
@@ -80,10 +90,10 @@ export class Display {
 		this.drawGridElements(grid)
 
 		//Рисуем текущую падующую фигуру
-		for (let i = 0; i < currentFigure.cells.length; i++) {
-			this.ctx.drawImage(this.imgKv[currentFigure.cells[i].view - 1],
+		for (let cell of currentFigure.cells) {
+			this.ctx.drawImage(this.imgKv[cell.view - 1],
 				0, 0, SIZE_TILES, SIZE_TILES,
-				(currentFigure.cells[i].x * SIZE_TILES) + currentFigure.position.x, (currentFigure.cells[i].y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
+				(cell.x * SIZE_TILES) + currentFigure.position.x, (cell.y * SIZE_TILES) + currentFigure.position.y, SIZE_TILES, SIZE_TILES);
 		}
 
 		//Рисуем бегающего жука
@@ -97,4 +107,4 @@ export class Display {
 		this.txtScores.innerHTML = String(scores).padStart(6, "0");
 
 	}
-};
+}

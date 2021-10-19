@@ -51,7 +51,7 @@ class Model {
 		this.deltaTime = 0;
 		this.pause = false;
 		this.pauseTime = null;
-	};
+	}
 
 	createCurrentFigure() {
 		this.nextFigure = this.nextFigure || new Figure();
@@ -59,14 +59,14 @@ class Model {
 		this.nextFigure = new Figure();
 
 		display.drawNextFigure(this.nextFigure);
-	};
+	}
 
 	ifNotBreath() {
 		let sec = TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000);
 		if (!this.elementTimeBreath) {
 			let element = document.createElement("h1");
 			element.id = "Breath";
-			document.querySelector("#infoID").append(element);;
+			document.querySelector("#infoID").append(element);
 			this.elementTimeBreath = document.querySelector("#Breath");
 			this.beetle.breath = true;
 		}
@@ -96,13 +96,13 @@ class Model {
 		let sec = Math.ceil((Date.now() - this.beetle.timeBreath) / 1000);
 		let int = Math.floor(sec) * 255 / TIMES_BREATH_LOSE;
 		this.elementDivBreath.style.backgroundColor = `rgb(255, ${255 - int}, ${255 - int})`;
-	};
+	}
 
 	//Фиксация фигуры
 	fixation() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		let countRowFull = this.grid.getCountRowFull();
-		if (countRowFull != 0) controller.refresh;
+		if (countRowFull !== 0) controller.refresh();
 
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
@@ -113,7 +113,7 @@ class Model {
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
 		this.beetle.deleteRow = 1;
 		this.renderBreath(0, this.beetle);
-	};
+	}
 
 	ifRecord() {
 		let record = localStorage.getItem('Record') || 0;
@@ -128,7 +128,7 @@ class Model {
 		model = new Model();
 		this.newGame();
 		this.clickNewgame();
-	};
+	}
 
 	update(deltaTime) {
 		this.deltaTime += deltaTime;
@@ -145,7 +145,7 @@ class Model {
 
 	checkLose() {
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-		if ((this.grid.space[tile.y][tile.x].element != 0 && this.beetle.eat == 0) ||
+		if ((this.grid.space[tile.y][tile.x].element !== 0 && this.beetle.eat === 0) ||
 			TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / 1000) <= 0) {
 			this.lose();
 			return true;
@@ -159,25 +159,28 @@ class Model {
 		if (controller.pressed.right) this.currentFigure.moveRight();
 		if (controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-		if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto) === false) {
+		let resultMoveDown = this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
+		if (resultMoveDown === false) {
 			// Стакан заполнен игра окончена
 			this.lose();
-			return true;
-		} else if (this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto)) {
+		} else if (resultMoveDown === true) {
 			this.fixation();
 			this.createCurrentFigure();
 		} else {
 			// Фигура достигла препятствия
-			let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
-			for (let elem of this.currentFigure.getPositionTile())
-				if ((elem.x == tile.x && elem.y == tile.y)
-					|| (this.grid.space[tile.y][tile.x].element != 0
-						&& this.beetle.eat == 0)) {
-					this.lose();
-					return true;
-				}
+			if (this.isCrushedBeetle()) {
+				this.lose();
+			}
 		}
+	}
 
+	isCrushedBeetle() {
+		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
+		for (let elem of this.currentFigure.getPositionTile())
+			if ((elem.x === tile.x && elem.y === tile.y)
+				|| (this.grid.space[tile.y][tile.x].element !== 0
+					&& this.beetle.eat === 0))
+				return true;
 		return false;
 	}
 
@@ -194,7 +197,7 @@ class Model {
 	}
 
 	clickPause() {
-		if (document.getElementById("pause").textContent == "Пауза") {
+		if (document.getElementById("pause").textContent === "Пауза") {
 			document.getElementById("pause").textContent = "Продолжить";
 			model.pause = true;
 			model.pauseTime = Date.now();
@@ -204,7 +207,7 @@ class Model {
 			model.beetle.timeBreath += Date.now() - model.pauseTime;
 		}
 	}
-};
+}
 
 function game() {
 	let now = Date.now();
@@ -219,11 +222,12 @@ function game() {
 }
 
 
-window.onload = async function () {
+window.onload = function () {
 	display = new Display();
-	await display.load();
-
-	model = new Model();
-	model.newGame();
-	game();
+	display.onload = () => {
+		model = new Model();
+		model.newGame();
+		game();
+	}
+	display.load();
 }

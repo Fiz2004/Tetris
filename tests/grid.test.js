@@ -11,15 +11,15 @@ describe("Проверяем функцию isInside", function () {
 	});
 
 	it("Значение 0,0", function () {
-		assert.equal(grid.isInside({ x:0, y:0}), true);
+		assert.equal(grid.isInside({ x: 0, y: 0 }), true);
 	});
 
 	it("Значение max(4),max(4)", function () {
-		assert.equal(grid.isInside({ x:4, y:4}), true);
+		assert.equal(grid.isInside({ x: 4, y: 4 }), true);
 	});
 
 	it("Значение x<0,0", function () {
-		assert.equal(grid.isInside({x:- 1, y:0}), false);
+		assert.equal(grid.isInside({ x: - 1, y: 0 }), false);
 	});
 
 	it("Значение x>length,0", function () {
@@ -59,24 +59,24 @@ describe("Проверяем функцию getCountRowFull", function () {
 	});
 
 	it("Значение 1", function () {
-		for (let x = 0; x < grid.space[4].length;x++)
-			grid.space[4][x].element = 1;
+		for (let space4 of grid.space[4])
+			space4[x].element = 1;
 		assert.equal(grid.getCountRowFull(), 1);
 	});
 
 	it("Значение 2", function () {
-		for (let x = 0; x < grid.space[4].length; x++)
-			grid.space[4][x].element = 1;
-		for (let x = 0; x < grid.space[4].length; x++)
-			grid.space[3][x].element = 1;
+		for (let space4 of grid.space[4])
+			space4[x].element = 1;
+		for (let space3 of grid.space[3])
+			space3[x].element = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 
 	it("Значение 1 0 1", function () {
-		for (let x = 0; x < grid.space[4].length; x++)
-			grid.space[4][x].element = 1;
-		for (let x = 0; x < grid.space[4].length; x++)
-			grid.space[2][x].element = 1;
+		for (let space4 of grid.space[4])
+			space4[x].element = 1;
+		for (let space2 of grid.space[2])
+			space2[2].element = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 

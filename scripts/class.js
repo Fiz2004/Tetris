@@ -49,7 +49,7 @@ export class Point {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
-	};
+	}
 }
 
 // Класс для обзначения ячейки с координатами x и y, и сохранением номера фона
@@ -58,7 +58,7 @@ class Cell extends Point {
 	constructor(x, y, view) {
 		super(x, y);
 		this.view = view;
-	};
+	}
 }
 
 // Класс для фигуры
@@ -72,7 +72,7 @@ export class Figure {
 		for (let cell of FIGURE[Math.floor(Math.random() * FIGURE.length)])
 			// Новая ячейка(координаты x и y и номер изображения фигуры)
 			this.cells.push(new Cell(cell[0], cell[1], Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1));
-	};
+	}
 }
 
 // Класс для текущей падающей фигуры
@@ -88,7 +88,7 @@ export class CurrentFigure extends Figure {
 		let height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
 		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
 		this.deltaTime = 0;
-	};
+	}
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
@@ -118,7 +118,7 @@ export class CurrentFigure extends Figure {
 			cell.y + Math.ceil(y / SIZE_TILES)
 		)));
 		return result;
-	};
+	}
 
 	// Проверяем столкновение
 	isCollission(x, y) {
@@ -135,7 +135,7 @@ export class CurrentFigure extends Figure {
 			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1) return true;
 
 		return result;
-	};
+	}
 
 	//функция поворота фигуры
 	rotate() {
@@ -145,19 +145,19 @@ export class CurrentFigure extends Figure {
 			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
 			this.cells.forEach((cell) => { [cell.x, cell.y] = [3 - cell.y, cell.x] });
 		}
-	};
+	}
 
 	//Метод движения влево
 	moveLeft() {
 		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
 			this.position.x -= STEP_MOVE_KEY_X;
-	};
+	}
 
 	//Метод движения вправо
 	moveRight() {
 		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
 			this.position.x += STEP_MOVE_KEY_X;
-	};
+	}
 
 	//Метод движения вниз возвращает 3 значения true (Фигура достигла какого то препятствия), false (Игра окончена, стакан заполнен) и другое (Перемещаем фигуру на заданное расстояние)
 	moveDown(stepY) {
