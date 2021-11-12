@@ -137,11 +137,17 @@ class Model {
 			this.actionsControl();
 			// Проверяем возможность дыхания
 			if (this.renderBreath() || this.checkLose()) return;
+window.onload = function () {
+	runGame(new Level(), CanvasDisplay);
+}
 
 			this.beetle.beetleAnimation();
 			this.deltaTime = 0;
 		}
 	}
+async function runGame(plans, Display) {
+	let status = await runLevel(plans, Display);
+	if (status === "exit") return
 
 	checkLose() {
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
@@ -150,9 +156,15 @@ class Model {
 			this.lose();
 			return true;
 		}
+	runGame(Display);
+}
 
 		return false;
 	}
+async function runLevel(level, Display) {
+	let display = new Display(document.body, level);
+	let state = State.start(level);
+	let ending = 1;
 
 	actionsControl() {
 		if (controller.pressed.left) this.currentFigure.moveLeft();
@@ -173,6 +185,8 @@ class Model {
 			}
 		}
 	}
+	await display.load();
+	state.newGame();
 
 	isCrushedBeetle() {
 		let tile = new Point(Math.floor(this.beetle.position.x / SIZE_TILES), Math.floor(this.beetle.position.y / SIZE_TILES));
@@ -180,6 +194,11 @@ class Model {
 			if ((elem.x === tile.x && elem.y === tile.y)
 				|| (this.grid.space[tile.y][tile.x].element !== 0
 					&& this.beetle.eat === 0))
+	return new Promise(resolve => {
+		runAnimation(time => {
+			state = state.update(time);
+			display.render(state);
+			if (state.status === "playing") {
 				return true;
 		return false;
 	}
@@ -195,6 +214,17 @@ class Model {
 		model = new Model();
 		document.getElementById("pause").textContent = "Пауза";
 	}
+			} else if (ending > 0) {
+				ending -= time;
+				return true;
+			} else {
+				display.clear();
+				resolve(state.status);
+				return false;
+			}
+		})
+	})
+}
 
 	clickPause() {
 		if (document.getElementById("pause").textContent === "Пауза") {
@@ -206,28 +236,17 @@ class Model {
 			model.pause = false;
 			model.beetle.timeBreath += Date.now() - model.pauseTime;
 		}
+function runAnimation(frameFunc) {
+	let lastTime;
+	function frame(time) {
+		let timeStep = Math.min(time - (lastTime ?? 0), 100) / 1000;
+		if (!frameFunc(timeStep)) return;
+		lastTime = time;
+		requestAnimationFrame(frame);
 	}
-}
-
-function game() {
-	let now = Date.now();
-	let deltaTime = (now - model.lastTime ?? 0) / 1000.0;
-
-	!model.pause && model.update(deltaTime);
-	display.render(model);
-
-	model.lastTime = now;
-
-	requestAnimationFrame(game);
+	requestAnimationFrame(frame);
 }
 
 
-window.onload = function () {
-	display = new Display();
-	display.onload = () => {
-		model = new Model();
-		model.newGame();
-		game();
-	}
-	display.load();
-}
+
+
