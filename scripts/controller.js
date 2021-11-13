@@ -14,12 +14,12 @@ export class Controller {
 		//Текущая позиция
 		this.touchPosition = null;
 
-		document.addEventListener("keydown", this.handler);
-		document.addEventListener("keyup", this.handler);
-		document.addEventListener("touchstart", this.touchStarts);
-		document.addEventListener("touchmove", this.touchMove);
-		document.addEventListener("touchend", this.touchEnd);
-		document.addEventListener("touchcancel", this.touchEnd);
+		window.addEventListener("keydown", this.handler);
+		window.addEventListener("keyup", this.handler);
+		window.addEventListener("touchstart", this.touchStarts);
+		window.addEventListener("touchmove", this.touchMove);
+		window.addEventListener("touchend", this.touchEnd);
+		window.addEventListener("touchcancel", this.touchEnd);
 	}
 
 	refresh() {
@@ -34,6 +34,9 @@ export class Controller {
 	}
 
 	touchStarts = event => {
+		if (event.cancelable && event.target !== "button") {
+			event.preventDefault();
+		}
 		this.touchStart = { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
 		this.touchPosition = { x: this.touchStart.x, y: this.touchStart.y };
 
@@ -67,6 +70,9 @@ export class Controller {
 	}
 
 	touchEnd = event => {
+		if (event.cancelable) {
+			event.preventDefault();
+		}
 		this.pressed["left"] = false;
 		this.pressed["up"] = false;
 		this.pressed["right"] = false;
