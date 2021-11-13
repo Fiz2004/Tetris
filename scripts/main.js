@@ -24,11 +24,13 @@ async function runLevel() {
 	let ending = 1;
 	return new Promise(resolve => {
 		runAnimation(time => {
-			let status = state.update(time);
+			let status;
+			if (ending === 1)
+				status = state.update(time);
 			display.render(state);
 			if (status)
 				return true;
-			else if (ending > 0) {
+			else if (ending > 0 && state.status !== "new game") {
 				ending -= time;
 				return true;
 			}

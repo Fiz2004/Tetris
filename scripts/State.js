@@ -9,8 +9,6 @@ import {
 	PLUS_STEP_MOVE_AUTO,
 	TIME_UPDATE_CONTROLLER,
 } from './const.js';
-// Экземпляр объекта Controller, для взаимодействия
-let controller;
 
 //Класс в котором хранится вся модель игры
 export class State {
@@ -47,7 +45,7 @@ export class State {
 		this.deltaTime = 0;
 		this.pauseTime = null;
 
-		controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
+		this.controller = new Controller({ 37: "left", 38: "up", 39: "right", 40: "down" });
 		document.getElementById("new_game").onclick = () => this.clickNewgame();
 		document.getElementById("pause").onclick = () => this.clickPause();
 	}
@@ -101,7 +99,7 @@ export class State {
 	fixation() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		let countRowFull = this.grid.getCountRowFull();
-		if (countRowFull !== 0) controller.refresh();
+		if (countRowFull !== 0) this.controller.refresh();
 
 		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * 100;
@@ -161,11 +159,11 @@ export class State {
 	}
 
 	actionsControl() {
-		if (controller.pressed.left) this.currentFigure.moveLeft();
-		if (controller.pressed.right) this.currentFigure.moveRight();
-		if (controller.pressed.up) this.currentFigure.rotate();
+		if (this.controller.pressed.left) this.currentFigure.moveLeft();
+		if (this.controller.pressed.right) this.currentFigure.moveRight();
+		if (this.controller.pressed.up) this.currentFigure.rotate();
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
-		let resultMoveDown = this.currentFigure.moveDown(controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
+		let resultMoveDown = this.currentFigure.moveDown(this.controller.pressed.down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
 		if (resultMoveDown === false) {
 			// Стакан заполнен игра окончена
 			return false;
