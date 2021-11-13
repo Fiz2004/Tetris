@@ -1,5 +1,4 @@
 import { Point } from './class.js';
-import { model } from './main.js';
 import * as getSprite from './getSpriteBeetle.js';
 import {
 	SIZE_TILES,
@@ -60,7 +59,8 @@ export class Beetle {
 
 		this.deltaTime = 0;
 
-		this.handleEat = function () { model.scores += 50 }
+		//TODO Добавить количество очков при сьедании
+		this.handleEat = function () {/* state.scores += 50*/ }
 	}
 
 	//Метод движения жука

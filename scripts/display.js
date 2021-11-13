@@ -26,27 +26,29 @@ export class Display {
 		const numberImg = 1 + Figure.numberCell + 1;
 		let currentImg = 0;
 
-		const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : this.onload();
 		//Формируем картинки для фигур
 		this.imgKv = Array.from({ length: Figure.numberCell });
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
 		}
 
-		//загружаем картинки фигур
-		for (let i = 0; i < this.imgKv.length; i++) {
-			this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
-			this.imgKv[i].onload = loadImage;
-		}
-
 		this.imgFon = new Image();
-		this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
-		this.imgFon.onload = loadImage;
-
-		//загружаем картинки жука
 		this.imgBeetle = new Image();
-		this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
-		this.imgBeetle.onload = loadImage;
+
+		return new Promise(resolve => {
+			const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : resolve();
+			//загружаем картинки фигур
+			for (let i = 0; i < this.imgKv.length; i++) {
+				this.imgKv[i].src = DIRECTORY_IMG + 'Kvadrat' + (i + 1) + '.png';
+				this.imgKv[i].onload = loadImage;
+			}
+
+			this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+			this.imgFon.onload = loadImage;
+
+			this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+			this.imgBeetle.onload = loadImage;
+		})
 	}
 
 	drawNextFigure(nextFigure) {
