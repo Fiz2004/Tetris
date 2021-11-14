@@ -21,7 +21,7 @@ export class Beetle {
 	// Текущий кадр анимации от 1 до NUMBER_FRAMES_BEEATLE
 	framesAnimation;
 	// Показывает задыхаемся мы или нет
-	breath
+	breath;
 	// Время которое прошло с момента нехватки дыхания
 	timeBreath;
 	// Происходит ли удаление строки
@@ -45,7 +45,7 @@ export class Beetle {
 		this.direction = new Point(0, 0);
 		this.moves = [];
 		this.move = new Point(0, 0);
-		this.lastDirection = "R";
+		this.lastDirection = 'R';
 		this.eat = 0;
 		this.deleteRow = 0;
 		this.frames = NUMBER_FRAMES_BEEATLE;
@@ -58,17 +58,15 @@ export class Beetle {
 		this.framesAnimation = 0;
 
 		this.deltaTime = 0;
-
-		//TODO Добавить количество очков при сьедании
-		this.handleEat = function () {/* state.scores += 50*/ }
 	}
 
 	//Метод движения жука
-	beetleAnimation() {
+	update() {
 		// Если происходит поворот то не двигаемся
 		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
-			if (this.move.y === 0)
+			if (this.move.y === 0) {
 				this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+			}
 
 			this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
 		}
@@ -76,36 +74,49 @@ export class Beetle {
 		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
 			&& this.framesAnimation !== this.frames - 1) {
 			let offsetX = this.move.x;
-			let offsetY = this.move.y;
-			let direction = this.getDirectionEat(this.move);
-			if (offsetX === -1) offsetX = 0;
-			let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+			const offsetY = this.move.y;
+			const direction = this.getDirectionEat(this.move);
+			if (offsetX === -1) {
+				offsetX = 0;
+			}
+			const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
 				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
 
-		this.getCurrentFramesAnimation();
+		return this.getCurrentFramesAnimation();
 	}
 
 	getDirectionEat({ x, y }) {
-		if (x === -1 && y === 0) return "R";
-		if (x === 1 && y === 0) return "L";
-		if (x === 0 && y === 1) return "U";
+		if (x === -1 && y === 0) {
+			return 'R';
+		}
+		if (x === 1 && y === 0) {
+			return 'L';
+		}
+		if (x === 0 && y === 1) {
+			return 'U';
+		}
+		throw new Error('Error: uncorrect value function getDirectionEat');
 	}
 
 	//Определяем текущий кадр
 	getCurrentFramesAnimation() {
+		let eat = false;
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames === NUMBER_FRAMES_BEEATLE) {
 				this.eat = 0;
+				eat = true;
 				//Вызываем функцию обработчика того что сьели
-				this.handleEat();
-				let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+				const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
 				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
 				this.grid.space[tile.y][tile.x].element = 0;
 			}
 			this.getDirection();
 			this.framesAnimation = 0;
+			if (eat) {
+				return 'eat';
+			}
 		} else {
 			this.framesAnimation += 1;
 		}
@@ -114,128 +125,137 @@ export class Beetle {
 	//Функция для определения направления движения жука
 	getDirection() {
 		// Проверяем свободен ли выбранный путь при фиксации фигуры
-		if (this.deleteRow === 1) {
-			if (this.moves === this.isCanMove([this.moves]))
-				this.deleteRow = 0;
+		if (this.deleteRow === 1 &&
+			this.moves === this.isCanMove([this.moves])) {
+			this.deleteRow = 0;
 		}
 
-		if (this.moves.length === 0 || this.deleteRow === 1)
+		if (this.moves.length === 0 || this.deleteRow === 1) {
 			this.moves = this.getNewDirection();
+		}
 
-		let startMove = { ...this.move };
+		const startMove = { ...this.move };
 		if (startMove.x === this.moves[0].x && startMove.y === this.moves[0].y) {
 			this.move = this.moves.shift();
 		} else {
 			this.move = this.moves[0];
 		}
-		this.frames = this.getFrameRotate({ ...startMove }, this.move)
+		this.frames = this.getFrameRotate({ ...startMove }, this.move);
 		this.direction = { ...startMove };
 	}
 
 	isCanMove = (arrayDirectionses) => {
-		for (let directions of arrayDirectionses)
-			if (this.isCanDirections(directions))
+		for (const directions of arrayDirectionses) {
+			if (this.isCanDirections(directions)) {
 				return directions;
+			}
+		}
 
 		return [{ x: 0, y: 0 }];
-	}
+	};
 
 	isCanDirections = (directions) => {
 		let TekX = 0;
 		let TekY = 0;
-		for (let direction of directions) {
+		for (const direction of directions) {
 			TekX += direction.x;
 			TekY += direction.y;
-			let point = {
+			const point = {
 				x: Math.floor(this.position.x / SIZE_TILES) + TekX,
-				y: Math.floor(this.position.y / SIZE_TILES) + TekY
+				y: Math.floor(this.position.y / SIZE_TILES) + TekY,
 			};
 			// Если смещение попадает за границы стакана, сказать что туда нельзя
-			if (!this.grid.isInside(point))
+			if (!this.grid.isInside(point)) {
 				return false;
+			}
 
 			// Проверить свободен ли элемент при смещении
-			if (!this.grid.isFree(point)) {
-				if (TekY === 0)
-					if (Math.random() * 100 < PROBABILITY_EAT) {
-						this.eat = 1;
-						directions.length = directions.indexOf(direction) + 1;
-						return true;
-					}
+			if (!this.grid.isFree(point) && TekY === 0) {
+				if (Math.random() * 100 < PROBABILITY_EAT) {
+					this.eat = 1;
+					directions.length = directions.indexOf(direction) + 1;
+					return true;
+				}
 				return false;
 			}
 		}
 		return true;
-	}
+	};
 
 	getNewDirection() {
 		const DIRECTION = {};
-		DIRECTION["L"] = { x: -1, y: 0 };
-		DIRECTION["R"] = { x: 1, y: 0 };
-		DIRECTION["D"] = { x: 0, y: 1 };
-		DIRECTION["U"] = { x: 0, y: -1 };
-		DIRECTION["0"] = { x: 0, y: 0 };
-		DIRECTION["0D"] = [{ x: 0, y: 1 }];
-		DIRECTION["RD"] = [DIRECTION["D"], DIRECTION["R"]];
-		DIRECTION["LD"] = [DIRECTION["D"], DIRECTION["L"]];
-		DIRECTION["R0"] = [DIRECTION["R"]];
-		DIRECTION["L0"] = [DIRECTION["L"]];
-		DIRECTION["RU"] = [DIRECTION["U"], DIRECTION["R"]];
-		DIRECTION["LU"] = [DIRECTION["U"], DIRECTION["L"]];
-		DIRECTION["RUU"] = [DIRECTION["U"], DIRECTION["U"], DIRECTION["R"]];
-		DIRECTION["LUU"] = [DIRECTION["U"], DIRECTION["U"], DIRECTION["L"]];
-		DIRECTION["LEFTDOWN"] = [DIRECTION["0D"], DIRECTION["LD"], DIRECTION["RD"]];
-		DIRECTION["RIGHTDOWN"] = [DIRECTION["0D"], DIRECTION["RD"], DIRECTION["LD"]];
-		DIRECTION["LEFT"] = [DIRECTION["L0"], DIRECTION["LU"], DIRECTION["LUU"]];
-		DIRECTION["RIGHT"] = [DIRECTION["R0"], DIRECTION["RU"], DIRECTION["RUU"]];
+		DIRECTION['L'] = { x: -1, y: 0 };
+		DIRECTION['R'] = { x: 1, y: 0 };
+		DIRECTION['D'] = { x: 0, y: 1 };
+		DIRECTION['U'] = { x: 0, y: -1 };
+		DIRECTION['0'] = { x: 0, y: 0 };
+		DIRECTION['0D'] = [{ x: 0, y: 1 }];
+		DIRECTION['RD'] = [DIRECTION['D'], DIRECTION['R']];
+		DIRECTION['LD'] = [DIRECTION['D'], DIRECTION['L']];
+		DIRECTION['R0'] = [DIRECTION['R']];
+		DIRECTION['L0'] = [DIRECTION['L']];
+		DIRECTION['RU'] = [DIRECTION['U'], DIRECTION['R']];
+		DIRECTION['LU'] = [DIRECTION['U'], DIRECTION['L']];
+		DIRECTION['RUU'] = [DIRECTION['U'], DIRECTION['U'], DIRECTION['R']];
+		DIRECTION['LUU'] = [DIRECTION['U'], DIRECTION['U'], DIRECTION['L']];
+		DIRECTION['LEFTDOWN'] = [DIRECTION['0D'], DIRECTION['LD'], DIRECTION['RD']];
+		DIRECTION['RIGHTDOWN'] = [DIRECTION['0D'], DIRECTION['RD'], DIRECTION['LD']];
+		DIRECTION['LEFT'] = [DIRECTION['L0'], DIRECTION['LU'], DIRECTION['LUU']];
+		DIRECTION['RIGHT'] = [DIRECTION['R0'], DIRECTION['RU'], DIRECTION['RUU']];
 
 		this.deleteRow = 0;
-		let code = "" + [this.direction.x, this.direction.y, this.move.x, this.move.y].join("");
+		const code = '' + [this.direction.x, this.direction.y, this.move.x, this.move.y].join('');
 		// Если двигаемся вправо
-		if (code === "0010" || code === "1010") {
-			this.lastDirection = "R";
-			return this.isCanMove([...DIRECTION["RIGHTDOWN"], ...DIRECTION["RIGHT"], ...DIRECTION["LEFT"]]);
+		if (code === '0010' || code === '1010') {
+			this.lastDirection = 'R';
+			return this.isCanMove([...DIRECTION['RIGHTDOWN'], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']]);
 		}
 		// Если двигаемся влево
-		if (code === "00-10" || code === "-10-10") {
-			this.lastDirection = "L";
-			return this.isCanMove([...DIRECTION["LEFTDOWN"], ...DIRECTION["LEFT"], ...DIRECTION["RIGHT"]]);
+		if (code === '00-10' || code === '-10-10') {
+			this.lastDirection = 'L';
+			return this.isCanMove([...DIRECTION['LEFTDOWN'], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']]);
 		}
 
-		if (this.lastDirection === "L")
-			return this.isCanMove([...[DIRECTION["0D"]], ...DIRECTION["LEFT"], ...DIRECTION["RIGHT"]]);
-		else
-			return this.isCanMove([...[DIRECTION["0D"]], ...DIRECTION["RIGHT"], ...DIRECTION["LEFT"]]);
+		if (this.lastDirection === 'L') {
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']]);
+		} else {
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']]);
+		}
 
 	}
 
 	getFrameRotate(direction, move) {
 		// !Добавить если с 0 поворачиваемся на лево или направо, а также если в 0
-		if (direction.x === move.x && direction.y === move.y)
+		if (direction.x === move.x && direction.y === move.y) {
 			return NUMBER_FRAMES_BEEATLE;
-		else if (direction.x === 0 && direction.y === 0)
+		} else if (direction.x === 0 && direction.y === 0) {
 			return NUMBER_FRAMES_BEEATLE_ROTATE;
-		else
+		} else {
 			//?? При изменении кадров надо задавать другое значение
 			return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
+		}
 	}
 
 	// Проверяем есть ли доступ к верху стакана
 	isBreath() {
-		let tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-		return this.findWay(tile, []);
+		const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+		this.breath = this.findWay(tile, []);
+		return this.breath;
 	}
 
 	findWay(tile, cash) {
-		if (tile.y === 0) return true;
+		if (tile.y === 0) {
+			return true;
+		}
 		cash.push([tile.x, tile.y]);
-		for (let element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }]) {
-			let filterCash = cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0;
+		for (const element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }]) {
+			const filterCash = cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0;
 			if (this.grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
 				&& this.grid.space[tile.y + element.y][tile.x + element.x].element === 0
 				&& filterCash) {
-				if (this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash))
+				if (this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash)) {
 					return true;
+				}
 			}
 		}
 		return false;
@@ -243,7 +263,7 @@ export class Beetle {
 
 	// Получить напарвления движения
 	getDirectionMovement() {
-		return "" + [this.direction.x, this.direction.y, this.move.x, this.move.y].join("");
+		return '' + [this.direction.x, this.direction.y, this.move.x, this.move.y].join('');
 	}
 
 	// Проверяем ест ли жук сейчас
@@ -255,8 +275,10 @@ export class Beetle {
 	// Исходя из данных определяет спрайт для рисования
 	getSprite() {
 		// Если жук ест
-		if (this.isEatingNow()) return getSprite.EatingNow(this.getDirectionMovement(), this.framesAnimation);
-		else return getSprite.NoEatingNow(this.getDirectionMovement(), this.framesAnimation);
+		if (this.isEatingNow()) {
+			return getSprite.EatingNow(this.getDirectionMovement(), this.framesAnimation);
+		} else {
+			return getSprite.NoEatingNow(this.getDirectionMovement(), this.framesAnimation);
+		}
 	}
-
 }

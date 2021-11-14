@@ -1,0 +1,173 @@
+import {
+	SIZE_TILES, STEP_MOVE_KEY_X,
+	// Количество изображений для фигуры
+	NUMBER_IMAGES_FIGURE,
+	FIGURE,
+} from './const.js';
+import { Cell, Point } from './class.js';
+// Класс для фигуры
+export class Figure {
+	// Ячейки в фигуре
+	cells;
+	// Количество изображений для фигуры
+	static numberCell = NUMBER_IMAGES_FIGURE;
+	constructor() {
+		this.cells = [];
+		for (const [x, y] of FIGURE[Math.floor(Math.random() * FIGURE.length)]) {
+			// Новая ячейка(координаты x и y и номер изображения фигуры)
+			this.cells.push(new Cell(x, y, Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1));
+		}
+	}
+}
+
+// Класс для текущей падающей фигуры
+export class CurrentFigure extends Figure {
+	position;
+	grid;
+	constructor(grid, newCell) {
+		super();
+		this.grid = grid;
+		this.cells = [...newCell];
+		//Задаем стартовую позицию
+		const width = this.cells.reduce((a, b) => a.x > b.x ? a : b).x;
+		const height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
+		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
+	}
+
+	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
+	getPositionTile(x = this.position.x, y = this.position.y) {
+		const resultSet = [];
+		this.cells.forEach((cell) => {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0) {
+				resultSet.push(new Point(
+					cell.x + Math.floor(x / SIZE_TILES),
+					cell.y + Math.floor(y / SIZE_TILES)));
+			}
+			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0) {
+				resultSet.push(new Point(
+					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
+					cell.y + Math.floor(y / SIZE_TILES)));
+			}
+			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0) {
+				resultSet.push(new Point(
+					cell.x + Math.floor(x / SIZE_TILES),
+					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+			}
+			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0) {
+				resultSet.push(new Point(
+					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
+					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+			}
+		});
+
+		const result = [];
+		this.cells.forEach((cell) => result.push(new Point(
+			cell.x + Math.ceil(x / SIZE_TILES),
+			cell.y + Math.ceil(y / SIZE_TILES),
+		)));
+		return result;
+	}
+
+	// Проверяем столкновение
+	isCollission(x, y) {
+		let result = false;
+		// Проверяем есть ли в этой точке элемент
+		for (const point of this.getPositionTile(x, y)) {
+			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0) {
+				result = true;
+			}
+		}
+
+		if (result) {
+			return true;
+		}
+
+		// Проверяем выходит ли точка за границы стакана
+		for (const { x: x1, y: y1 } of this.getPositionTile(x, y)) {
+			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1) {
+				return true;
+			}
+		}
+
+		return result;
+	}
+
+	//функция поворота фигуры
+	rotate() {
+		this.cells.forEach((cell) => {
+			[cell.x, cell.y] = [3 - cell.y, cell.x];
+		});
+		if (this.isCollission(this.position.x, this.position.y)) {
+			this.cells.forEach((cell) => {
+				[cell.x, cell.y] = [3 - cell.y, cell.x];
+			});
+			this.cells.forEach((cell) => {
+				[cell.x, cell.y] = [3 - cell.y, cell.x];
+			});
+			this.cells.forEach((cell) => {
+				[cell.x, cell.y] = [3 - cell.y, cell.x];
+			});
+		}
+	}
+
+	//Метод движения влево
+	moveLeft() {
+		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y)) {
+			this.position.x -= STEP_MOVE_KEY_X;
+		}
+	}
+
+	//Метод движения вправо
+	moveRight() {
+		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y)) {
+			this.position.x += STEP_MOVE_KEY_X;
+		}
+	}
+
+
+	//Метод движения вниз возвращает 3 значения true (Фигура достигла какого то препятствия), false (Игра окончена, стакан заполнен) и другое (Перемещаем фигуру на заданное расстояние)
+	moveDown(stepY) {
+		// Переменные для удобства
+		// Текущая позиция по Y
+		const tY = Math.ceil(this.position.y / SIZE_TILES);
+		// Конечная позиция по Y при шаге stepY
+		const kY = Math.ceil((this.position.y + stepY) / SIZE_TILES);
+		// Запоминаем конечную пощицию еще в одну переменную
+		let predel = kY;
+		// Создаем флаг для понимания что ниже двигатся нельзя
+		let stop = false;
+		// Просматриваем все Y между начальной и конечной позицицей
+		for (let y = tY; y <= kY; y++) {
+			if (this.isCollission(this.position.x, y * SIZE_TILES)) {
+				predel = y;
+				stop = true;
+				break;
+			}
+		}
+
+		if (stepY < SIZE_TILES) {
+			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
+			this.position.y += stepY;
+		} else {
+			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
+			this.position.y += (predel - tY) * SIZE_TILES;
+		}
+		// Если движение возможно просто выходим, если нет то смотрим условия
+		if (stop) {
+			const positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
+			for (const { y } of positionCells) {
+				if (y - 1 < 0) {
+					return 'endGame';
+				}
+			}
+
+			positionCells.forEach(({ x, y }, index) => {
+				this.grid.space[y - 1][x].element = this.cells[index].view;
+			});
+
+			return 'fixation';
+		}
+
+		return 'fall';
+	}
+}

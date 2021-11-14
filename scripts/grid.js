@@ -43,13 +43,15 @@ export class Grid {
 				count++;
 
 			}
-		})
+		});
 		return count;
 	}
 
 	deleteRow(rowIndex) {
-		for (let i = rowIndex; i > 0; i--)
-			for (let j = 0; j < this.width; j++)
+		for (let i = rowIndex; i > 0; i--) {
+			for (let j = 0; j < this.width; j++) {
 				this.space[i][j].setElement(this.space[i - 1][j]);
+			}
+		}
 	}
 }
