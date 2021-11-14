@@ -1,7 +1,9 @@
 import {
 	SIZE_TILES, STEP_MOVE_KEY_X,
-	// Количество изображений для фигуры
 	NUMBER_IMAGES_FIGURE,
+	START_STEP_MOVE_AUTO,
+	STEP_MOVE_KEY_Y,
+	PLUS_STEP_MOVE_AUTO,
 	FIGURE,
 } from './const.js';
 import { Cell, Point } from './class.js';
@@ -28,6 +30,7 @@ export class CurrentFigure extends Figure {
 		super();
 		this.grid = grid;
 		this.cells = [...newCell];
+		this.stepMoveAuto = START_STEP_MOVE_AUTO;
 		//Задаем стартовую позицию
 		const width = this.cells.reduce((a, b) => a.x > b.x ? a : b).x;
 		const height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
@@ -66,6 +69,11 @@ export class CurrentFigure extends Figure {
 			cell.y + Math.ceil(y / SIZE_TILES),
 		)));
 		return result;
+	}
+
+	fixation(scores) {
+		const scoresForLevel = 300;
+		this.stepMoveAuto = PLUS_STEP_MOVE_AUTO + PLUS_STEP_MOVE_AUTO * Math.ceil(scores / scoresForLevel);
 	}
 
 	// Проверяем столкновение
@@ -108,6 +116,20 @@ export class CurrentFigure extends Figure {
 				[cell.x, cell.y] = [3 - cell.y, cell.x];
 			});
 		}
+	}
+
+	moves({ left, right, up, down }) {
+		if (left) {
+			this.moveLeft();
+		}
+		if (right) {
+			this.moveRight();
+		}
+		if (up) {
+			this.rotate();
+		}
+		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
+		return this.moveDown(down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
 	}
 
 	//Метод движения влево

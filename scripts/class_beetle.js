@@ -34,12 +34,11 @@ export class Beetle {
 	// Вспомогательная сетка для ссылки на сетку
 	grid;
 	constructor(grid) {
-		this.grid = grid;
 		//! Сделать определение ширины и высоты жука програмным, чтобы не зависит от вида картинки
 		this.width = 24;
 		this.height = 24;
 
-		this.position = new Point(Math.floor(Math.random() * this.grid.width) * SIZE_TILES, ((this.grid.height - 1) * SIZE_TILES));
+		this.position = new Point(Math.floor(Math.random() * grid.width) * SIZE_TILES, ((grid.height - 1) * SIZE_TILES));
 
 		//Установить случайное движение
 		this.direction = new Point(0, 0);
@@ -61,7 +60,7 @@ export class Beetle {
 	}
 
 	//Метод движения жука
-	update() {
+	update(grid) {
 		// Если происходит поворот то не двигаемся
 		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
 			if (this.move.y === 0) {
@@ -80,11 +79,11 @@ export class Beetle {
 				offsetX = 0;
 			}
 			const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-			this.grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
+			grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
 				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
 
-		return this.getCurrentFramesAnimation();
+		return this.getCurrentFramesAnimation(grid);
 	}
 
 	getDirectionEat({ x, y }) {
@@ -101,7 +100,7 @@ export class Beetle {
 	}
 
 	//Определяем текущий кадр
-	getCurrentFramesAnimation() {
+	getCurrentFramesAnimation(grid) {
 		let eat = false;
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames === NUMBER_FRAMES_BEEATLE) {
@@ -109,10 +108,10 @@ export class Beetle {
 				eat = true;
 				//Вызываем функцию обработчика того что сьели
 				const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
-				this.grid.space[tile.y][tile.x].element = 0;
+				grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
+				grid.space[tile.y][tile.x].element = 0;
 			}
-			this.getDirection();
+			this.getDirection(grid);
 			this.framesAnimation = 0;
 			if (eat) {
 				return 'eat';
@@ -123,15 +122,15 @@ export class Beetle {
 	}
 
 	//Функция для определения направления движения жука
-	getDirection() {
+	getDirection(grid) {
 		// Проверяем свободен ли выбранный путь при фиксации фигуры
 		if (this.deleteRow === 1 &&
-			this.moves === this.isCanMove([this.moves])) {
+			this.moves === this.isCanMove([this.moves], grid)) {
 			this.deleteRow = 0;
 		}
 
 		if (this.moves.length === 0 || this.deleteRow === 1) {
-			this.moves = this.getNewDirection();
+			this.moves = this.getNewDirection(grid);
 		}
 
 		const startMove = { ...this.move };
@@ -144,9 +143,9 @@ export class Beetle {
 		this.direction = { ...startMove };
 	}
 
-	isCanMove = (arrayDirectionses) => {
+	isCanMove = (arrayDirectionses, grid) => {
 		for (const directions of arrayDirectionses) {
-			if (this.isCanDirections(directions)) {
+			if (this.isCanDirections(directions, grid)) {
 				return directions;
 			}
 		}
@@ -154,7 +153,7 @@ export class Beetle {
 		return [{ x: 0, y: 0 }];
 	};
 
-	isCanDirections = (directions) => {
+	isCanDirections = (directions, grid) => {
 		let TekX = 0;
 		let TekY = 0;
 		for (const direction of directions) {
@@ -165,13 +164,13 @@ export class Beetle {
 				y: Math.floor(this.position.y / SIZE_TILES) + TekY,
 			};
 			// Если смещение попадает за границы стакана, сказать что туда нельзя
-			if (!this.grid.isInside(point)) {
+			if (!grid.isInside(point)) {
 				return false;
 			}
 
 			// Проверить свободен ли элемент при смещении
-			if (!this.grid.isFree(point) && TekY === 0) {
-				if (Math.random() * 100 < PROBABILITY_EAT) {
+			if (!grid.isFree(point)) {
+				if (TekY === 0 && (Math.random() * 100 < PROBABILITY_EAT)) {
 					this.eat = 1;
 					directions.length = directions.indexOf(direction) + 1;
 					return true;
@@ -182,7 +181,7 @@ export class Beetle {
 		return true;
 	};
 
-	getNewDirection() {
+	getNewDirection(grid) {
 		const DIRECTION = {};
 		DIRECTION['L'] = { x: -1, y: 0 };
 		DIRECTION['R'] = { x: 1, y: 0 };
@@ -208,18 +207,18 @@ export class Beetle {
 		// Если двигаемся вправо
 		if (code === '0010' || code === '1010') {
 			this.lastDirection = 'R';
-			return this.isCanMove([...DIRECTION['RIGHTDOWN'], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']]);
+			return this.isCanMove([...DIRECTION['RIGHTDOWN'], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']], grid);
 		}
 		// Если двигаемся влево
 		if (code === '00-10' || code === '-10-10') {
 			this.lastDirection = 'L';
-			return this.isCanMove([...DIRECTION['LEFTDOWN'], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']]);
+			return this.isCanMove([...DIRECTION['LEFTDOWN'], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']], grid);
 		}
 
 		if (this.lastDirection === 'L') {
-			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']]);
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']], grid);
 		} else {
-			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']]);
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']], grid);
 		}
 
 	}
@@ -237,25 +236,24 @@ export class Beetle {
 	}
 
 	// Проверяем есть ли доступ к верху стакана
-	isBreath() {
+	isBreath(grid) {
 		const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
-		this.breath = this.findWay(tile, []);
+		this.breath = this.findWay(tile, [], grid);
 		return this.breath;
 	}
 
-	findWay(tile, cash) {
+	findWay(tile, cash, grid) {
 		if (tile.y === 0) {
 			return true;
 		}
 		cash.push([tile.x, tile.y]);
 		for (const element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }]) {
 			const filterCash = cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0;
-			if (this.grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
-				&& this.grid.space[tile.y + element.y][tile.x + element.x].element === 0
-				&& filterCash) {
-				if (this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash)) {
-					return true;
-				}
+			if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
+				&& grid.space[tile.y + element.y][tile.x + element.x].element === 0
+				&& filterCash
+				&& this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash, grid)) {
+				return true;
 			}
 		}
 		return false;
