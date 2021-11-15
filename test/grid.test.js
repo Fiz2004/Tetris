@@ -1,4 +1,4 @@
-import { Grid } from "..//scripts/grid.js"
+import { Grid } from "../scripts/grid.js"
 import { strict as assert } from 'assert';
 
 describe("Проверяем функцию isInside", function () {
@@ -52,31 +52,29 @@ describe("Проверяем функцию getCountRowFull", function () {
 		grid = new Grid(5, 5);
 	});
 
-
-
 	it("Значение 0", function () {
 		assert.equal(grid.getCountRowFull(), 0);
 	});
 
 	it("Значение 1", function () {
-		for (let space4 of grid.space[4])
-			space4[x].element = 1;
+		for (let space of grid.space[4])
+			space.element = 1;
 		assert.equal(grid.getCountRowFull(), 1);
 	});
 
 	it("Значение 2", function () {
-		for (let space4 of grid.space[4])
-			space4[x].element = 1;
-		for (let space3 of grid.space[3])
-			space3[x].element = 1;
+		for (let space of grid.space[4])
+			space.element = 1;
+		for (let space of grid.space[3])
+			space.element = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 
 	it("Значение 1 0 1", function () {
-		for (let space4 of grid.space[4])
-			space4[x].element = 1;
-		for (let space2 of grid.space[2])
-			space2[2].element = 1;
+		for (let space of grid.space[4])
+			space.element = 1;
+		for (let space of grid.space[2])
+			space.element = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 

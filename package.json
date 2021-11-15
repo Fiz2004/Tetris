@@ -6,10 +6,11 @@
 	"main": "pathToMain",
 	"type": "module",
 	"dependencies": {
-		"nyc": "^15.1.0"
+		"nyc": "*",
+		"mocha": "*"
 	},
 	"scripts": {
-		"test": "nyc mocha ./tests/*.test.js"
+		"test": "nyc mocha ./test/*.test.js"
 	},
 	"devDependencies": {
 		"mocha": "*"

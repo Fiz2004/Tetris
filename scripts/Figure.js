@@ -1,5 +1,5 @@
 import {
-	SIZE_TILES, STEP_MOVE_KEY_X,
+	STEP_MOVE_KEY_X,
 	NUMBER_IMAGES_FIGURE,
 	START_STEP_MOVE_AUTO,
 	STEP_MOVE_KEY_Y,
@@ -34,39 +34,39 @@ export class CurrentFigure extends Figure {
 		//Задаем стартовую позицию
 		const width = this.cells.reduce((a, b) => a.x > b.x ? a : b).x;
 		const height = this.cells.reduce((a, b) => a.y > b.y ? a : b).y;
-		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)) * SIZE_TILES, (-1 - height) * SIZE_TILES);
+		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)), -1 - height);
 	}
 
 	//Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
 	getPositionTile(x = this.position.x, y = this.position.y) {
 		const resultSet = [];
 		this.cells.forEach((cell) => {
-			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0) {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x) === el.x && cell.y + Math.floor(y) === el.y)).length === 0) {
 				resultSet.push(new Point(
-					cell.x + Math.floor(x / SIZE_TILES),
-					cell.y + Math.floor(y / SIZE_TILES)));
+					cell.x + Math.floor(x),
+					cell.y + Math.floor(y)));
 			}
-			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor(y / SIZE_TILES) === el.y)).length === 0) {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x + 1) === el.x && cell.y + Math.floor(y) === el.y)).length === 0) {
 				resultSet.push(new Point(
-					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
-					cell.y + Math.floor(y / SIZE_TILES)));
+					cell.x + Math.floor(x + 1),
+					cell.y + Math.floor(y)));
 			}
-			if (resultSet.filter((el) => (cell.x + Math.floor(x / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0) {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x) === el.x && cell.y + Math.floor(y + 1) === el.y)).length === 0) {
 				resultSet.push(new Point(
-					cell.x + Math.floor(x / SIZE_TILES),
-					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+					cell.x + Math.floor(x),
+					cell.y + Math.floor(y + 1)));
 			}
-			if (resultSet.filter((el) => (cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES) === el.x && cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES) === el.y)).length === 0) {
+			if (resultSet.filter((el) => (cell.x + Math.floor(x + 1) === el.x && cell.y + Math.floor(y + 1) === el.y)).length === 0) {
 				resultSet.push(new Point(
-					cell.x + Math.floor((x + SIZE_TILES) / SIZE_TILES),
-					cell.y + Math.floor((y + SIZE_TILES) / SIZE_TILES)));
+					cell.x + Math.floor(x + 1),
+					cell.y + Math.floor(y + 1)));
 			}
 		});
 
 		const result = [];
 		this.cells.forEach((cell) => result.push(new Point(
-			cell.x + Math.ceil(x / SIZE_TILES),
-			cell.y + Math.ceil(y / SIZE_TILES),
+			cell.x + Math.ceil(x),
+			cell.y + Math.ceil(y),
 		)));
 		return result;
 	}
@@ -151,32 +151,32 @@ export class CurrentFigure extends Figure {
 	moveDown(stepY) {
 		// Переменные для удобства
 		// Текущая позиция по Y
-		const tY = Math.ceil(this.position.y / SIZE_TILES);
+		const tY = Math.ceil(this.position.y);
 		// Конечная позиция по Y при шаге stepY
-		const kY = Math.ceil((this.position.y + stepY) / SIZE_TILES);
+		const kY = Math.ceil(this.position.y + stepY);
 		// Запоминаем конечную пощицию еще в одну переменную
 		let predel = kY;
 		// Создаем флаг для понимания что ниже двигатся нельзя
 		let stop = false;
 		// Просматриваем все Y между начальной и конечной позицицей
 		for (let y = tY; y <= kY; y++) {
-			if (this.isCollission(this.position.x, y * SIZE_TILES)) {
+			if (this.isCollission(this.position.x, y)) {
 				predel = y;
 				stop = true;
 				break;
 			}
 		}
 
-		if (stepY < SIZE_TILES) {
+		if (stepY < 1) {
 			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
 			this.position.y += stepY;
 		} else {
 			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
-			this.position.y += (predel - tY) * SIZE_TILES;
+			this.position.y += predel - tY;
 		}
 		// Если движение возможно просто выходим, если нет то смотрим условия
 		if (stop) {
-			const positionCells = this.getPositionTile(this.position.x, predel * SIZE_TILES);
+			const positionCells = this.getPositionTile(this.position.x, predel);
 			for (const { y } of positionCells) {
 				if (y - 1 < 0) {
 					return 'endGame';

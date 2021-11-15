@@ -3,6 +3,7 @@ import {
 	SIZE_TILES,
 	DIRECTORY_IMG,
 	TIMES_BREATH_LOSE,
+	NUMBER_IMAGES_FIGURE,
 } from './const.js';
 //Объект рисования
 export class Display {
@@ -79,52 +80,6 @@ export class Display {
 		return [0, 0];
 	}
 
-	drawGridElements(grid) {
-		let offsetX, offsetY;
-		for (let y = 0; y < this.canvas.height / SIZE_TILES; y++) {
-			for (let x = 0; x < this.canvas.width / SIZE_TILES; x++) {
-				const screenX = x * SIZE_TILES;
-				const screenY = y * SIZE_TILES;
-				offsetX = Math.floor(grid.space[y][x].background / 4) * SIZE_TILES;
-				offsetY = (grid.space[y][x].background % 4) * SIZE_TILES;
-				// Рисуем задний фон
-				this.ctx.drawImage(this.imgFon,
-					offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-					screenX, screenY, SIZE_TILES, SIZE_TILES);
-
-				if (grid.space[y][x].element === 0) {
-					continue;
-				}
-
-				// Рисуем существующие элементы
-				[offsetX, offsetY] = this.getOffset(grid.space[y][x]);
-				this.ctx.drawImage(this.imgKv[grid.space[y][x].element - 1],
-					offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-					screenX, screenY, SIZE_TILES, SIZE_TILES);
-
-			}
-		}
-	}
-
-	drawCurrentFigure(currentFigure) {
-		for (const cell of currentFigure.cells) {
-			const screenX = (cell.x * SIZE_TILES) + currentFigure.position.x;
-			const screenY = (cell.y * SIZE_TILES) + currentFigure.position.y;
-			this.ctx.drawImage(this.imgKv[cell.view - 1],
-				0, 0, SIZE_TILES, SIZE_TILES,
-				screenX, screenY, SIZE_TILES, SIZE_TILES);
-		}
-	}
-
-	drawBeetle(beetle) {
-		let [offsetX, offsetY] = beetle.getSprite();
-		offsetX *= SIZE_TILES;
-		offsetY *= SIZE_TILES;
-		this.ctx.drawImage(this.imgBeetle,
-			offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-			beetle.position.x, beetle.position.y, SIZE_TILES, SIZE_TILES);
-	}
-
 	render({ grid, currentFigure, beetle, scores, record, status }) {
 		//Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid);
@@ -162,5 +117,56 @@ export class Display {
 		// Закрашиваем элемент связанный с дыханием
 		const int = Math.floor(sec) * 255 / TIMES_BREATH_LOSE;
 		document.querySelector('#infoID').style.backgroundColor = `rgb(255, ${int}, ${int})`;
+	}
+
+	drawGridElements(grid) {
+		let offsetX, offsetY;
+		for (let y = 0; y < grid.height; y++) {
+			for (let x = 0; x < grid.width; x++) {
+				const screenX = x * SIZE_TILES;
+				const screenY = y * SIZE_TILES;
+				offsetX = Math.floor(grid.space[y][x].background / NUMBER_IMAGES_FIGURE) * SIZE_TILES;
+				offsetY = (grid.space[y][x].background % NUMBER_IMAGES_FIGURE) * SIZE_TILES;
+
+				this.ctx.drawImage(this.imgFon,
+					offsetX, offsetY, SIZE_TILES, SIZE_TILES,
+					screenX, screenY, SIZE_TILES, SIZE_TILES);
+
+			}
+		}
+
+		for (let y = 0; y < grid.height; y++) {
+			for (let x = 0; x < grid.width; x++) {
+				if (grid.space[y][x].element !== 0) {
+					const screenX = x * SIZE_TILES;
+					const screenY = y * SIZE_TILES;
+					[offsetX, offsetY] = this.getOffset(grid.space[y][x]);
+					this.ctx.drawImage(this.imgKv[grid.space[y][x].element - 1],
+						offsetX, offsetY, SIZE_TILES, SIZE_TILES,
+						screenX, screenY, SIZE_TILES, SIZE_TILES);
+				}
+			}
+		}
+	}
+
+	drawCurrentFigure(currentFigure) {
+		for (const cell of currentFigure.cells) {
+			const screenX = (cell.x + currentFigure.position.x) * SIZE_TILES;
+			const screenY = (cell.y + currentFigure.position.y) * SIZE_TILES;
+			this.ctx.drawImage(this.imgKv[cell.view - 1],
+				0, 0, SIZE_TILES, SIZE_TILES,
+				screenX, screenY, SIZE_TILES, SIZE_TILES);
+		}
+	}
+
+	drawBeetle(beetle) {
+		let [offsetX, offsetY] = beetle.getSprite();
+		offsetX *= SIZE_TILES;
+		offsetY *= SIZE_TILES;
+		const screenX = beetle.position.x * SIZE_TILES;
+		const screenY = beetle.position.y * SIZE_TILES;
+		this.ctx.drawImage(this.imgBeetle,
+			offsetX, offsetY, SIZE_TILES, SIZE_TILES,
+			screenX, screenY, SIZE_TILES, SIZE_TILES);
 	}
 }

@@ -22,13 +22,10 @@ describe("Проверяем функцию beetleAnimation", function () {
 	});
 
 	it("Проверяем движение вправо", function () {
-		console.log(beetle.position.x);
-		for (let i = 0; i <= NUMBER_FRAMES_BEEATLE; i++)
-			beetle.beetleAnimation();
-		console.log(beetle.position.x);
+		for (let i = 0; i <= NUMBER_FRAMES_BEEATLE+1; i++)
+			beetle.update(grid);
 		assert.equal(Math.floor(beetle.position.x / SIZE_TILES), 3);
 	});
-
 	// it("Значение max(4),max(4)", function () {
 	// 	assert.equal(grid.isInside({ x: 4, y: 4 }), true);
 	// });

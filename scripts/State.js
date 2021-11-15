@@ -53,6 +53,9 @@ export class State {
 	fixation() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		const countRowFull = this.grid.getCountRowFull();
+		if (countRowFull) {
+			this.grid.deleteRows();
+		}
 
 		const scoresForRow = 100;
 		for (let i = 1; i <= countRowFull; i++) {

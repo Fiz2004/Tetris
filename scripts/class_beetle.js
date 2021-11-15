@@ -1,9 +1,10 @@
 import { Point } from './class.js';
 import * as getSprite from './getSpriteBeetle.js';
 import {
-	SIZE_TILES,
-	NUMBER_FRAMES_BEEATLE, NUMBER_FRAMES_BEEATLE_ROTATE,
-	NUMBER_FRAMES_ELEMENTS, PROBABILITY_EAT,
+	NUMBER_FRAMES_BEEATLE,
+	NUMBER_FRAMES_BEEATLE_ROTATE,
+	NUMBER_FRAMES_ELEMENTS,
+	PROBABILITY_EAT,
 } from './const.js';
 
 // Класс для жука
@@ -38,13 +39,13 @@ export class Beetle {
 		this.width = 24;
 		this.height = 24;
 
-		this.position = new Point(Math.floor(Math.random() * grid.width) * SIZE_TILES, ((grid.height - 1) * SIZE_TILES));
+		// this.position = new Point(Math.floor(Math.random() * grid.width), (grid.height - 1));
+		this.position = new Point(1, 24);
 
-		//Установить случайное движение
 		this.direction = new Point(0, 0);
 		this.moves = [];
 		this.move = new Point(0, 0);
-		this.lastDirection = 'R';
+		this.lastDirection = 'L';
 		this.eat = 0;
 		this.deleteRow = 0;
 		this.frames = NUMBER_FRAMES_BEEATLE;
@@ -64,10 +65,10 @@ export class Beetle {
 		// Если происходит поворот то не двигаемся
 		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
 			if (this.move.y === 0) {
-				this.position.x += this.move.x * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+				this.position.x += this.move.x * (1 / NUMBER_FRAMES_BEEATLE);
 			}
 
-			this.position.y += this.move.y * (SIZE_TILES / NUMBER_FRAMES_BEEATLE);
+			this.position.y += this.move.y * (1 / NUMBER_FRAMES_BEEATLE);
 		}
 
 		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
@@ -78,9 +79,9 @@ export class Beetle {
 			if (offsetX === -1) {
 				offsetX = 0;
 			}
-			const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+			const tile = new Point(Math.floor(this.position.x), Math.floor(this.position.y));
 			grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
-				= Math.floor(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+				= Math.round(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
 
 		return this.getCurrentFramesAnimation(grid);
@@ -107,7 +108,7 @@ export class Beetle {
 				this.eat = 0;
 				eat = true;
 				//Вызываем функцию обработчика того что сьели
-				const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+				const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
 				grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
 				grid.space[tile.y][tile.x].element = 0;
 			}
@@ -160,8 +161,8 @@ export class Beetle {
 			TekX += direction.x;
 			TekY += direction.y;
 			const point = {
-				x: Math.floor(this.position.x / SIZE_TILES) + TekX,
-				y: Math.floor(this.position.y / SIZE_TILES) + TekY,
+				x: Math.round(this.position.x) + TekX,
+				y: Math.round(this.position.y) + TekY,
 			};
 			// Если смещение попадает за границы стакана, сказать что туда нельзя
 			if (!grid.isInside(point)) {
@@ -237,7 +238,7 @@ export class Beetle {
 
 	// Проверяем есть ли доступ к верху стакана
 	isBreath(grid) {
-		const tile = new Point(Math.floor(this.position.x / SIZE_TILES), Math.floor(this.position.y / SIZE_TILES));
+		const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
 		this.breath = this.findWay(tile, [], grid);
 		return this.breath;
 	}

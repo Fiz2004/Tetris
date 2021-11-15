@@ -17,6 +17,7 @@ export class Grid {
 		this.space = Array.from({ length: this.height }).map(() =>
 			Array.from({ length: this.width }).map(() =>
 				new Element(Math.floor(Math.random() * NUMBER_IMAGES_BACKGROUND))));
+		this.space[24][12].element = 1;
 	}
 
 	// Проверяем ячейка с x и y внутри сетки
@@ -30,21 +31,21 @@ export class Grid {
 	}
 
 	getCountRowFull() {
-		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
-		let count = 0;
-		//Проверяем удаление строки
+		let result = 0;
+		this.space.forEach((row) => {
+			if (row.every((x) => x.element !== 0))
+				result += 1;
+		});
+		return result;
+	}
+
+	deleteRows() {
 		this.space.forEach((row, rowIndex) => {
 			if (row.every((x) => x.element !== 0)) {
 				this.deleteRow(rowIndex);
-
-				// Добавляем верхнюю строку
 				this.space[0].forEach((x) => x.setZero());
-
-				count++;
-
 			}
 		});
-		return count;
 	}
 
 	deleteRow(rowIndex) {
