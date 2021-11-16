@@ -10,12 +10,13 @@ export const UPDATE_TIME = 1000 / 60;
 export const TIME_UPDATE_CONTROLLER = 0.08;
 // Шаг движения блоков по умолчанию
 export const START_STEP_MOVE_AUTO = 0.03;
-
+// Шаг увеличения скорости падения блоков
 export const PLUS_STEP_MOVE_AUTO = 0.1;
-// Шаг движения блоков по горизонтали
+// Шаг движения блоков по горизонтали при нажатии клавиши
 export const STEP_MOVE_KEY_X = 1;
-// Шаг движения блоков по вертикали
+// Шаг движения блоков по вертикали при нажатии клавиши
 export const STEP_MOVE_KEY_Y = 2;
+
 // Число кадров движения
 export const NUMBER_FRAMES_BEEATLE = 10;
 // Число кадров движения налево и направо
@@ -25,6 +26,7 @@ export const NUMBER_FRAMES_BEEATLE_ROTATE = 1;
 export const NUMBER_FRAMES_BEEATLE_ROTATE_0 = 5;
 // Количество Кадров при повреждении фигуры
 export const NUMBER_FRAMES_ELEMENTS = 4;
+
 // Время без дыхания для проигрыша
 export const TIMES_BREATH_LOSE = 60;
 // Вероятность того что жук будет есть блок

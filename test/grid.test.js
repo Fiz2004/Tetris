@@ -1,4 +1,4 @@
-import { Grid } from "../scripts/grid.js"
+import Grid from "../scripts/grid.js"
 import { strict as assert } from 'assert';
 
 describe("Проверяем функцию isInside", function () {

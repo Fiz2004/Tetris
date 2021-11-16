@@ -8,39 +8,51 @@ import {
 } from './const.js';
 
 // Класс для жука
-export class Beetle {
+export default class Beetle {
 	// Позиция относительно клетки
 	position;
+
 	// Текущее направление до конца анимации
 	direction;
+
 	// Направление движения, массивом с указанием смещения
 	lastDirection;
+
 	// Направление движения, массивом с указанием смещения
 	move;
+
 	// массив Направлений движения, массивом с указанием смещения
 	moves;
+
 	// Текущий кадр анимации от 1 до NUMBER_FRAMES_BEEATLE
 	framesAnimation;
+
 	// Показывает задыхаемся мы или нет
 	breath;
+
 	// Время которое прошло с момента нехватки дыхания
 	timeBreath;
+
 	// Происходит ли удаление строки
 	deleteRow;
+
 	// Ест ли жук
 	eat;
+
 	// Выоота и ширина спрайта жука
 	width;
+
 	height;
+
 	// Вспомогательная сетка для ссылки на сетку
 	grid;
+
 	constructor(grid) {
 		//! Сделать определение ширины и высоты жука програмным, чтобы не зависит от вида картинки
 		this.width = 24;
 		this.height = 24;
 
-		// this.position = new Point(Math.floor(Math.random() * grid.width), (grid.height - 1));
-		this.position = new Point(1, 24);
+		this.position = new Point(Math.floor(Math.random() * grid.width), (grid.height - 1));
 
 		this.direction = new Point(0, 0);
 		this.moves = [];
@@ -48,6 +60,7 @@ export class Beetle {
 		this.lastDirection = 'L';
 		this.eat = 0;
 		this.deleteRow = 0;
+		this.speed = 1 / NUMBER_FRAMES_BEEATLE;
 		this.frames = NUMBER_FRAMES_BEEATLE;
 
 		// Задаем время для дыхания после истечения которого будет проигрыш
@@ -60,15 +73,15 @@ export class Beetle {
 		this.deltaTime = 0;
 	}
 
-	//Метод движения жука
+	// Метод движения жука
 	update(grid) {
 		// Если происходит поворот то не двигаемся
 		if (this.direction.x === this.move.x && this.direction.y === this.move.y) {
 			if (this.move.y === 0) {
-				this.position.x += this.move.x * (1 / NUMBER_FRAMES_BEEATLE);
+				this.position.x += this.move.x * this.speed;
 			}
 
-			this.position.y += this.move.y * (1 / NUMBER_FRAMES_BEEATLE);
+			this.position.y += this.move.y * this.speed;
 		}
 
 		if (this.eat === 1 && (this.direction.x === this.move.x && this.direction.y === this.move.y)
@@ -76,12 +89,10 @@ export class Beetle {
 			let offsetX = this.move.x;
 			const offsetY = this.move.y;
 			const direction = this.getDirectionEat(this.move);
-			if (offsetX === -1) {
-				offsetX = 0;
-			}
-			const tile = new Point(Math.floor(this.position.x), Math.floor(this.position.y));
-			grid.space[tile.y + offsetY][tile.x + offsetX].status[direction]
-				= Math.round(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
+			if (offsetX === -1) offsetX = 0;
+
+			const tile = new Point(Math.floor(this.position.x) + offsetX, Math.floor(this.position.y) + offsetY);
+			grid.space[tile.y][tile.x].status[direction] = Math.round(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
 		}
 
 		return this.getCurrentFramesAnimation(grid);
@@ -100,14 +111,14 @@ export class Beetle {
 		throw new Error('Error: uncorrect value function getDirectionEat');
 	}
 
-	//Определяем текущий кадр
+	// Определяем текущий кадр
 	getCurrentFramesAnimation(grid) {
 		let eat = false;
 		if (this.framesAnimation === this.frames - 1) {
 			if (this.eat === 1 && this.frames === NUMBER_FRAMES_BEEATLE) {
 				this.eat = 0;
 				eat = true;
-				//Вызываем функцию обработчика того что сьели
+				// Вызываем функцию обработчика того что сьели
 				const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
 				grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
 				grid.space[tile.y][tile.x].element = 0;
@@ -122,11 +133,11 @@ export class Beetle {
 		}
 	}
 
-	//Функция для определения направления движения жука
+	// Функция для определения направления движения жука
 	getDirection(grid) {
 		// Проверяем свободен ли выбранный путь при фиксации фигуры
-		if (this.deleteRow === 1 &&
-			this.moves === this.isCanMove([this.moves], grid)) {
+		if (this.deleteRow === 1
+			&& this.moves === this.isCanMove([this.moves], grid)) {
 			this.deleteRow = 0;
 		}
 
@@ -184,56 +195,53 @@ export class Beetle {
 
 	getNewDirection(grid) {
 		const DIRECTION = {};
-		DIRECTION['L'] = { x: -1, y: 0 };
-		DIRECTION['R'] = { x: 1, y: 0 };
-		DIRECTION['D'] = { x: 0, y: 1 };
-		DIRECTION['U'] = { x: 0, y: -1 };
+		DIRECTION.L = { x: -1, y: 0 };
+		DIRECTION.R = { x: 1, y: 0 };
+		DIRECTION.D = { x: 0, y: 1 };
+		DIRECTION.U = { x: 0, y: -1 };
 		DIRECTION['0'] = { x: 0, y: 0 };
 		DIRECTION['0D'] = [{ x: 0, y: 1 }];
-		DIRECTION['RD'] = [DIRECTION['D'], DIRECTION['R']];
-		DIRECTION['LD'] = [DIRECTION['D'], DIRECTION['L']];
-		DIRECTION['R0'] = [DIRECTION['R']];
-		DIRECTION['L0'] = [DIRECTION['L']];
-		DIRECTION['RU'] = [DIRECTION['U'], DIRECTION['R']];
-		DIRECTION['LU'] = [DIRECTION['U'], DIRECTION['L']];
-		DIRECTION['RUU'] = [DIRECTION['U'], DIRECTION['U'], DIRECTION['R']];
-		DIRECTION['LUU'] = [DIRECTION['U'], DIRECTION['U'], DIRECTION['L']];
-		DIRECTION['LEFTDOWN'] = [DIRECTION['0D'], DIRECTION['LD'], DIRECTION['RD']];
-		DIRECTION['RIGHTDOWN'] = [DIRECTION['0D'], DIRECTION['RD'], DIRECTION['LD']];
-		DIRECTION['LEFT'] = [DIRECTION['L0'], DIRECTION['LU'], DIRECTION['LUU']];
-		DIRECTION['RIGHT'] = [DIRECTION['R0'], DIRECTION['RU'], DIRECTION['RUU']];
+		DIRECTION.RD = [DIRECTION.D, DIRECTION.R];
+		DIRECTION.LD = [DIRECTION.D, DIRECTION.L];
+		DIRECTION.R0 = [DIRECTION.R];
+		DIRECTION.L0 = [DIRECTION.L];
+		DIRECTION.RU = [DIRECTION.U, DIRECTION.R];
+		DIRECTION.LU = [DIRECTION.U, DIRECTION.L];
+		DIRECTION.RUU = [DIRECTION.U, DIRECTION.U, DIRECTION.R];
+		DIRECTION.LUU = [DIRECTION.U, DIRECTION.U, DIRECTION.L];
+		DIRECTION.LEFTDOWN = [DIRECTION['0D'], DIRECTION.LD, DIRECTION.RD];
+		DIRECTION.RIGHTDOWN = [DIRECTION['0D'], DIRECTION.RD, DIRECTION.LD];
+		DIRECTION.LEFT = [DIRECTION.L0, DIRECTION.LU, DIRECTION.LUU];
+		DIRECTION.RIGHT = [DIRECTION.R0, DIRECTION.RU, DIRECTION.RUU];
 
 		this.deleteRow = 0;
-		const code = '' + [this.direction.x, this.direction.y, this.move.x, this.move.y].join('');
+		const code = `${[this.direction.x, this.direction.y, this.move.x, this.move.y].join('')}`;
 		// Если двигаемся вправо
 		if (code === '0010' || code === '1010') {
 			this.lastDirection = 'R';
-			return this.isCanMove([...DIRECTION['RIGHTDOWN'], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']], grid);
+			return this.isCanMove([...DIRECTION.RIGHTDOWN, ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
 		}
 		// Если двигаемся влево
 		if (code === '00-10' || code === '-10-10') {
 			this.lastDirection = 'L';
-			return this.isCanMove([...DIRECTION['LEFTDOWN'], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']], grid);
+			return this.isCanMove([...DIRECTION.LEFTDOWN, ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
 		}
 
 		if (this.lastDirection === 'L') {
-			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['LEFT'], ...DIRECTION['RIGHT']], grid);
-		} else {
-			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION['RIGHT'], ...DIRECTION['LEFT']], grid);
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
 		}
-
+		return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
 	}
 
 	getFrameRotate(direction, move) {
 		// !Добавить если с 0 поворачиваемся на лево или направо, а также если в 0
 		if (direction.x === move.x && direction.y === move.y) {
 			return NUMBER_FRAMES_BEEATLE;
-		} else if (direction.x === 0 && direction.y === 0) {
+		} if (direction.x === 0 && direction.y === 0) {
 			return NUMBER_FRAMES_BEEATLE_ROTATE;
-		} else {
-			//?? При изменении кадров надо задавать другое значение
-			return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
 		}
+		// ?? При изменении кадров надо задавать другое значение
+		return Math.floor(NUMBER_FRAMES_BEEATLE / 2);
 	}
 
 	// Проверяем есть ли доступ к верху стакана
@@ -262,7 +270,7 @@ export class Beetle {
 
 	// Получить напарвления движения
 	getDirectionMovement() {
-		return '' + [this.direction.x, this.direction.y, this.move.x, this.move.y].join('');
+		return `${[this.direction.x, this.direction.y, this.move.x, this.move.y].join('')}`;
 	}
 
 	// Проверяем ест ли жук сейчас
@@ -276,8 +284,7 @@ export class Beetle {
 		// Если жук ест
 		if (this.isEatingNow()) {
 			return getSprite.EatingNow(this.getDirectionMovement(), this.framesAnimation);
-		} else {
-			return getSprite.NoEatingNow(this.getDirectionMovement(), this.framesAnimation);
 		}
+		return getSprite.NoEatingNow(this.getDirectionMovement(), this.framesAnimation);
 	}
 }

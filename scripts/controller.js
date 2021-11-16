@@ -1,17 +1,21 @@
-export class Controller {
+export default class Controller {
 	pressed;
+
 	codes;
-	//Точка начала касания
+
+	// Точка начала касания
 	touchStart;
-	//Текущая позиция
+
+	// Текущая позиция
 	touchPosition;
+
 	constructor(codes) {
-		//Задаем начальное значение падения
+		// Задаем начальное значение падения
 		this.pressed = Object.create(null);
 		this.codes = codes;
-		//Точка начала касания
+		// Точка начала касания
 		this.touchStart = null;
-		//Текущая позиция
+		// Текущая позиция
 		this.touchPosition = null;
 
 		window.addEventListener('keydown', this.handler);
@@ -24,12 +28,14 @@ export class Controller {
 
 	refresh() {
 		for (const key in this.pressed) {
-			this.pressed[key] = null;
+			if (Object.prototype.hasOwnProperty.call(this.pressed, key)) {
+				this.pressed[key] = null;
+			}
 		}
 	}
 
 	handler = (event) => {
-		if (this.codes.hasOwnProperty(event.keyCode)) {
+		if (Object.prototype.hasOwnProperty.call(this.codes, event.keyCode)) {
 			this.pressed[this.codes[event.keyCode]] = (event.type === 'keydown');
 			event.preventDefault();
 		}
@@ -44,43 +50,47 @@ export class Controller {
 
 		const partHorizontal = 0.295;
 		const partVertical = 0.5;
-		if ((this.touchStart.x > document.documentElement.clientWidth * partHorizontal)
-			&& this.touchStart.x < document.documentElement.clientWidth - (document.documentElement.clientWidth * partHorizontal)) {
-			if (this.touchStart.y < document.documentElement.clientHeight * partVertical) {
-				this.pressed['left'] = false;
-				this.pressed['up'] = true;
-				this.pressed['right'] = false;
-				this.pressed['down'] = false;
+
+		const cW = document.documentElement.clientWidth;
+		const cH = document.documentElement.clientHeight;
+		if ((this.touchStart.x > cW * partHorizontal)
+			&& this.touchStart.x < cW - (cW * partHorizontal)) {
+			if (this.touchStart.y < cH * partVertical) {
+				this.pressed.left = false;
+				this.pressed.up = true;
+				this.pressed.right = false;
+				this.pressed.down = false;
 			} else {
-				this.pressed['left'] = false;
-				this.pressed['up'] = false;
-				this.pressed['right'] = false;
-				this.pressed['down'] = true;
+				this.pressed.left = false;
+				this.pressed.up = false;
+				this.pressed.right = false;
+				this.pressed.down = true;
 			}
 		}
-		if (this.touchStart.x <= document.documentElement.clientWidth * partHorizontal) {
-			this.pressed['left'] = true;
-			this.pressed['up'] = false;
-			this.pressed['right'] = false;
-			this.pressed['down'] = false;
-		}
-		if (this.touchStart.x >= document.documentElement.clientWidth - (document.documentElement.clientWidth * partHorizontal)) {
-			this.pressed['left'] = false;
-			this.pressed['up'] = false;
-			this.pressed['right'] = true;
-			this.pressed['down'] = false;
+
+		if (this.touchStart.x <= cW * partHorizontal) {
+			this.pressed.left = true;
+			this.pressed.up = false;
+			this.pressed.right = false;
+			this.pressed.down = false;
 		}
 
+		if (this.touchStart.x >= cW - (cW * partHorizontal)) {
+			this.pressed.left = false;
+			this.pressed.up = false;
+			this.pressed.right = true;
+			this.pressed.down = false;
+		}
 	};
 
 	touchEnd = (event) => {
 		if (event.cancelable) {
 			event.preventDefault();
 		}
-		this.pressed['left'] = false;
-		this.pressed['up'] = false;
-		this.pressed['right'] = false;
-		this.pressed['down'] = false;
+		this.pressed.left = false;
+		this.pressed.up = false;
+		this.pressed.right = false;
+		this.pressed.down = false;
 
 		this.touchStart = null;
 		this.touchPosition = null;
