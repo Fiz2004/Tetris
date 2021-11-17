@@ -73,6 +73,10 @@
     "function-call-argument-newline": [
       "error",
       "consistent"
+    ],
+    "curly": [
+      "error",
+      "consistent"
     ]
   }
 }

@@ -31,6 +31,10 @@ export default class Grid {
 		return x < 0 || x >= this.width || y < 0 || y >= this.height;
 	}
 
+	isCanMove(point) {
+		return this.isOutside(point) || this.isNotFree(point)
+	}
+
 	// Проверяем свободна ли ячейка
 	isFree({ x, y }) {
 		return this.space[y][x].element === 0;

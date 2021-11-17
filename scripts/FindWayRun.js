@@ -13,7 +13,7 @@ const CHARACTER_SPEED_ROTATE = 45;
 export default function getDirection(character, grid) {
 	// Проверяем свободен ли выбранный путь при фиксации фигуры
 	if (character.deleteRow === 1
-		&& character.moves === isCanMove([character.moves], grid)) {
+		&& character.moves === isCanMove(character, [character.moves], grid)) {
 		character.deleteRow = 0;
 	}
 
@@ -23,12 +23,13 @@ export default function getDirection(character, grid) {
 
 	const startMove = { ...character.move };
 	if (startMove.x === character.moves[0].x && startMove.y === character.moves[0].y) {
-		character.move = character.moves.shift();
+		if (character.speed.rotate === 0)
+			character.move = character.moves.shift();
 	} else {
 		character.move = character.moves[0];
 	}
 
-	getSpeedAngle(character);
+	character.speed = { ...character.speed, ...getSpeedAngle(character) };
 	character.direction = { ...startMove };
 }
 
@@ -54,29 +55,26 @@ function getNewDirection(character, grid) {
 	DIRECTION.RIGHT = [DIRECTION.R0, DIRECTION.RU, DIRECTION.RUU];
 
 	character.deleteRow = 0;
-	character.direction = {};
-	[character.direction.x, character.direction.y] = [Math.round(Math.cos(character.angle * Math.PI / 180)), Math.round(Math.sin(character.angle * Math.PI / 180))]
-	const code = `${[character.direction.x, character.direction.y, character.move.x, character.move.y].join('')}`;
 	// Если двигаемся вправо
-	if (code === '0010' || code === '1010') {
-		character.lastDirection = 'R';
+	if (character.angle === 90 || character.move.x === 1) {
+		character.lastDirection = 1;
 		return isCanMove(character, [...DIRECTION.RIGHTDOWN, ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
 	}
 	// Если двигаемся влево
-	if (code === '00-10' || code === '-10-10') {
-		character.lastDirection = 'L';
+	if (character.angle === 90 || character.move.x === -1) {
+		character.lastDirection = -1;
 		return isCanMove(character, [...DIRECTION.LEFTDOWN, ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
 	}
 
-	if (character.direction.x === -1) {
+	if (character.lastDirection === -1) {
 		return isCanMove(character, [...[DIRECTION['0D']], ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
 	}
 	return isCanMove(character, [...[DIRECTION['0D']], ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
 }
 
-function isCanMove(character, arrayDirectionses, grid) {
+export function isCanMove({ position }, arrayDirectionses, grid) {
 	for (const directions of arrayDirectionses) {
-		if (isCanDirections(character, directions, grid)) {
+		if (isCanRun(position, directions, grid, (Math.random() * 100) < PROBABILITY_EAT)) {
 			return directions;
 		}
 	}
@@ -84,7 +82,7 @@ function isCanMove(character, arrayDirectionses, grid) {
 	return [{ x: 0, y: 0 }];
 };
 
-function isCanDirections(character, directions, grid) {
+function isCanDirections(character, directions, grid, isEat) {
 	let TekX = 0;
 	let TekY = 0;
 	for (const direction of directions) {
@@ -100,7 +98,7 @@ function isCanDirections(character, directions, grid) {
 		}
 
 		if (grid.isNotFree(point)) {
-			if (TekY === 0 && (Math.random() * 100 < PROBABILITY_EAT)) {
+			if (TekY === 0 && isEat) {
 				character.eat = 1;
 				directions.length = directions.indexOf(direction) + 1;
 				return true;
@@ -109,16 +107,30 @@ function isCanDirections(character, directions, grid) {
 		}
 	}
 	return true;
-};
+}
 
-function getSpeedAngle(character) {
-	if (Math.round(Math.cos(character.angle * Math.PI / 180)) === character.move.x
-		&& Math.round(Math.sin(character.angle * Math.PI / 180)) === character.move.y) {
-		character.speed.rotate = 0;
-		character.speed.line = 1 / 10;
-		return;
+export function isCanRun({ x, y }, directions, grid) {
+	let TekX = 0;
+	let TekY = 0;
+	for (const direction of directions) {
+		TekX += direction.x;
+		TekY += direction.y;
+		const point = {
+			x: Math.round(x) + TekX,
+			y: Math.round(y) + TekY,
+		};
+
+		if (grid.isCanMove(point)) return false;
 	}
 
-	character.speed.line = 0;
-	character.speed.rotate = CHARACTER_SPEED_ROTATE;
+	return true;
+}
+
+function getSpeedAngle(character) {
+	if (Math.round(Math.cos(character.angle * (Math.PI / 180))) === character.move.x
+		&& Math.round(Math.sin(character.angle * (Math.PI / 180))) === character.move.y) {
+		return { rotate: 0, line: 1 / 10 }
+	}
+
+	return { rotate: CHARACTER_SPEED_ROTATE, line: 0 }
 }

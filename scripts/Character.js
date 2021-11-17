@@ -51,6 +51,7 @@ export default class Character {
 
 		this.moves = [];
 		this.move = new Point(-1, 0);
+		this.lastDirection = -1;
 
 		this.eat = 0;
 		this.deleteRow = 0;
@@ -84,8 +85,8 @@ export default class Character {
 
 	changePosition() {
 		if (this.speed.rotate === 0) {
-			this.position.x += this.speed.line * Math.cos(this.angle * Math.PI / 180);
-			this.position.y += this.speed.line * Math.sin(this.angle * Math.PI / 180);
+			this.position.x += this.speed.line * Math.cos(this.angle * (Math.PI / 180));
+			this.position.y += this.speed.line * Math.sin(this.angle * (Math.PI / 180));
 		} else {
 			this.angle += this.speed.rotate;
 		}
