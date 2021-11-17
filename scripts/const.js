@@ -7,7 +7,7 @@ export const NUMBER_IMAGES_FIGURE = 4;
 // Время в милисекундах одного движения
 export const UPDATE_TIME = 1000 / 60;
 // Время в секундах, как часто обновляем контроллер
-export const TIME_UPDATE_CONTROLLER = 0.08;
+export const TIME_UPDATE_CONTROLLER = 80 / 1000;
 // Шаг движения блоков по умолчанию
 export const START_STEP_MOVE_AUTO = 0.03;
 // Шаг увеличения скорости падения блоков
@@ -28,9 +28,9 @@ export const NUMBER_FRAMES_BEEATLE_ROTATE_0 = 5;
 export const NUMBER_FRAMES_ELEMENTS = 4;
 
 // Время без дыхания для проигрыша
-export const TIMES_BREATH_LOSE = 60;
+export const TIMES_BREATH_LOSE = 5;
 // Вероятность того что жук будет есть блок
-export const PROBABILITY_EAT = 20;
+export const PROBABILITY_EAT = 0;
 // Директория где храняться картинки
 export const DIRECTORY_IMG = 'Resurs/v1/';
 // Обозначение фигур, задаются координаты каждой ячейки

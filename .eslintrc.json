@@ -22,7 +22,17 @@
       "error",
       "always"
     ],
-    "linebreak-style": "off",
+    "linebreak-style": [
+      "error",
+      "windows"
+    ],
+    "lines-between-class-members": [
+      "error",
+      "always",
+      {
+        "exceptAfterSingleLine": true
+      }
+    ],
     "no-tabs": "off",
     "indent": "off",
     "no-plusplus": [
@@ -44,6 +54,25 @@
       {
         "code": 120
       }
+    ],
+    "spaced-comment": [
+      "error",
+      "always"
+    ],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ],
+    "function-paren-newline": [
+      "error",
+      "consistent"
+    ],
+    "function-call-argument-newline": [
+      "error",
+      "consistent"
     ]
   }
 }

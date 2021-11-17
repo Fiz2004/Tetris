@@ -1,12 +1,13 @@
-import { Figure } from './Figure.js';
+import Figure from './Figure.js';
 import {
 	SIZE_TILES,
 	DIRECTORY_IMG,
 	TIMES_BREATH_LOSE,
 	NUMBER_IMAGES_FIGURE,
 } from './const.js';
-//Объект рисования
-export class Display {
+
+// Объект рисования
+export default class Display {
 	canvas;
 	ctx;
 	canvasNextFigure;
@@ -32,7 +33,7 @@ export class Display {
 		const numberImg = 1 + Figure.numberCell + 1;
 		let currentImg = 0;
 
-		//Формируем картинки для фигур
+		// Формируем картинки для фигур
 		this.imgKv = Array.from({ length: Figure.numberCell });
 		for (let i = 0; i < this.imgKv.length; i++) {
 			this.imgKv[i] = new Image();
@@ -42,17 +43,17 @@ export class Display {
 		this.imgBeetle = new Image();
 
 		return new Promise((resolve) => {
-			const loadImage = () => currentImg < numberImg - 1 ? currentImg++ : resolve();
-			//загружаем картинки фигур
+			const loadImage = () => { currentImg < numberImg - 1 ? currentImg += 1 : resolve(); };
+			// загружаем картинки фигур
 			for (let i = 0; i < this.imgKv.length; i++) {
 				this.imgKv[i].src = `${DIRECTORY_IMG}Kvadrat${i + 1}.png`;
 				this.imgKv[i].onload = loadImage;
 			}
 
-			this.imgFon.src = DIRECTORY_IMG + 'Fon.png';
+			this.imgFon.src = `${DIRECTORY_IMG}Fon.png`;
 			this.imgFon.onload = loadImage;
 
-			this.imgBeetle.src = DIRECTORY_IMG + 'Beetle.png';
+			this.imgBeetle.src = `${DIRECTORY_IMG}Beetle.png`;
 			this.imgBeetle.onload = loadImage;
 		});
 	}
@@ -60,9 +61,17 @@ export class Display {
 	drawNextFigure(nextFigure) {
 		this.ctxNextFigure.clearRect(0, 0, this.canvasNextFigure.width, this.canvasNextFigure.height);
 		for (const cell of nextFigure.cells) {
-			this.ctxNextFigure.drawImage(this.imgKv[cell.view - 1],
-				0, 0, SIZE_TILES, SIZE_TILES,
-				(cell.x * SIZE_TILES), (cell.y * SIZE_TILES), SIZE_TILES, SIZE_TILES);
+			this.ctxNextFigure.drawImage(
+				this.imgKv[cell.view - 1],
+				0,
+				0,
+				SIZE_TILES,
+				SIZE_TILES,
+				cell.x * SIZE_TILES,
+				cell.y * SIZE_TILES,
+				SIZE_TILES,
+				SIZE_TILES,
+			);
 		}
 	}
 
@@ -80,47 +89,47 @@ export class Display {
 		return [0, 0];
 	}
 
-	render({ grid, currentFigure, beetle, scores, record, status }) {
-		//Рисуем фон и целые и поврежденные элементы в стакане
+	render({
+		grid, currentFigure, character, scores, record, status,
+	}) {
+		// Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid);
 		this.drawCurrentFigure(currentFigure);
-		this.drawBeetle(beetle);
+		this.drawCharacter(character);
 
-		//Обновляем Очки
+		// Обновляем Очки
 		this.txtScores.textContent = String(scores).padStart(6, '0');
 		this.txtRecord.textContent = String(record).padStart(6, '0');
 
 		if (status === 'pause') {
-			document.getElementById('pause').textContent = 'Пауза';
-		} else {
 			document.getElementById('pause').textContent = 'Продолжить';
-		}
-
-		const mSecOfSec = 1000;
-		const sec = Math.max(TIMES_BREATH_LOSE - Math.ceil((Date.now() - beetle.timeBreath) / mSecOfSec), 0);
-		if (!(beetle.breath)) {
-			if (!this.elementTimeBreath) {
-				const element = document.createElement('h1');
-				element.id = 'Breath';
-				document.querySelector('#infoID').append(element);
-				this.elementTimeBreath = document.querySelector('#Breath');
-			}
-			this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${sec}`;
 		} else {
-			if (this.elementTimeBreath) {
+			document.getElementById('pause').textContent = 'Пауза';
+		}
+		if (status !== 'pause') {
+			const sec = Math.max(TIMES_BREATH_LOSE - Math.ceil((Date.now() - character.timeBreath) / 1000), 0);
+			if (!(character.breath)) {
+				if (!this.elementTimeBreath) {
+					const element = document.createElement('h1');
+					element.id = 'Breath';
+					document.querySelector('#infoID').append(element);
+					this.elementTimeBreath = document.querySelector('#Breath');
+				}
+				this.elementTimeBreath.innerHTML = `Задыхаемся<br/>Осталось секунд: ${sec}`;
+			} else if (this.elementTimeBreath) {
 				this.elementTimeBreath.parentNode.removeChild(this.elementTimeBreath);
 				this.elementTimeBreath = null;
 			}
-			beetle.timeBreath = Date.now();
-		}
 
-		// Закрашиваем элемент связанный с дыханием
-		const int = Math.floor(sec) * 255 / TIMES_BREATH_LOSE;
-		document.querySelector('#infoID').style.backgroundColor = `rgb(255, ${int}, ${int})`;
+			// Закрашиваем элемент связанный с дыханием
+			const int = (Math.floor(sec) * 255) / TIMES_BREATH_LOSE;
+			document.querySelector('#infoID').style.backgroundColor = `rgb(255, ${int}, ${int})`;
+		}
 	}
 
 	drawGridElements(grid) {
-		let offsetX, offsetY;
+		let offsetX; let
+			offsetY;
 		for (let y = 0; y < grid.height; y++) {
 			for (let x = 0; x < grid.width; x++) {
 				const screenX = x * SIZE_TILES;
@@ -128,10 +137,17 @@ export class Display {
 				offsetX = Math.floor(grid.space[y][x].background / NUMBER_IMAGES_FIGURE) * SIZE_TILES;
 				offsetY = (grid.space[y][x].background % NUMBER_IMAGES_FIGURE) * SIZE_TILES;
 
-				this.ctx.drawImage(this.imgFon,
-					offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-					screenX, screenY, SIZE_TILES, SIZE_TILES);
-
+				this.ctx.drawImage(
+					this.imgFon,
+					offsetX,
+					offsetY,
+					SIZE_TILES,
+					SIZE_TILES,
+					screenX,
+					screenY,
+					SIZE_TILES,
+					SIZE_TILES,
+				);
 			}
 		}
 
@@ -141,9 +157,17 @@ export class Display {
 					const screenX = x * SIZE_TILES;
 					const screenY = y * SIZE_TILES;
 					[offsetX, offsetY] = this.getOffset(grid.space[y][x]);
-					this.ctx.drawImage(this.imgKv[grid.space[y][x].element - 1],
-						offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-						screenX, screenY, SIZE_TILES, SIZE_TILES);
+					this.ctx.drawImage(
+						this.imgKv[grid.space[y][x].element - 1],
+						offsetX,
+						offsetY,
+						SIZE_TILES,
+						SIZE_TILES,
+						screenX,
+						screenY,
+						SIZE_TILES,
+						SIZE_TILES,
+					);
 				}
 			}
 		}
@@ -153,20 +177,36 @@ export class Display {
 		for (const cell of currentFigure.cells) {
 			const screenX = (cell.x + currentFigure.position.x) * SIZE_TILES;
 			const screenY = (cell.y + currentFigure.position.y) * SIZE_TILES;
-			this.ctx.drawImage(this.imgKv[cell.view - 1],
-				0, 0, SIZE_TILES, SIZE_TILES,
-				screenX, screenY, SIZE_TILES, SIZE_TILES);
+			this.ctx.drawImage(
+				this.imgKv[cell.view - 1],
+				0,
+				0,
+				SIZE_TILES,
+				SIZE_TILES,
+				screenX,
+				screenY,
+				SIZE_TILES,
+				SIZE_TILES,
+			);
 		}
 	}
 
-	drawBeetle(beetle) {
-		let [offsetX, offsetY] = beetle.getSprite();
+	drawCharacter(character) {
+		let [offsetX, offsetY] = character.getSprite();
 		offsetX *= SIZE_TILES;
 		offsetY *= SIZE_TILES;
-		const screenX = beetle.position.x * SIZE_TILES;
-		const screenY = beetle.position.y * SIZE_TILES;
-		this.ctx.drawImage(this.imgBeetle,
-			offsetX, offsetY, SIZE_TILES, SIZE_TILES,
-			screenX, screenY, SIZE_TILES, SIZE_TILES);
+		const screenX = character.position.x * SIZE_TILES;
+		const screenY = character.position.y * SIZE_TILES;
+		this.ctx.drawImage(
+			this.imgBeetle,
+			offsetX,
+			offsetY,
+			SIZE_TILES,
+			SIZE_TILES,
+			screenX,
+			screenY,
+			SIZE_TILES,
+			SIZE_TILES,
+		);
 	}
 }

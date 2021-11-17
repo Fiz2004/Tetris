@@ -1,4 +1,4 @@
-import { Element } from './class.js';
+import Element from './Element.js';
 import {
 	// Количество изображений для фона
 	NUMBER_IMAGES_BACKGROUND,
@@ -27,9 +27,17 @@ export default class Grid {
 		return x >= 0 && x < this.width && y >= 0 && y < this.height;
 	}
 
+	isOutside({ x, y }) {
+		return x < 0 || x >= this.width || y < 0 || y >= this.height;
+	}
+
 	// Проверяем свободна ли ячейка
 	isFree({ x, y }) {
 		return this.space[y][x].element === 0;
+	}
+
+	isNotFree({ x, y }) {
+		return this.space[y][x].element !== 0;
 	}
 
 	getCountRowFull() {

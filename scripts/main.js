@@ -1,4 +1,4 @@
-import { Display } from './display.js';
+import Display from './Display.js';
 import State from './State.js';
 import Controller from './controller.js';
 
@@ -47,8 +47,7 @@ async function runLevel() {
 function runAnimation(funcframe) {
 	let lastTime;
 	function frame(time) {
-		const mSecOfSec = 1000;
-		const deltaTime = (time - (lastTime ?? 0)) / mSecOfSec;
+		const deltaTime = Math.min(time - (lastTime ?? 0), 100) / 1000;
 		if (!funcframe(deltaTime)) {
 			return;
 		}

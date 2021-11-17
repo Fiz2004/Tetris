@@ -1,7 +1,8 @@
-import { Point } from './class.js';
-import { Figure, CurrentFigure } from './Figure.js';
+import Point from './Point.js';
+import Figure from './Figure.js';
+import CurrentFigure from './CurrentFigure.js';
 import Grid from './grid.js';
-import Beetle from './class_beetle.js';
+import Character from './Character.js';
 import {
 	SIZE_TILES,
 	TIMES_BREATH_LOSE,
@@ -11,14 +12,10 @@ import {
 // Класс в котором хранится вся модель игры
 export default class State {
 	scores;
-
 	grid;
-
 	currentFigure;
-
 	nextFigure;
-
-	beetle;
+	character;
 
 	constructor(display) {
 		this.display = display;
@@ -26,7 +23,7 @@ export default class State {
 
 		this.createCurrentFigure();
 
-		this.beetle = new Beetle(this.grid, this.scores);
+		this.character = new Character(this.grid, this.scores);
 
 		this.scores = 0;
 		this.record = localStorage.getItem('Record') || 0;
@@ -42,7 +39,7 @@ export default class State {
 			this.pauseTime = Date.now();
 		} else {
 			this.status = 'playing';
-			this.beetle.timeBreath += Date.now() - this.pauseTime;
+			this.character.timeBreath += Date.now() - this.pauseTime;
 		}
 	}
 
@@ -71,8 +68,8 @@ export default class State {
 		this.ifRecord();
 
 		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
-		this.beetle.deleteRow = 1;
-		this.beetle.isBreath(this.grid);
+		this.character.deleteRow = 1;
+		this.character.isBreath(this.grid);
 	}
 
 	ifRecord() {
@@ -92,13 +89,13 @@ export default class State {
 
 		if (this.deltaTime > TIME_UPDATE_CONTROLLER) {
 			if (this.actionsControl(controller) === false
-				|| (!this.beetle.isBreath(this.grid) && this.checkLose())
+				|| (!this.character.isBreath(this.grid) && this.isCrushedBeetle())
 				|| this.status === 'new game') {
 				this.ifRecord();
 				return false;
 			}
 
-			if (this.beetle.update(this.grid) === 'eat') {
+			if (this.character.update(this.grid) === 'eat') {
 				this.scores += 50;
 			}
 			this.deltaTime = 0;
@@ -125,9 +122,9 @@ export default class State {
 
 	checkLose() {
 		const mSecOfSec = 1000;
-		const tile = new Point(Math.floor(this.beetle.position.x), Math.floor(this.beetle.position.y));
-		if ((this.grid.space[tile.y][tile.x].element !== 0 && this.beetle.eat === 0)
-			|| TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.beetle.timeBreath) / mSecOfSec) <= 0) {
+		const tile = new Point(Math.floor(this.character.position.x), Math.floor(this.character.position.y));
+		if ((this.grid.space[tile.y][tile.x].element !== 0 && this.character.eat === 0)
+			|| TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.character.timeBreath) / mSecOfSec) <= 0) {
 			return true;
 		}
 
@@ -135,11 +132,11 @@ export default class State {
 	}
 
 	isCrushedBeetle() {
-		const tile = new Point(Math.floor(this.beetle.position.x), Math.floor(this.beetle.position.y));
+		const tile = new Point(Math.round(this.character.position.x), Math.round(this.character.position.y));
 		for (const elem of this.currentFigure.getPositionTile()) {
 			if ((elem.x === tile.x && elem.y === tile.y)
 				|| (this.grid.space[tile.y][tile.x].element !== 0
-					&& this.beetle.eat === 0)) {
+					&& this.character.eat === 0)) {
 				return true;
 			}
 		}
