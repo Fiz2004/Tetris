@@ -6,7 +6,6 @@ import Character, { getFrames } from './Character.js';
 import {
 	SIZE_TILES,
 	TIMES_BREATH_LOSE,
-	TIME_UPDATE_CONTROLLER,
 	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS,
 } from './const.js';
@@ -43,18 +42,6 @@ export default class State {
 	}
 
 	update(deltaTime, controller) {
-		if (this.status === 'pause')
-			return true;
-
-		this.deltaTime = (this.deltaTime ?? 0) + deltaTime;
-
-		if (this.deltaTime > TIME_UPDATE_CONTROLLER)
-			return this.frame(controller);
-
-		return true;
-	}
-
-	frame(controller) {
 		if (this.actionsControl(controller) === false
 			|| (!this.character.isBreath(this.grid) && this.checkLose())
 			|| (!this.character.isBreath(this.grid) && this.isCrushedBeetle())
@@ -72,7 +59,6 @@ export default class State {
 		} else if (statusCharacter === 'eatDestroy') {
 			this.changeGridDestroyElement();
 		}
-		this.deltaTime = 0;
 		return true;
 	}
 

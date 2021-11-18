@@ -1,6 +1,9 @@
 import Display from './Display.js';
 import State from './State.js';
 import Controller from './controller.js';
+import {
+	TIME_UPDATE_CONTROLLER,
+} from './const.js';
 
 window.onload = function () {
 	runGame();
@@ -21,11 +24,19 @@ async function runLevel() {
 	document.getElementById('new_game').onclick = () => { state.status = 'new game'; };
 	document.getElementById('pause').onclick = () => state.clickPause();
 	let ending = 1;
+	let deltaTime = 0;
 	return new Promise((resolve) => {
 		runAnimation((time) => {
-			let status;
-			if (ending === 1)
-				status = state.update(time, controller);
+			let status = true;
+			deltaTime += time;
+			if (state.status !== 'pause')
+				if (deltaTime > TIME_UPDATE_CONTROLLER) {
+					if (ending === 1) {
+						status = null;
+						status = state.update(time, controller);
+					}
+					deltaTime = 0;
+				}
 
 			display.render(state);
 
