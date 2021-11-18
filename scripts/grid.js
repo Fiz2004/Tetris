@@ -32,7 +32,7 @@ export default class Grid {
 	}
 
 	isCanMove(point) {
-		return this.isOutside(point) || this.isNotFree(point)
+		return this.isOutside(point) || this.isNotFree(point);
 	}
 
 	// Проверяем свободна ли ячейка
@@ -47,7 +47,7 @@ export default class Grid {
 	getCountRowFull() {
 		let result = 0;
 		this.space.forEach((row) => {
-			if (row.every((x) => x.element !== 0)) { result += 1; }
+			if (row.every((x) => x.element !== 0)) result += 1;
 		});
 		return result;
 	}
@@ -62,10 +62,8 @@ export default class Grid {
 	}
 
 	deleteRow(rowIndex) {
-		for (let i = rowIndex; i > 0; i--) {
-			for (let j = 0; j < this.width; j++) {
+		for (let i = rowIndex; i > 0; i--)
+			for (let j = 0; j < this.width; j++)
 				this.space[i][j].setElement(this.space[i - 1][j]);
-			}
-		}
 	}
 }

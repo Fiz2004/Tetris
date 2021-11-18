@@ -24,14 +24,13 @@ async function runLevel() {
 	return new Promise((resolve) => {
 		runAnimation((time) => {
 			let status;
-			if (ending === 1) {
+			if (ending === 1)
 				status = state.update(time, controller);
-			}
+
 			display.render(state);
 
-			if (status) {
+			if (status)
 				return true;
-			}
 
 			if (ending > 0 && state.status !== 'new game') {
 				ending -= time;
@@ -48,9 +47,9 @@ function runAnimation(funcframe) {
 	let lastTime;
 	function frame(time) {
 		const deltaTime = Math.min(time - (lastTime ?? 0), 100) / 1000;
-		if (!funcframe(deltaTime)) {
+		if (!funcframe(deltaTime))
 			return;
-		}
+
 		lastTime = time;
 		requestAnimationFrame(frame);
 	}

@@ -76,7 +76,12 @@
     ],
     "curly": [
       "error",
+      "multi",
       "consistent"
+    ],
+    "nonblock-statement-body-position": [
+      "error",
+      "any"
     ]
   }
 }

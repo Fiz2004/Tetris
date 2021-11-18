@@ -7,6 +7,8 @@ import {
 	SIZE_TILES,
 	TIMES_BREATH_LOSE,
 	TIME_UPDATE_CONTROLLER,
+	NUMBER_FRAMES_BEEATLE,
+	NUMBER_FRAMES_ELEMENTS,
 } from './const.js';
 
 // Класс в котором хранится вся модель игры
@@ -55,14 +57,12 @@ export default class State {
 	fixation() {
 		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		const countRowFull = this.grid.getCountRowFull();
-		if (countRowFull) {
+		if (countRowFull)
 			this.grid.deleteRows();
-		}
 
 		const scoresForRow = 100;
-		for (let i = 1; i <= countRowFull; i++) {
+		for (let i = 1; i <= countRowFull; i++)
 			this.scores += i * scoresForRow;
-		}
 
 		this.currentFigure.fixation(this.scores);
 		this.ifRecord();
@@ -81,9 +81,8 @@ export default class State {
 	}
 
 	update(deltaTime, controller) {
-		if (this.status === 'pause') {
+		if (this.status === 'pause')
 			return true;
-		}
 
 		this.deltaTime += deltaTime;
 
@@ -95,23 +94,48 @@ export default class State {
 				return false;
 			}
 
-			if (this.character.update(this.grid) === 'eat') {
+			const statusCharacter = this.character.update(this.grid);
+			if (statusCharacter === 'eat') {
+				const tile = new Point(Math.round(this.character.position.x), Math.round(this.character.position.y));
+				this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
+				this.grid.space[tile.y][tile.x].element = 0;
 				this.scores += 50;
+			} else if (statusCharacter === 'eatDestroy') {
+				this.changeGridDestroyElement();
 			}
+
 			this.deltaTime = 0;
 		}
 
 		return true;
 	}
 
+	changeGridDestroyElement() {
+		let offsetX = this.character.move.x;
+		const offsetY = this.character.move.y;
+		const direction = this.character.getDirectionEat();
+		if (offsetX === -1) offsetX = 0;
+
+		const { move } = this.character;
+		const { position } = this.character;
+		const { angle } = this.character;
+		const devided = (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS);
+		const statusDestroyElement = Math.round(this.character.getFrames(move, position, angle) / devided);
+
+		const x = Math.floor(this.character.position.x);
+		const y = Math.floor(this.character.position.y);
+		const tile = new Point(x + offsetX, y + offsetY);
+		this.grid.space[tile.y][tile.x].status[direction] = statusDestroyElement + 1;
+	}
+
 	actionsControl(controller) {
 		const status = this.currentFigure.moves(controller.pressed);
 		if (status === 'endGame'
 			// Фигура достигла препятствия
-			|| (status === 'fall' && this.isCrushedBeetle())) {
+			|| (status === 'fall' && this.isCrushedBeetle()))
 			// Стакан заполнен игра окончена
 			return false;
-		}
+
 		if (status === 'fixation') {
 			this.fixation();
 			this.createCurrentFigure();
@@ -124,22 +148,20 @@ export default class State {
 		const mSecOfSec = 1000;
 		const tile = new Point(Math.floor(this.character.position.x), Math.floor(this.character.position.y));
 		if ((this.grid.space[tile.y][tile.x].element !== 0 && this.character.eat === 0)
-			|| TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.character.timeBreath) / mSecOfSec) <= 0) {
+			|| TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.character.timeBreath) / mSecOfSec) <= 0)
 			return true;
-		}
 
 		return false;
 	}
 
 	isCrushedBeetle() {
 		const tile = new Point(Math.round(this.character.position.x), Math.round(this.character.position.y));
-		for (const elem of this.currentFigure.getPositionTile()) {
+		for (const elem of this.currentFigure.getPositionTile())
 			if ((elem.x === tile.x && elem.y === tile.y)
 				|| (this.grid.space[tile.y][tile.x].element !== 0
-					&& this.character.eat === 0)) {
+					&& this.character.eat === 0))
 				return true;
-			}
-		}
+
 		return false;
 	}
 }

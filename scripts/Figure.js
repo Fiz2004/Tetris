@@ -13,8 +13,7 @@ export default class Figure {
 
 	constructor() {
 		this.cells = [];
-		for (const [x, y] of FIGURE[Math.floor(Math.random() * FIGURE.length)]) {
+		for (const [x, y] of FIGURE[Math.floor(Math.random() * FIGURE.length)])
 			this.cells.push(new Cell(x, y, Math.floor(Math.random() * NUMBER_IMAGES_FIGURE) + 1));
-		}
 	}
 }

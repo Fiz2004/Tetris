@@ -2,10 +2,9 @@ import Point from './Point.js';
 import * as getSprite from './getSpriteBeetle.js';
 import {
 	NUMBER_FRAMES_BEEATLE,
-	NUMBER_FRAMES_ELEMENTS,
 	NUMBER_FRAMES_BEEATLE_MOVE,
+	PROBABILITY_EAT,
 } from './const.js';
-import getDirection from "./FindWayRun.js"
 
 const CHARACTER_SPEED_LINE = 30;
 const CHARACTER_SPEED_ROTATE = 45;
@@ -50,8 +49,8 @@ export default class Character {
 		this.angle = 90;
 
 		this.moves = [];
-		this.move = new Point(-1, 0);
-		this.lastDirection = -1;
+		this.move = new Point(0, 0);
+		this.lastDirection = 1;
 
 		this.eat = 0;
 		this.deleteRow = 0;
@@ -69,18 +68,14 @@ export default class Character {
 
 		// Если не новый кадр
 		this.direction = {};
-		[this.direction.x, this.direction.y] = [Math.round(Math.cos(this.angle * Math.PI / 180)), Math.round(Math.sin(this.angle * Math.PI / 180))];
+		this.direction.x = Math.round(Math.cos(this.angle * (Math.PI / 180)));
+		this.direction.y = Math.round(Math.sin(this.angle * (Math.PI / 180)));
 
 		if (this.eat === 1
-			&& (this.direction.x === this.move.x && this.direction.y === this.move.y)) {
-			let offsetX = this.move.x;
-			const offsetY = this.move.y;
-			const direction = this.getDirectionEat(this.move);
-			if (offsetX === -1) offsetX = 0;
+			&& (this.direction.x === this.move.x && this.direction.y === this.move.y))
+			return 'eatDestroy';
 
-			const tile = new Point(Math.floor(this.position.x) + offsetX, Math.floor(this.position.y) + offsetY);
-			grid.space[tile.y][tile.x].status[direction] = Math.round(this.framesAnimation / (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS)) + 1;
-		}
+		return true;
 	}
 
 	changePosition() {
@@ -89,70 +84,96 @@ export default class Character {
 			this.position.y += this.speed.line * Math.sin(this.angle * (Math.PI / 180));
 		} else {
 			this.angle += this.speed.rotate;
+			this.angle %= 360;
 		}
 	}
 
-	getDirectionEat({ x, y }) {
-		if (x === -1 && y === 0) {
+	getDirectionEat() {
+		if (this.move.x === -1 && this.move.y === 0)
 			return 'R';
-		}
-		if (x === 1 && y === 0) {
+
+		if (this.move.x === 1 && this.move.y === 0)
 			return 'L';
-		}
-		if (x === 0 && y === 1) {
+
+		if (this.move.x === 0 && this.move.y === 1)
 			return 'U';
-		}
+
 		throw new Error('Error: uncorrect value function getDirectionEat');
 	}
 
 	isNewFrame() {
-		return (this.position.x % 1 < (1 / CHARACTER_SPEED_LINE) || this.position.x % 1 > (1 - (1 / CHARACTER_SPEED_LINE)))
-			&& (this.position.y % 1 < (1 / CHARACTER_SPEED_LINE) || this.position.y % 1 > (1 - (1 / CHARACTER_SPEED_LINE)))
-			&& ((this.angle / CHARACTER_SPEED_ROTATE) % 2 < 0.01 || (this.angle / CHARACTER_SPEED_ROTATE) % 2 > 1.99)
+		return (
+			this.position.x % 1 < (1 / CHARACTER_SPEED_LINE)
+			|| this.position.x % 1 > (1 - (1 / CHARACTER_SPEED_LINE))
+		) && (this.position.y % 1 < (1 / CHARACTER_SPEED_LINE)
+			|| this.position.y % 1 > (1 - (1 / CHARACTER_SPEED_LINE))
+			) && ((this.angle / CHARACTER_SPEED_ROTATE) % 2 < 0.01
+				|| (this.angle / CHARACTER_SPEED_ROTATE) % 2 > 1.99
+			);
 	}
 
 	updateNewFrame(grid) {
-		getDirection(this, grid);
+		const { eat } = this;
+		this.eat = 0;
 
-		if (this.eat === 1) {
-			this.eat = 0;
+		this.moves = this.getDirection(grid);
 
-			const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
-			grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
-			grid.space[tile.y][tile.x].element = 0;
-			return 'eat'
+		if (this.move.x === this.moves[0].x && this.move.y === this.moves[0].y) {
+			if (Math.round(Math.cos(this.angle * (Math.PI / 180))) === this.move.x
+				&& Math.round(Math.sin(this.angle * (Math.PI / 180))) === this.move.y)
+				this.move = this.moves.shift();
+		} else {
+			[this.move] = this.moves;
 		}
+
+		this.speed = this.getSpeedAngle();
+
+		if (eat === 1)
+			return 'eat';
+
+		return true;
+	}
+
+	getSpeedAngle() {
+		const angle = Math.atan2(this.move.y, this.move.x) * (180 / Math.PI);
+		let sign = 1;
+		if ((this.angle - angle) > 0 && (this.angle - angle) < 180)
+			sign = -1;
+
+		if (Math.round(Math.cos(this.angle * (Math.PI / 180))) === this.move.x
+			&& Math.round(Math.sin(this.angle * (Math.PI / 180))) === this.move.y)
+			return { rotate: 0, line: 1 / 10 };
+
+		return { rotate: sign * CHARACTER_SPEED_ROTATE, line: 0 };
 	}
 
 	// Проверяем есть ли доступ к верху стакана
 	isBreath(grid) {
 		const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
 		this.breath = this.findWay(tile, [], grid);
-		if (this.breath) { this.timeBreath = Date.now(); }
+		if (this.breath) this.timeBreath = Date.now();
 		return this.breath;
 	}
 
 	findWay(tile, cash, grid) {
-		if (tile.y === 0) {
+		if (tile.y === 0)
 			return true;
-		}
-		cash.push([tile.x, tile.y]);
-		for (const element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }]) {
-			const filterCash = cash.filter((el) => tile.x + element.x === el[0] && tile.y + element.y === el[1]).length === 0;
+
+		cash.push({ x: tile.x, y: tile.y });
+		for (const element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }])
 			if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
 				&& grid.space[tile.y + element.y][tile.x + element.x].element === 0
-				&& filterCash
-				&& this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash, grid)) {
+				&& !cash.find(({ x, y }) => tile.x + element.x === x && tile.y + element.y === y)
+				&& this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash, grid))
 				return true;
-			}
-		}
+
 		return false;
 	}
 
-	// Получить напарвления движения
 	getDirectionMovement() {
 		this.direction = {};
-		[this.direction.x, this.direction.y] = [Math.round(Math.cos(this.angle * Math.PI / 180)), Math.round(Math.sin(this.angle * Math.PI / 180))]
+		this.direction.x = Math.round(Math.cos(this.angle * (Math.PI / 180)));
+		this.direction.y = Math.round(Math.sin(this.angle * (Math.PI / 180)));
 		if (this.direction.x === -1 && this.direction.y === 1) {
 			this.direction.x = -1;
 			this.direction.y = 0;
@@ -178,48 +199,144 @@ export default class Character {
 			&& (this.direction.x === this.move.x && this.direction.y === this.move.y);
 	}
 
-	// Исходя из данных определяет спрайт для рисования
-	getSprite() {
-		const framesAnimation = getFrames(this.move, this.position, this.angle);
-		// Если жук ест
-		if (this.isEatingNow()) {
-			return getSprite.EatingNow(this.getDirectionMovement(), framesAnimation);
-		}
-		return getSprite.NoEatingNow(this.getDirectionMovement(), framesAnimation);
+	getDirection(grid) {
+		// Проверяем свободен ли выбранный путь при фиксации фигуры
+		if (this.deleteRow === 1
+			&& this.moves === this.isCanMove([this.moves], grid))
+			this.deleteRow = 0;
+
+		if (this.moves.length === 0 || this.deleteRow === 1)
+			return this.getNewDirection(grid);
+
+		return this.moves;
 	}
 
+	getNewDirection(grid) {
+		const DIRECTION = getDIRECTION();
+		this.deleteRow = 0;
+		// Если двигаемся вправо
+		if ((
+			(this.speed.line === 0 && this.speed.rotate === 0)
+			&& this.move.x === 1
+		) || this.move.x === 1) {
+			this.lastDirection = 1;
+			return this.isCanMove([...DIRECTION.RIGHTDOWN, ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
+		}
+		// Если двигаемся влево
+		if ((
+			(this.speed.line === 0 && this.speed.rotate === 0)
+			&& this.move.x === -1
+		) || this.move.x === -1) {
+			this.lastDirection = -1;
+			return this.isCanMove([...DIRECTION.LEFTDOWN, ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
+		}
+
+		if (this.lastDirection === -1)
+			return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION.LEFT, ...DIRECTION.RIGHT], grid);
+
+		return this.isCanMove([...[DIRECTION['0D']], ...DIRECTION.RIGHT, ...DIRECTION.LEFT], grid);
+	}
+
+	isCanMove(arrayDirectionses, grid) {
+		for (const directions of arrayDirectionses)
+			if (this.isCanDirections(directions, grid))
+				return directions;
+
+		return [{ x: 0, y: 0 }];
+	}
+
+	isCanDirections(directions, grid) {
+		let result = [];
+		let TekX = 0;
+		let TekY = 0;
+		for (const direction of directions) {
+			result = [];
+			TekX += direction.x;
+			TekY += direction.y;
+			const point = {
+				x: Math.round(this.position.x) + TekX,
+				y: Math.round(this.position.y) + TekY,
+			};
+
+			if (grid.isOutside(point))
+				return false;
+
+			if (grid.isNotFree(point)) {
+				if (TekY === 0
+					&& (Math.random() * 100) < PROBABILITY_EAT) {
+					this.eat = 1;
+					result.push(direction);
+					return result;
+				}
+				return false;
+			}
+			result.push(direction);
+		}
+		return result;
+	}
+
+	// Исходя из данных определяет спрайт для рисования
+	getSprite() {
+		const framesAnimation = getFrames(this.move, this.position);
+		// Если жук ест
+		if (this.isEatingNow())
+			return getSprite.EatingNow(this.getDirectionMovement(), framesAnimation);
+
+		return getSprite.NoEatingNow(this.getDirectionMovement(), framesAnimation);
+	}
+}
+
+function getDIRECTION() {
+	const result = {};
+	result.L = { x: -1, y: 0 };
+	result.R = { x: 1, y: 0 };
+	result.D = { x: 0, y: 1 };
+	result.U = { x: 0, y: -1 };
+	result['0'] = { x: 0, y: 0 };
+	result['0D'] = [{ x: 0, y: 1 }];
+	result.RD = [result.D, result.R];
+	result.LD = [result.D, result.L];
+	result.R0 = [result.R];
+	result.L0 = [result.L];
+	result.RU = [result.U, result.R];
+	result.LU = [result.U, result.L];
+	result.RUU = [result.U, result.U, result.R];
+	result.LUU = [result.U, result.U, result.L];
+	result.LEFTDOWN = [result['0D'], result.LD, result.RD];
+	result.RIGHTDOWN = [result['0D'], result.RD, result.LD];
+	result.LEFT = [result.L0, result.LU, result.LUU];
+	result.RIGHT = [result.R0, result.RU, result.RUU];
+	return result;
 }
 
 function getframe(coor) {
-	if (coor % 1 > 0.01 && coor % 1 < 0.99) {
+	if (coor % 1 > 0.01 && coor % 1 < 0.99)
 		return Math.ceil((coor % 1) * NUMBER_FRAMES_BEEATLE_MOVE);
-	}
+
 	return 0;
 }
 
-function getFrames(direct, position, angle) {
+function getFramesDirect(direct, position) {
+	if (direct === 1)
+		return getframe(position);
+
+	if (direct === -1) {
+		if (getframe(position) !== 0)
+			return NUMBER_FRAMES_BEEATLE_MOVE + 1 - getframe(position);
+
+		return 0;
+	}
+
+	return false;
+}
+
+function getFrames(direct, position) {
 	let result;
-	if (angle)
-		result = getFramesDirect(direct.x, position.x);
+	result = getFramesDirect(direct.x, position.x);
 	if (result !== false) return result;
 
 	result = getFramesDirect(direct.y, position.y);
 	if (result !== false) return result;
 
 	return 0;
-}
-
-function getFramesDirect(direct, position) {
-	if (direct === 1) {
-		return getframe(position);
-	}
-
-	if (direct === -1) {
-		if (getframe(position) !== 0) {
-			return NUMBER_FRAMES_BEEATLE_MOVE + 1 - getframe(position);
-		}
-		return 0;
-	}
-
-	return false;
 }

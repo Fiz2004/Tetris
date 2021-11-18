@@ -56,22 +56,17 @@ export default class CurrentFigure extends Figure {
 	isCollission(x, y) {
 		let result = false;
 		// Проверяем есть ли в этой точке элемент
-		for (const point of this.getPositionTile(x, y)) {
-			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0) {
+		for (const point of this.getPositionTile(x, y))
+			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0)
 				result = true;
-			}
-		}
 
-		if (result) {
+		if (result)
 			return true;
-		}
 
 		// Проверяем выходит ли точка за границы стакана
-		for (const { x: x1, y: y1 } of this.getPositionTile(x, y)) {
-			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1) {
+		for (const { x: x1, y: y1 } of this.getPositionTile(x, y))
+			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1)
 				return true;
-			}
-		}
 
 		return result;
 	}
@@ -79,41 +74,37 @@ export default class CurrentFigure extends Figure {
 	// функция поворота фигуры
 	rotate() {
 		this.cells = this.cells.map((cell) => ({ ...cell, ...{ x: 3 - cell.y, y: cell.x } }));
-		if (this.isCollission(this.position.x, this.position.y)) {
-			for (let i = 0; i < 3; i++) {
+		if (this.isCollission(this.position.x, this.position.y))
+			for (let i = 0; i < 3; i++)
 				this.cells = this.cells.map((cell) => ({ ...cell, ...{ x: 3 - cell.y, y: cell.x } }));
-			}
-		}
 	}
 
 	moves({
 		left, right, up, down,
 	}) {
-		if (left) {
+		if (left)
 			this.moveLeft();
-		}
-		if (right) {
+
+		if (right)
 			this.moveRight();
-		}
-		if (up) {
+
+		if (up)
 			this.rotate();
-		}
+
 		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
 		return this.moveDown(down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
 	}
 
 	// Метод движения влево
 	moveLeft() {
-		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y)) {
+		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
 			this.position.x -= STEP_MOVE_KEY_X;
-		}
 	}
 
 	// Метод движения вправо
 	moveRight() {
-		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y)) {
+		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
 			this.position.x += STEP_MOVE_KEY_X;
-		}
 	}
 
 	// Метод движения вниз возвращает
@@ -131,29 +122,26 @@ export default class CurrentFigure extends Figure {
 		// Создаем флаг для понимания что ниже двигатся нельзя
 		let stop = false;
 		// Просматриваем все Y между начальной и конечной позицицей
-		for (let y = tY; y <= kY; y++) {
+		for (let y = tY; y <= kY; y++)
 			if (this.isCollission(this.position.x, y)) {
 				predel = y;
 				stop = true;
 				break;
 			}
-		}
 
-		if (stepY < 1) {
+		if (stepY < 1)
 			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
 			this.position.y += stepY;
-		} else {
+		else
 			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
 			this.position.y += predel - tY;
-		}
+
 		// Если движение возможно просто выходим, если нет то смотрим условия
 		if (stop) {
 			const positionCells = this.getPositionTile(this.position.x, predel);
-			for (const { y } of positionCells) {
-				if (y - 1 < 0) {
+			for (const { y } of positionCells)
+				if (y - 1 < 0)
 					return 'endGame';
-				}
-			}
 
 			positionCells.forEach(({ x, y }, index) => {
 				this.grid.space[y - 1][x].element = this.cells[index].view;

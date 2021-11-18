@@ -21,15 +21,10 @@ export default class Element {
 
 	// Получить статус элемента, поврежден ли он или целый
 	getSpaceStatus() {
-		if (this.status.L !== 0) {
-			return 'L';
-		}
-		if (this.status.R !== 0) {
-			return 'R';
-		}
-		if (this.status.U !== 0) {
-			return 'U';
-		}
+		if (this.status.L !== 0) return 'L';
+		if (this.status.R !== 0) return 'R';
+		if (this.status.U !== 0) return 'U';
+
 		return '0';
 	}
 
