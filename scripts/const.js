@@ -30,7 +30,7 @@ export const NUMBER_FRAMES_ELEMENTS = 4;
 // Время без дыхания для проигрыша
 export const TIMES_BREATH_LOSE = 5;
 // Вероятность того что жук будет есть блок
-export const PROBABILITY_EAT = 20;
+export const PROBABILITY_EAT = 20 / 100;
 // Директория где храняться картинки
 export const DIRECTORY_IMG = 'Resurs/v1/';
 // Обозначение фигур, задаются координаты каждой ячейки

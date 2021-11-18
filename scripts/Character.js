@@ -239,20 +239,20 @@ export default class Character {
 
 	isCanMove(arrayDirectionses, grid) {
 		for (const directions of arrayDirectionses)
-			if (this.isCanDirections(directions, grid))
+			if (this.isCanDirections(directions, grid, (Math.random()) < PROBABILITY_EAT))
 				return directions;
 
 		return [{ x: 0, y: 0 }];
 	}
 
-	isCanDirections(directions, grid) {
+	isCanDirections(directions, grid, isDestoy) {
 		let result = [];
 		let TekX = 0;
 		let TekY = 0;
-		for (const direction of directions) {
-			result = [];
-			TekX += direction.x;
-			TekY += direction.y;
+		result = [];
+		for (const { x, y } of directions) {
+			TekX += x;
+			TekY += y;
 			const point = {
 				x: Math.round(this.position.x) + TekX,
 				y: Math.round(this.position.y) + TekY,
@@ -261,17 +261,17 @@ export default class Character {
 			if (grid.isOutside(point))
 				return false;
 
+			result.push({ x, y });
+
 			if (grid.isNotFree(point)) {
-				if (TekY === 0
-					&& (Math.random() * 100) < PROBABILITY_EAT) {
+				if (TekY === 0 && isDestoy) {
 					this.eat = 1;
-					result.push(direction);
 					return result;
 				}
 				return false;
 			}
-			result.push(direction);
 		}
+
 		return result;
 	}
 
@@ -330,7 +330,7 @@ function getFramesDirect(direct, position) {
 	return false;
 }
 
-function getFrames(direct, position) {
+export function getFrames(direct, position) {
 	let result;
 	result = getFramesDirect(direct.x, position.x);
 	if (result !== false) return result;
