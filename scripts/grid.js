@@ -35,7 +35,6 @@ export default class Grid {
 		return this.isOutside(point) || this.isNotFree(point);
 	}
 
-	// Проверяем свободна ли ячейка
 	isFree({ x, y }) {
 		return this.space[y][x].element === 0;
 	}

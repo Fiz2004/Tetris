@@ -82,6 +82,12 @@
     "nonblock-statement-body-position": [
       "error",
       "any"
+    ],
+    "object-curly-newline": [
+      "error",
+      {
+        "consistent": true
+      }
     ]
   }
 }

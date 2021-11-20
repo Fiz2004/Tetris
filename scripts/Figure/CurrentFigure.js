@@ -1,44 +1,27 @@
-import {
-	STEP_MOVE_KEY_X,
-	START_STEP_MOVE_AUTO,
-	STEP_MOVE_KEY_Y,
-	PLUS_STEP_MOVE_AUTO,
-} from './const.js';
-import Point from './Point.js';
+import Point from '../Point.js';
 import Figure from './Figure.js';
 
-export default class CurrentFigure extends Figure {
-	position;
-	grid;
+const START_STEP_MOVE_AUTO = 0.03;
+const ADD_STEP_MOVE_AUTO = 0.1;
+const STEP_MOVE_KEY_X = 1;
+const STEP_MOVE_KEY_Y = 2;
 
+export default class CurrentFigure extends Figure {
 	constructor(grid, newCell) {
 		super();
 		this.grid = grid;
 		this.cells = [...newCell];
 		this.stepMoveAuto = START_STEP_MOVE_AUTO;
-		// Задаем стартовую позицию
-		const width = this.cells.reduce((a, b) => (a.x > b.x ? a : b)).x;
-		const height = this.cells.reduce((a, b) => (a.y > b.y ? a : b)).y;
-		this.position = new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)), -1 - height);
+		this.position = this.createStartPosition();
 	}
 
-	// Получить массив занимаемый текущей фигурой по умолчанию, либо с задаными x и y, например при проверке коллизии
-	getPositionTile(x = this.position.x, y = this.position.y) {
-		/* const resultSet = [];
-		this.cells.forEach((cell) => {
-			for (let coorX = 0; coorX <= 1; coorX++) {
-				for (let coorY = 0; coorY <= 1; coorY++) {
-					if (resultSet.filter((el) => (cell.x + Math.floor(x + coorX) === el.x
-					&& cell.y + Math.floor(y + coorY) === el.y)).length === 0) {
-						resultSet.push(new Point(
-							cell.x + Math.floor(x + coorX),
-							cell.y + Math.floor(y + coorY),
-						));
-					}
-				}
-			}
-		});*/
+	createStartPosition() {
+		const width = this.cells.reduce((a, b) => (a.x > b.x ? a : b)).x;
+		const height = this.cells.reduce((a, b) => (a.y > b.y ? a : b)).y;
+		return new Point(Math.floor(Math.random() * (this.grid.width - 1 - width)), -1 - height);
+	}
 
+	getPositionTile(x = this.position.x, y = this.position.y) {
 		const result = [];
 		this.cells.forEach((cell) => result.push(new Point(
 			cell.x + Math.ceil(x),
@@ -49,59 +32,41 @@ export default class CurrentFigure extends Figure {
 
 	fixation(scores) {
 		const scoresForLevel = 300;
-		this.stepMoveAuto = PLUS_STEP_MOVE_AUTO + PLUS_STEP_MOVE_AUTO * Math.ceil(scores / scoresForLevel);
+		this.stepMoveAuto = ADD_STEP_MOVE_AUTO
+			+ ADD_STEP_MOVE_AUTO * Math.ceil(scores / scoresForLevel);
 	}
 
-	// Проверяем столкновение
 	isCollission(x, y) {
-		let result = false;
-		// Проверяем есть ли в этой точке элемент
-		for (const point of this.getPositionTile(x, y))
-			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0)
-				result = true;
-
-		if (result)
-			return true;
-
-		// Проверяем выходит ли точка за границы стакана
 		for (const { x: x1, y: y1 } of this.getPositionTile(x, y))
 			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1)
 				return true;
 
-		return result;
+		for (const point of this.getPositionTile(x, y))
+			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0)
+				return true;
+
+		return false;
 	}
 
-	// функция поворота фигуры
 	rotate() {
+		const oldCells = this.cells;
 		this.cells = this.cells.map((cell) => ({ ...cell, ...{ x: 3 - cell.y, y: cell.x } }));
 		if (this.isCollission(this.position.x, this.position.y))
-			for (let i = 0; i < 3; i++)
-				this.cells = this.cells.map((cell) => ({ ...cell, ...{ x: 3 - cell.y, y: cell.x } }));
+			this.cells = oldCells;
 	}
 
-	moves({
-		left, right, up, down,
-	}) {
-		if (left)
-			this.moveLeft();
-
-		if (right)
-			this.moveRight();
-
-		if (up)
-			this.rotate();
-
-		// Проверяем нажатие клавиши вниз и в таком случае ускоряем падение или двигаем по умолчанию
+	moves({ left, right, up, down }) {
+		if (left) this.moveLeft();
+		if (right) this.moveRight();
+		if (up) this.rotate();
 		return this.moveDown(down ? STEP_MOVE_KEY_Y : this.stepMoveAuto);
 	}
 
-	// Метод движения влево
 	moveLeft() {
 		if (!this.isCollission(this.position.x - STEP_MOVE_KEY_X, this.position.y))
 			this.position.x -= STEP_MOVE_KEY_X;
 	}
 
-	// Метод движения вправо
 	moveRight() {
 		if (!this.isCollission(this.position.x + STEP_MOVE_KEY_X, this.position.y))
 			this.position.x += STEP_MOVE_KEY_X;

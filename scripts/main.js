@@ -1,9 +1,8 @@
 import Display from './Display.js';
 import State from './State.js';
 import Controller from './controller.js';
-import {
-	TIME_UPDATE_CONTROLLER,
-} from './const.js';
+
+const TIME_UPDATE_CONTROLLER = 80 / 1000;
 
 window.onload = function () {
 	runGame();
@@ -17,7 +16,7 @@ async function runGame() {
 async function runLevel() {
 	const display = new Display();
 	await display.load();
-	const state = new State(display);
+	const state = new State(display.width, display.height);
 	const controller = new Controller({
 		37: 'left', 38: 'up', 39: 'right', 40: 'down',
 	});
@@ -40,7 +39,7 @@ async function runLevel() {
 
 			display.render(state);
 
-			if (status)
+			if (status && ending === 1)
 				return true;
 
 			if (ending > 0 && state.status !== 'new game') {

@@ -1,21 +1,13 @@
-import Figure from './Figure.js';
 import {
-	SIZE_TILES,
-	DIRECTORY_IMG,
-	TIMES_BREATH_LOSE,
 	NUMBER_IMAGES_FIGURE,
+	TIMES_BREATH_LOSE,
 } from './const.js';
+
+const DIRECTORY_IMG = 'Resurs/v1/';
+const SIZE_TILES = 30;
 
 // Объект рисования
 export default class Display {
-	canvas;
-	ctx;
-	canvasNextFigure;
-	ctxNextFigure;
-	txtScores;
-	imgFon;
-	imgKv;
-	imgBeetle;
 	constructor() {
 		this.canvas = document.querySelector('#canvasId');
 		this.ctx = this.canvas.getContext('2d');
@@ -28,13 +20,21 @@ export default class Display {
 		this.elementDivBreath = document.querySelector('#infoID');
 	}
 
+	get width() {
+		return this.canvas.width / SIZE_TILES;
+	}
+
+	get height() {
+		return this.canvas.height / SIZE_TILES;
+	}
+
 	load() {
 		// Переменные для отслеживания загрузки изображений
-		const numberImg = 1 + Figure.numberCell + 1;
+		const numberImg = NUMBER_IMAGES_FIGURE + 1;
 		let currentImg = 0;
 
 		// Формируем картинки для фигур
-		this.imgKv = Array.from({ length: Figure.numberCell });
+		this.imgKv = Array.from({ length: NUMBER_IMAGES_FIGURE });
 		for (let i = 0; i < this.imgKv.length; i++)
 			this.imgKv[i] = new Image();
 
@@ -42,7 +42,7 @@ export default class Display {
 		this.imgBeetle = new Image();
 
 		return new Promise((resolve) => {
-			const loadImage = () => { currentImg < numberImg - 1 ? currentImg += 1 : resolve(); };
+			const loadImage = () => { currentImg < numberImg ? currentImg += 1 : resolve(); };
 			// загружаем картинки фигур
 			for (let i = 0; i < this.imgKv.length; i++) {
 				this.imgKv[i].src = `${DIRECTORY_IMG}Kvadrat${i + 1}.png`;
@@ -73,13 +73,12 @@ export default class Display {
 			);
 	}
 
-	render({
-		grid, currentFigure, character, scores, record, status,
-	}) {
+	render({ grid, currentFigure, character, scores, record, status, nextFigure }) {
 		// Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid);
 		this.drawCurrentFigure(currentFigure);
 		this.drawCharacter(character);
+		this.drawNextFigure(nextFigure);
 
 		// Обновляем Очки
 		this.txtScores.textContent = String(scores).padStart(6, '0');
@@ -96,7 +95,7 @@ export default class Display {
 				sec = Math.max(TIMES_BREATH_LOSE - Math.ceil((Date.now() - character.timeBreath) / 1000), 0);
 			else
 				sec = TIMES_BREATH_LOSE;
-			if (!(character.breath)) {
+			if (!character.breath) {
 				if (!this.elementTimeBreath) {
 					const element = document.createElement('h1');
 					element.id = 'Breath';
@@ -122,8 +121,10 @@ export default class Display {
 			for (let x = 0; x < grid.width; x++) {
 				const screenX = x * SIZE_TILES;
 				const screenY = y * SIZE_TILES;
-				offsetX = Math.floor(grid.space[y][x].background / NUMBER_IMAGES_FIGURE) * SIZE_TILES;
-				offsetY = (grid.space[y][x].background % NUMBER_IMAGES_FIGURE) * SIZE_TILES;
+				const NUMBER_COLUMNS_IMAGES_FON = 4;
+				const NUMBER_ROWS_IMAGES_FON = 4;
+				offsetX = Math.floor(grid.space[y][x].background / NUMBER_COLUMNS_IMAGES_FON) * SIZE_TILES;
+				offsetY = (grid.space[y][x].background % NUMBER_ROWS_IMAGES_FON) * SIZE_TILES;
 
 				this.ctx.drawImage(
 					this.imgFon,

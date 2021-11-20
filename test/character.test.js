@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import Character from '../scripts/Character.js';
+import Character from '../scripts/Character/CharacterBreath.js';
 import Grid from '../scripts/grid.js';
 
 describe('isCanDirections', () => {

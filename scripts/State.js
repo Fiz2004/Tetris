@@ -1,50 +1,37 @@
-import Point from './Point.js';
-import Figure from './Figure.js';
-import CurrentFigure from './CurrentFigure.js';
+import Figure from './Figure/Figure.js';
+import CurrentFigure from './Figure/CurrentFigure.js';
 import Grid from './grid.js';
-import Character, { getFrames } from './Character.js';
+import { getFrames } from './Character/Character.js';
 import {
-	SIZE_TILES,
 	TIMES_BREATH_LOSE,
 	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS,
 } from './const.js';
+import CharacterBreath from './Character/CharacterBreath.js';
 
-// Класс в котором хранится вся модель игры
 export default class State {
-	scores;
-	grid;
-	currentFigure;
-	nextFigure;
-	character;
-
-	constructor(display) {
-		this.display = display;
-		this.grid = new Grid(display.canvas.width / SIZE_TILES, display.canvas.height / SIZE_TILES);
-
-		this.createCurrentFigure();
-
-		this.character = new Character(this.grid, this.scores);
+	constructor(width, height) {
+		this.grid = new Grid(width, height);
+		this.character = new CharacterBreath(this.grid);
 
 		this.scores = 0;
 		this.record = localStorage.getItem('Record') || 0;
 		this.status = 'playing';
 
 		this.pauseTime = null;
+
+		this.createCurrentFigure();
 	}
 
 	createCurrentFigure() {
 		this.nextFigure = this.nextFigure || new Figure();
 		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cells);
 		this.nextFigure = new Figure();
-
-		this.display.drawNextFigure(this.nextFigure);
 	}
 
 	update(deltaTime, controller) {
 		if (this.actionsControl(controller) === false
-			|| (!this.character.isBreath(this.grid) && this.checkLose())
-			|| (!this.character.isBreath(this.grid) && this.isCrushedBeetle())
+			|| (!this.character.isBreath(this.grid) && (this.checkLose() || this.isCrushedBeetle()))
 			|| this.status === 'new game') {
 			this.ifRecord();
 			return false;
@@ -52,13 +39,14 @@ export default class State {
 
 		const statusCharacter = this.character.update(this.grid);
 		if (statusCharacter === 'eat') {
-			const tile = new Point(Math.round(this.character.position.x), Math.round(this.character.position.y));
+			const tile = this.character.posTile;
 			this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
 			this.grid.space[tile.y][tile.x].element = 0;
 			this.scores += 50;
 		} else if (statusCharacter === 'eatDestroy') {
 			this.changeGridDestroyElement();
 		}
+
 		return true;
 	}
 
@@ -79,19 +67,16 @@ export default class State {
 	}
 
 	isCrushedBeetle() {
-		const tile = new Point(Math.round(this.character.position.x), Math.round(this.character.position.y));
+		const tile = this.character.posTile;
 		for (const elem of this.currentFigure.getPositionTile())
 			if ((elem.x === tile.x && elem.y === tile.y)
-				|| (this.grid.space[tile.y][tile.x].element !== 0
-					&& this.character.eat === 0))
+				|| (this.grid.isNotFree(tile) && this.character.eat === 0))
 				return true;
 
 		return false;
 	}
 
-	// Фиксация фигуры
 	fixation() {
-		// Подсчитываем количество исчезнувших рядов, для увеличения количества очков
 		const countRowFull = this.grid.getCountRowFull();
 		if (countRowFull)
 			this.grid.deleteRows();
@@ -103,7 +88,6 @@ export default class State {
 		this.currentFigure.fixation(this.scores);
 		this.ifRecord();
 
-		// Уведомляем жука что произошла фиксация фигуры, и надо проверить возможность движения{
 		this.character.deleteRow = 1;
 		this.character.isBreath(this.grid);
 	}
@@ -117,26 +101,25 @@ export default class State {
 	}
 
 	changeGridDestroyElement() {
-		let offsetX = this.character.move.x;
-		const offsetY = this.character.move.y;
+		const offset = { ...this.character.move };
 		const direction = this.character.getDirectionEat();
-		if (offsetX === -1) offsetX = 0;
+		if (offset.x === -1) offset.x = 0;
 
-		const { move } = this.character;
-		const { position } = this.character;
-		const { angle } = this.character;
+		const move = { ...this.character.move };
+		const position = { ...this.character.position };
+		const angle = { ...this.character.angle };
 		const devided = (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS);
 		const statusDestroyElement = Math.round(getFrames(move, position, angle) / devided);
 
-		const x = Math.floor(this.character.position.x);
-		const y = Math.floor(this.character.position.y);
-		const tile = new Point(x + offsetX, y + offsetY);
+		const tile = {
+			x: Math.floor(this.character.position.x) + offset.x,
+			y: Math.floor(this.character.position.y) + offset.y,
+		};
 		this.grid.space[tile.y][tile.x].status[direction] = statusDestroyElement + 1;
 	}
 
 	checkLose() {
-		const tile = new Point(Math.floor(this.character.position.x), Math.floor(this.character.position.y));
-		if ((this.grid.space[tile.y][tile.x].element !== 0 && this.character.eat === 0)
+		if ((this.grid.isNotFree(this.character.posTile) && this.character.eat === 0)
 			|| TIMES_BREATH_LOSE - Math.ceil((Date.now() - this.character.timeBreath) / 1000) <= 0)
 			return true;
 

@@ -1,44 +1,13 @@
-import Point from './Point.js';
-import * as getSprite from './getSpriteBeetle.js';
+import Point from '../Point.js';
+import * as getSprite from '../getSpriteBeetle.js';
 import {
-	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_BEEATLE_MOVE,
-	PROBABILITY_EAT,
-} from './const.js';
+} from '../const.js';
 
 const CHARACTER_SPEED_LINE = 30;
 const CHARACTER_SPEED_ROTATE = 45;
 
-// Класс для жука
 export default class Character {
-	// Позиция относительно клетки
-	position;
-	// Угол поворота
-	angle;
-	// Текущее направление до конца анимации
-	direction;
-	// Направление движения, массивом с указанием смещения
-	lastDirection;
-	// Направление движения, массивом с указанием смещения
-	move;
-	// массив Направлений движения, массивом с указанием смещения
-	moves;
-	// Текущий кадр анимации от 1 до NUMBER_FRAMES_BEEATLE
-	framesAnimation;
-	// Показывает задыхаемся мы или нет
-	breath;
-	// Время которое прошло с момента нехватки дыхания
-	timeBreath;
-	// Происходит ли удаление строки
-	deleteRow;
-	// Ест ли жук
-	eat;
-	// Выоота и ширина спрайта жука
-	width;
-	height;
-	// Вспомогательная сетка для ссылки на сетку
-	grid;
-
 	constructor(grid) {
 		// !Сделать определение ширины и высоты жука програмным, чтобы не зависит от вида картинки
 		this.width = 24;
@@ -51,54 +20,45 @@ export default class Character {
 		this.moves = [];
 		this.move = new Point(0, 0);
 		this.lastDirection = 1;
+	}
 
-		this.eat = 0;
-		this.deleteRow = 0;
+	get posTileX() {
+		return Math.round(this.position.x);
+	}
 
-		// Задаем время для дыхания после истечения которого будет проигрыш
-		this.timeBreath = Date.now();
-		// С самого начала жук дышит
-		this.breath = false;
+	get posTileY() {
+		return Math.round(this.position.y);
+	}
+
+	get posTile() {
+		return new Point(this.posTileX, this.posTileY);
+	}
+
+	get directionX() {
+		return Math.round(Math.cos(this.angle * (Math.PI / 180)));
+	}
+
+	get directionY() {
+		return Math.round(Math.sin(this.angle * (Math.PI / 180)));
 	}
 
 	update(grid) {
 		this.changePosition();
+
 		if (this.isNewFrame())
 			return this.updateNewFrame(grid);
-
-		// Если не новый кадр
-		this.direction = {};
-		this.direction.x = Math.round(Math.cos(this.angle * (Math.PI / 180)));
-		this.direction.y = Math.round(Math.sin(this.angle * (Math.PI / 180)));
-
-		if (this.eat === 1
-			&& (this.direction.x === this.move.x && this.direction.y === this.move.y))
-			return 'eatDestroy';
 
 		return true;
 	}
 
 	changePosition() {
 		if (this.speed.rotate === 0) {
-			this.position.x += this.speed.line * Math.cos(this.angle * (Math.PI / 180));
-			this.position.y += this.speed.line * Math.sin(this.angle * (Math.PI / 180));
+			this.position.x += this.speed.line * this.directionX;
+			this.position.y += this.speed.line * this.directionY;
 		} else {
 			this.angle += this.speed.rotate;
 			this.angle %= 360;
 		}
-	}
-
-	getDirectionEat() {
-		if (this.move.x === -1 && this.move.y === 0)
-			return 'R';
-
-		if (this.move.x === 1 && this.move.y === 0)
-			return 'L';
-
-		if (this.move.x === 0 && this.move.y === 1)
-			return 'U';
-
-		throw new Error('Error: uncorrect value function getDirectionEat');
 	}
 
 	isNewFrame() {
@@ -113,14 +73,10 @@ export default class Character {
 	}
 
 	updateNewFrame(grid) {
-		const { eat } = this;
-		this.eat = 0;
-
 		this.moves = this.getDirection(grid);
 
 		if (this.move.x === this.moves[0].x && this.move.y === this.moves[0].y) {
-			if (Math.round(Math.cos(this.angle * (Math.PI / 180))) === this.move.x
-				&& Math.round(Math.sin(this.angle * (Math.PI / 180))) === this.move.y)
+			if (this.isMoveStraight())
 				this.move = this.moves.shift();
 		} else {
 			[this.move] = this.moves;
@@ -128,10 +84,11 @@ export default class Character {
 
 		this.speed = this.getSpeedAngle();
 
-		if (eat === 1)
-			return 'eat';
-
 		return true;
+	}
+
+	isMoveStraight() {
+		return this.directionX === this.move.x && this.directionY === this.move.y;
 	}
 
 	getSpeedAngle() {
@@ -140,63 +97,34 @@ export default class Character {
 		if ((this.angle - angle) > 0 && (this.angle - angle) < 180)
 			sign = -1;
 
-		if (Math.round(Math.cos(this.angle * (Math.PI / 180))) === this.move.x
-			&& Math.round(Math.sin(this.angle * (Math.PI / 180))) === this.move.y)
+		if (this.isMoveStraight())
 			return { rotate: 0, line: 1 / 10 };
 
 		return { rotate: sign * CHARACTER_SPEED_ROTATE, line: 0 };
 	}
 
-	// Проверяем есть ли доступ к верху стакана
-	isBreath(grid) {
-		const tile = new Point(Math.round(this.position.x), Math.round(this.position.y));
-		this.breath = this.findWay(tile, [], grid);
-		if (this.breath) this.timeBreath = Date.now();
-		return this.breath;
-	}
-
-	findWay(tile, cash, grid) {
-		if (tile.y === 0)
-			return true;
-
-		cash.push({ x: tile.x, y: tile.y });
-		for (const element of [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }])
-			if (grid.isInside({ x: tile.x + element.x, y: tile.y + element.y })
-				&& grid.space[tile.y + element.y][tile.x + element.x].element === 0
-				&& !cash.find(({ x, y }) => tile.x + element.x === x && tile.y + element.y === y)
-				&& this.findWay(new Point(tile.x + element.x, tile.y + element.y), cash, grid))
-				return true;
-
-		return false;
-	}
-
 	getDirectionMovement() {
-		this.direction = {};
-		this.direction.x = Math.round(Math.cos(this.angle * (Math.PI / 180)));
-		this.direction.y = Math.round(Math.sin(this.angle * (Math.PI / 180)));
-		if (this.direction.x === -1 && this.direction.y === 1) {
+		this.direction = {
+			x: this.directionX,
+			y: this.directionY,
+		};
+		if (this.directionX === -1 && this.directionY === 1) {
 			this.direction.x = -1;
 			this.direction.y = 0;
 		}
-		if (this.direction.x === -1 && this.direction.y === -1) {
+		if (this.directionX === -1 && this.directionY === -1) {
 			this.direction.x = 0;
 			this.direction.y = -1;
 		}
-		if (this.direction.x === 1 && this.direction.y === 1) {
+		if (this.directionX === 1 && this.directionY === 1) {
 			this.direction.x = 0;
 			this.direction.y = 1;
 		}
-		if (this.direction.x === 1 && this.direction.y === -1) {
+		if (this.directionX === 1 && this.directionY === -1) {
 			this.direction.x = 1;
 			this.direction.y = 0;
 		}
 		return `${[this.direction.x, this.direction.y, this.move.x, this.move.y].join('')}`;
-	}
-
-	// Проверяем ест ли жук сейчас
-	isEatingNow() {
-		return this.eat === 1 && this.frames !== NUMBER_FRAMES_BEEATLE - 1
-			&& (this.direction.x === this.move.x && this.direction.y === this.move.y);
 	}
 
 	getDirection(grid) {
@@ -239,40 +167,22 @@ export default class Character {
 
 	isCanMove(arrayDirectionses, grid) {
 		for (const directions of arrayDirectionses)
-			if (this.isCanDirections(directions, grid, (Math.random()) < PROBABILITY_EAT))
+			if (this.isCanDirections(directions, grid))
 				return directions;
 
 		return [{ x: 0, y: 0 }];
 	}
 
-	isCanDirections(directions, grid, isDestoy) {
-		let result = [];
-		let TekX = 0;
-		let TekY = 0;
-		result = [];
-		for (const { x, y } of directions) {
-			TekX += x;
-			TekY += y;
-			const point = {
-				x: Math.round(this.position.x) + TekX,
-				y: Math.round(this.position.y) + TekY,
-			};
-
-			if (grid.isOutside(point))
+	isCanDirections(directions, grid) {
+		let addPoint = new Point(0, 0);
+		for (const direction of directions) {
+			addPoint = addPoint.plus(direction);
+			const point = this.posTile.plus(addPoint);
+			if (grid.isOutside(point) || grid.isNotFree(point))
 				return false;
-
-			result.push({ x, y });
-
-			if (grid.isNotFree(point)) {
-				if (TekY === 0 && isDestoy) {
-					this.eat = 1;
-					return result;
-				}
-				return false;
-			}
 		}
 
-		return result;
+		return true;
 	}
 
 	// Исходя из данных определяет спрайт для рисования
