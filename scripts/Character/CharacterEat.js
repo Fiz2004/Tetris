@@ -6,7 +6,7 @@ import {
 } from '../const.js';
 
 const CHARACTER_SPEED_ROTATE = 45;
-const PROBABILITY_EAT = 100 / 100;
+const PROBABILITY_EAT = 20 / 100;
 
 export default class CharacterEat extends Character {
 	constructor(grid) {
@@ -124,6 +124,45 @@ export default class CharacterEat extends Character {
 
 	// Исходя из данных определяет спрайт для рисования
 	getSprite() {
+		// console.log('angle=', this.angle);
+		// console.log('speed=', this.speed);
+		if (this.angle === 0 && this.speed.line !== 0 && getframe(this.position.x) === -1)
+			return { x: 2, y: 0 };
+		if (this.angle === 0 && this.speed.line !== 0)
+			return { x: getframe(this.position.x), y: 1 };
+
+		if (this.angle === 180 && this.speed.line !== 0 && getframe(this.position.x) === -1)
+			return { x: 6, y: 0 };
+		if (this.angle === 180 && this.speed.line !== 0)
+			return { x: 4 - getframe(this.position.x), y: 2 };
+
+		if (this.angle === 90 && this.speed.line !== 0 && getframe(this.position.y) === -1)
+			return { x: 0, y: 0 };
+		if (this.angle === 90 && this.speed.line !== 0)
+			return { x: getframe(this.position.y), y: 4 };
+
+		if (this.angle === 270 && this.speed.line !== 0 && getframe(this.position.y) === -1)
+			return { x: 4, y: 0 };
+		if (this.angle === 270 && this.speed.line !== 0)
+			return { x: getframe(this.position.y), y: 3 };
+
+		if (this.speed.rotate !== 0 && this.angle === 0)
+			return { x: 2, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 45)
+			return { x: 1, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 90)
+			return { x: 0, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 135)
+			return { x: 7, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 180)
+			return { x: 6, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 225)
+			return { x: 5, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 270)
+			return { x: 4, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 315)
+			return { x: 3, y: 0 };
+
 		const framesAnimation = getFrames(this.move, this.position);
 		// Если жук ест
 		if (this.isEatingNow())
@@ -135,9 +174,9 @@ export default class CharacterEat extends Character {
 
 function getframe(coor) {
 	if (coor % 1 > 0.01 && coor % 1 < 0.99)
-		return Math.ceil((coor % 1) * NUMBER_FRAMES_BEEATLE_MOVE);
+		return Math.floor((coor % 1) * NUMBER_FRAMES_BEEATLE_MOVE);
 
-	return 0;
+	return -1;
 }
 
 function getFramesDirect(direct, position) {

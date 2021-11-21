@@ -4,13 +4,13 @@ import Figure from './Figure.js';
 const START_STEP_MOVE_AUTO = 0.03;
 const ADD_STEP_MOVE_AUTO = 0.1;
 const STEP_MOVE_KEY_X = 1;
-const STEP_MOVE_KEY_Y = 2;
+const STEP_MOVE_KEY_Y = 4;
 
 export default class CurrentFigure extends Figure {
-	constructor(grid, newCell) {
+	constructor(grid, figure) {
 		super();
 		this.grid = grid;
-		this.cells = [...newCell];
+		this.cells = [...figure.cells];
 		this.stepMoveAuto = START_STEP_MOVE_AUTO;
 		this.position = this.createStartPosition();
 	}
@@ -22,12 +22,7 @@ export default class CurrentFigure extends Figure {
 	}
 
 	getPositionTile(x = this.position.x, y = this.position.y) {
-		const result = [];
-		this.cells.forEach((cell) => result.push(new Point(
-			cell.x + Math.ceil(x),
-			cell.y + Math.ceil(y),
-		)));
-		return result;
+		return this.cells.map((cell) => new Point(cell.x + Math.ceil(x), cell.y + Math.ceil(y)));
 	}
 
 	fixation(scores) {
@@ -37,13 +32,17 @@ export default class CurrentFigure extends Figure {
 	}
 
 	isCollission(x, y) {
-		for (const { x: x1, y: y1 } of this.getPositionTile(x, y))
-			if (x1 < 0 || x1 > this.grid.width - 1 || y1 > this.grid.height - 1)
-				return true;
+		if (this.getPositionTile(x, y)
+			.some(({ x: tileX, y: tileY }) => (
+				tileX < 0 || tileX > this.grid.width - 1 || tileY > this.grid.height - 1
+			)))
+			return true;
 
-		for (const point of this.getPositionTile(x, y))
-			if (this.grid.isInside(point) && this.grid.space[point.y][point.x].element !== 0)
-				return true;
+		if (this.getPositionTile(x, y)
+			.some((point) => (
+				this.grid.isInside(point) && this.grid.space[point.y][point.x].block !== 0
+			)))
+			return true;
 
 		return false;
 	}
@@ -72,49 +71,37 @@ export default class CurrentFigure extends Figure {
 			this.position.x += STEP_MOVE_KEY_X;
 	}
 
-	// Метод движения вниз возвращает
-	// 3 значения true(Фигура достигла какого то препятствия),
-	// false(Игра окончена, стакан заполнен) и
-	// другое(Перемещаем фигуру на заданное расстояние)
 	moveDown(stepY) {
-		// Переменные для удобства
-		// Текущая позиция по Y
-		const tY = Math.ceil(this.position.y);
-		// Конечная позиция по Y при шаге stepY
-		const kY = Math.ceil(this.position.y + stepY);
-		// Запоминаем конечную пощицию еще в одну переменную
-		let predel = kY;
-		// Создаем флаг для понимания что ниже двигатся нельзя
-		let stop = false;
-		// Просматриваем все Y между начальной и конечной позицицей
-		for (let y = tY; y <= kY; y++)
-			if (this.isCollission(this.position.x, y)) {
-				predel = y;
-				stop = true;
-				break;
-			}
+		const yStart = Math.ceil(this.position.y);
+		const yEnd = Math.ceil(this.position.y + stepY);
+		const yMax = this.getYMax(yStart, yEnd);
 
-		if (stepY < 1)
-			// Если шаг движения меньше размера клетки, то просто увеличиваем позицию
-			this.position.y += stepY;
-		else
-			// Если шаг движения больше размера клетки, то двигаемя до предельного значения до которого можно
-			this.position.y += predel - tY;
-
-		// Если движение возможно просто выходим, если нет то смотрим условия
-		if (stop) {
-			const positionCells = this.getPositionTile(this.position.x, predel);
-			for (const { y } of positionCells)
-				if (y - 1 < 0)
-					return 'endGame';
-
-			positionCells.forEach(({ x, y }, index) => {
-				this.grid.space[y - 1][x].element = this.cells[index].view;
-			});
+		if (this.isCheckCollisionIfMoveDown(yStart, yEnd)) {
+			if (this.getPositionTile(this.position.x, yMax)
+				.some(({ y }) => (y - 1) < 0))
+				return 'endGame';
+			this.position.y = yMax;
 
 			return 'fixation';
 		}
 
+		this.position.y += stepY < 1 ? stepY : yMax - yStart;
 		return 'fall';
 	}
+
+	getYMax = (yStart, yEnd) => {
+		for (let y = yStart; y <= yEnd; y++)
+			if (this.isCollission(this.position.x, y))
+				return y - 1;
+
+		return yEnd;
+	};
+
+	isCheckCollisionIfMoveDown = (yStart, yEnd) => {
+		for (let y = yStart; y <= yEnd; y++)
+			if (this.isCollission(this.position.x, y))
+				return true;
+
+		return false;
+	};
 }

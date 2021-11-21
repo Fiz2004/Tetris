@@ -70,10 +70,7 @@
       "error",
       "consistent"
     ],
-    "function-call-argument-newline": [
-      "error",
-      "consistent"
-    ],
+    "function-call-argument-newline": "off",
     "curly": [
       "error",
       "multi",

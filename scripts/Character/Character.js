@@ -58,6 +58,8 @@ export default class Character {
 		} else {
 			this.angle += this.speed.rotate;
 			this.angle %= 360;
+			if (this.angle < 0)
+				this.angle += 360;
 		}
 	}
 

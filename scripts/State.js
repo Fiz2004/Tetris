@@ -25,7 +25,7 @@ export default class State {
 
 	createCurrentFigure() {
 		this.nextFigure = this.nextFigure || new Figure();
-		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure.cells);
+		this.currentFigure = new CurrentFigure(this.grid, this.nextFigure);
 		this.nextFigure = new Figure();
 	}
 
@@ -40,8 +40,7 @@ export default class State {
 		const statusCharacter = this.character.update(this.grid);
 		if (statusCharacter === 'eat') {
 			const tile = this.character.posTile;
-			this.grid.space[tile.y][tile.x].status = { L: 0, R: 0, U: 0 };
-			this.grid.space[tile.y][tile.x].element = 0;
+			this.grid.space[tile.y][tile.x].setZero();
 			this.scores += 50;
 		} else if (statusCharacter === 'eatDestroy') {
 			this.changeGridDestroyElement();
@@ -77,6 +76,11 @@ export default class State {
 	}
 
 	fixation() {
+		this.currentFigure.getPositionTile()
+			.forEach(({ x, y }, index) => {
+				this.grid.space[y][x].block = this.currentFigure.cells[index].view;
+			});
+
 		const countRowFull = this.grid.getCountRowFull();
 		if (countRowFull)
 			this.grid.deleteRows();
@@ -113,7 +117,7 @@ export default class State {
 
 		const tile = {
 			x: Math.floor(this.character.position.x) + offset.x,
-			y: Math.floor(this.character.position.y) + offset.y,
+			y: Math.round(this.character.position.y) + offset.y,
 		};
 		this.grid.space[tile.y][tile.x].status[direction] = statusDestroyElement + 1;
 	}

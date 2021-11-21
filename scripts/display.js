@@ -43,7 +43,7 @@ export default class Display {
 
 		return new Promise((resolve) => {
 			const loadImage = () => { currentImg < numberImg ? currentImg += 1 : resolve(); };
-			// загружаем картинки фигур
+
 			for (let i = 0; i < this.imgKv.length; i++) {
 				this.imgKv[i].src = `${DIRECTORY_IMG}Kvadrat${i + 1}.png`;
 				this.imgKv[i].onload = loadImage;
@@ -62,25 +62,19 @@ export default class Display {
 		for (const cell of nextFigure.cells)
 			this.ctxNextFigure.drawImage(
 				this.imgKv[cell.view - 1],
-				0,
-				0,
-				SIZE_TILES,
-				SIZE_TILES,
-				cell.x * SIZE_TILES,
-				cell.y * SIZE_TILES,
-				SIZE_TILES,
-				SIZE_TILES,
+				0, 0,
+				SIZE_TILES, SIZE_TILES,
+				cell.x * SIZE_TILES, cell.y * SIZE_TILES,
+				SIZE_TILES, SIZE_TILES,
 			);
 	}
 
 	render({ grid, currentFigure, character, scores, record, status, nextFigure }) {
-		// Рисуем фон и целые и поврежденные элементы в стакане
 		this.drawGridElements(grid);
 		this.drawCurrentFigure(currentFigure);
 		this.drawCharacter(character);
 		this.drawNextFigure(nextFigure);
 
-		// Обновляем Очки
 		this.txtScores.textContent = String(scores).padStart(6, '0');
 		this.txtRecord.textContent = String(record).padStart(6, '0');
 
@@ -108,15 +102,14 @@ export default class Display {
 				this.elementTimeBreath = null;
 			}
 
-			// Закрашиваем элемент связанный с дыханием
 			const int = (Math.floor(sec) * 255) / TIMES_BREATH_LOSE;
 			document.querySelector('#infoID').style.backgroundColor = `rgb(255, ${int}, ${int})`;
 		}
 	}
 
 	drawGridElements(grid) {
-		let offsetX; let
-			offsetY;
+		let offsetX;
+		let offsetY;
 		for (let y = 0; y < grid.height; y++)
 			for (let x = 0; x < grid.width; x++) {
 				const screenX = x * SIZE_TILES;
@@ -128,33 +121,25 @@ export default class Display {
 
 				this.ctx.drawImage(
 					this.imgFon,
-					offsetX,
-					offsetY,
-					SIZE_TILES,
-					SIZE_TILES,
-					screenX,
-					screenY,
-					SIZE_TILES,
-					SIZE_TILES,
+					offsetX, offsetY,
+					SIZE_TILES, SIZE_TILES,
+					screenX, screenY,
+					SIZE_TILES, SIZE_TILES,
 				);
 			}
 
 		for (let y = 0; y < grid.height; y++)
 			for (let x = 0; x < grid.width; x++)
-				if (grid.space[y][x].element !== 0) {
+				if (grid.space[y][x].block !== 0) {
 					const screenX = x * SIZE_TILES;
 					const screenY = y * SIZE_TILES;
-					[offsetX, offsetY] = getOffset(grid.space[y][x]);
+					({ x: offsetX, y: offsetY } = getOffset(grid.space[y][x]));
 					this.ctx.drawImage(
-						this.imgKv[grid.space[y][x].element - 1],
-						offsetX,
-						offsetY,
-						SIZE_TILES,
-						SIZE_TILES,
-						screenX,
-						screenY,
-						SIZE_TILES,
-						SIZE_TILES,
+						this.imgKv[grid.space[y][x].block - 1],
+						offsetX, offsetY,
+						SIZE_TILES, SIZE_TILES,
+						screenX, screenY,
+						SIZE_TILES, SIZE_TILES,
 					);
 				}
 	}
@@ -165,34 +150,26 @@ export default class Display {
 			const screenY = (cell.y + currentFigure.position.y) * SIZE_TILES;
 			this.ctx.drawImage(
 				this.imgKv[cell.view - 1],
-				0,
-				0,
-				SIZE_TILES,
-				SIZE_TILES,
-				screenX,
-				screenY,
-				SIZE_TILES,
-				SIZE_TILES,
+				0, 0,
+				SIZE_TILES, SIZE_TILES,
+				screenX, screenY,
+				SIZE_TILES, SIZE_TILES,
 			);
 		}
 	}
 
 	drawCharacter(character) {
-		let [offsetX, offsetY] = character.getSprite();
+		let { x: offsetX, y: offsetY } = character.getSprite();
 		offsetX *= SIZE_TILES;
 		offsetY *= SIZE_TILES;
 		const screenX = character.position.x * SIZE_TILES;
 		const screenY = character.position.y * SIZE_TILES;
 		this.ctx.drawImage(
 			this.imgBeetle,
-			offsetX,
-			offsetY,
-			SIZE_TILES,
-			SIZE_TILES,
-			screenX,
-			screenY,
-			SIZE_TILES,
-			SIZE_TILES,
+			offsetX, offsetY,
+			SIZE_TILES, SIZE_TILES,
+			screenX, screenY,
+			SIZE_TILES, SIZE_TILES,
 		);
 	}
 }
@@ -200,13 +177,13 @@ export default class Display {
 // Получить смещение по тайлам в зависимости от статуса элемента
 function getOffset(element) {
 	if (element.getSpaceStatus() === 'R')
-		return [(element.status.R - 1) * SIZE_TILES, 1 * SIZE_TILES];
+		return { x: (element.status.R - 1) * SIZE_TILES, y: 1 * SIZE_TILES };
 
 	if (element.getSpaceStatus() === 'L')
-		return [(element.status.L - 1) * SIZE_TILES, 2 * SIZE_TILES];
+		return { x: (element.status.L - 1) * SIZE_TILES, y: 2 * SIZE_TILES };
 
 	if (element.getSpaceStatus() === 'U')
-		return [(element.status.U - 1) * SIZE_TILES, 3 * SIZE_TILES];
+		return { x: (element.status.U - 1) * SIZE_TILES, y: 3 * SIZE_TILES };
 
-	return [0, 0];
+	return { x: 0, y: 0 };
 }
