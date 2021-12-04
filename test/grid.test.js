@@ -58,23 +58,23 @@ describe("Проверяем функцию getCountRowFull", function () {
 
 	it("Значение 1", function () {
 		for (let space of grid.space[4])
-			space.element = 1;
+			space.block = 1;
 		assert.equal(grid.getCountRowFull(), 1);
 	});
 
 	it("Значение 2", function () {
 		for (let space of grid.space[4])
-			space.element = 1;
+			space.block = 1;
 		for (let space of grid.space[3])
-			space.element = 1;
+			space.block = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 
 	it("Значение 1 0 1", function () {
 		for (let space of grid.space[4])
-			space.element = 1;
+			space.block = 1;
 		for (let space of grid.space[2])
-			space.element = 1;
+			space.block = 1;
 		assert.equal(grid.getCountRowFull(), 2);
 	});
 

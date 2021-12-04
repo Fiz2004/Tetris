@@ -27,11 +27,9 @@ export default class Controller {
 	}
 
 	refresh() {
-		for (const key in this.pressed) {
-			if (Object.prototype.hasOwnProperty.call(this.pressed, key)) {
+		for (const key in this.pressed)
+			if (Object.prototype.hasOwnProperty.call(this.pressed, key))
 				this.pressed[key] = null;
-			}
-		}
 	}
 
 	handler = (event) => {
@@ -42,9 +40,9 @@ export default class Controller {
 	};
 
 	touchStarts = (event) => {
-		if (event.cancelable && event.target !== 'button') {
+		if (event.cancelable && event.target !== 'button')
 			event.preventDefault();
-		}
+
 		this.touchStart = { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
 		this.touchPosition = { x: this.touchStart.x, y: this.touchStart.y };
 
@@ -54,7 +52,7 @@ export default class Controller {
 		const cW = document.documentElement.clientWidth;
 		const cH = document.documentElement.clientHeight;
 		if ((this.touchStart.x > cW * partHorizontal)
-			&& this.touchStart.x < cW - (cW * partHorizontal)) {
+			&& this.touchStart.x < cW - (cW * partHorizontal))
 			if (this.touchStart.y < cH * partVertical) {
 				this.pressed.left = false;
 				this.pressed.up = true;
@@ -66,7 +64,6 @@ export default class Controller {
 				this.pressed.right = false;
 				this.pressed.down = true;
 			}
-		}
 
 		if (this.touchStart.x <= cW * partHorizontal) {
 			this.pressed.left = true;
@@ -84,9 +81,9 @@ export default class Controller {
 	};
 
 	touchEnd = (event) => {
-		if (event.cancelable) {
+		if (event.cancelable)
 			event.preventDefault();
-		}
+
 		this.pressed.left = false;
 		this.pressed.up = false;
 		this.pressed.right = false;
