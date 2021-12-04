@@ -104,20 +104,22 @@ export default class State {
 
 	changeGridDestroyElement() {
 		const offset = { ...this.character.move };
-		const direction = this.character.getDirectionEat();
 		if (offset.x === -1) offset.x = 0;
-
-		let statusDestroyElement;
-		if (this.character.angle === 0)
-			statusDestroyElement = Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
-		if (this.character.angle === 180)
-			statusDestroyElement = 3 - Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
 
 		const tile = {
 			x: Math.floor(this.character.position.x) + offset.x,
 			y: Math.round(this.character.position.y) + offset.y,
 		};
-		this.grid.space[tile.y][tile.x].status[direction] = statusDestroyElement + 1;
+		this.grid.space[tile.y][tile.x].status[this.character.getDirectionEat()] = this.getStatusDestroyElement() + 1;
+	}
+
+	getStatusDestroyElement() {
+		if (this.character.angle === 0)
+			return Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
+		if (this.character.angle === 180)
+			return 3 - Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
+
+		return 0;
 	}
 
 	checkLose() {
