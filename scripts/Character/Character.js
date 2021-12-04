@@ -1,5 +1,4 @@
 import Point from '../Point.js';
-import * as getSprite from '../getSpriteBeetle.js';
 import {
 	NUMBER_FRAMES_BEEATLE_MOVE,
 } from '../const.js';
@@ -99,8 +98,12 @@ export default class Character {
 		if ((this.angle - angle) > 0 && (this.angle - angle) < 180)
 			sign = -1;
 
-		if (this.isMoveStraight())
+		if (Math.round(Math.cos(this.angle * (Math.PI / 180))) === this.move.x
+			&& Math.round(Math.sin(this.angle * (Math.PI / 180))) === this.move.y)
 			return { rotate: 0, line: 1 / 10 };
+
+		if (this.angle === angle)
+			return { rotate: 0, line: 0 };
 
 		return { rotate: sign * CHARACTER_SPEED_ROTATE, line: 0 };
 	}
@@ -189,12 +192,44 @@ export default class Character {
 
 	// Исходя из данных определяет спрайт для рисования
 	getSprite() {
-		const framesAnimation = getFrames(this.move, this.position);
-		// Если жук ест
-		if (this.isEatingNow())
-			return getSprite.EatingNow(this.getDirectionMovement(), framesAnimation);
+		if (this.angle === 0 && this.speed.line !== 0 && getframe(this.position.x) === -1)
+			return { x: 2, y: 0 };
+		if (this.angle === 0 && this.speed.line !== 0)
+			return { x: getframe(this.position.x), y: 1 };
 
-		return getSprite.NoEatingNow(this.getDirectionMovement(), framesAnimation);
+		if (this.angle === 180 && this.speed.line !== 0 && getframe(this.position.x) === -1)
+			return { x: 6, y: 0 };
+		if (this.angle === 180 && this.speed.line !== 0)
+			return { x: 4 - getframe(this.position.x), y: 2 };
+
+		if (this.angle === 90 && this.speed.line !== 0 && getframe(this.position.y) === -1)
+			return { x: 0, y: 0 };
+		if (this.angle === 90 && this.speed.line !== 0)
+			return { x: getframe(this.position.y), y: 4 };
+
+		if (this.angle === 270 && this.speed.line !== 0 && getframe(this.position.y) === -1)
+			return { x: 4, y: 0 };
+		if (this.angle === 270 && this.speed.line !== 0)
+			return { x: getframe(this.position.y), y: 3 };
+
+		if (this.speed.rotate !== 0 && this.angle === 0)
+			return { x: 2, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 45)
+			return { x: 1, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 90)
+			return { x: 0, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 135)
+			return { x: 7, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 180)
+			return { x: 6, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 225)
+			return { x: 5, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 270)
+			return { x: 4, y: 0 };
+		if (this.speed.rotate !== 0 && this.angle === 315)
+			return { x: 3, y: 0 };
+
+		return { x: 0, y: 0 };
 	}
 }
 
@@ -223,32 +258,7 @@ function getDIRECTION() {
 
 function getframe(coor) {
 	if (coor % 1 > 0.01 && coor % 1 < 0.99)
-		return Math.ceil((coor % 1) * NUMBER_FRAMES_BEEATLE_MOVE);
+		return Math.floor((coor % 1) * NUMBER_FRAMES_BEEATLE_MOVE);
 
-	return 0;
-}
-
-function getFramesDirect(direct, position) {
-	if (direct === 1)
-		return getframe(position);
-
-	if (direct === -1) {
-		if (getframe(position) !== 0)
-			return NUMBER_FRAMES_BEEATLE_MOVE + 1 - getframe(position);
-
-		return 0;
-	}
-
-	return false;
-}
-
-export function getFrames(direct, position) {
-	let result;
-	result = getFramesDirect(direct.x, position.x);
-	if (result !== false) return result;
-
-	result = getFramesDirect(direct.y, position.y);
-	if (result !== false) return result;
-
-	return 0;
+	return -1;
 }

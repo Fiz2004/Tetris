@@ -1,10 +1,8 @@
 import Figure from './Figure/Figure.js';
 import CurrentFigure from './Figure/CurrentFigure.js';
 import Grid from './grid.js';
-import { getFrames } from './Character/Character.js';
 import {
 	TIMES_BREATH_LOSE,
-	NUMBER_FRAMES_BEEATLE,
 	NUMBER_FRAMES_ELEMENTS,
 } from './const.js';
 import CharacterBreath from './Character/CharacterBreath.js';
@@ -109,11 +107,11 @@ export default class State {
 		const direction = this.character.getDirectionEat();
 		if (offset.x === -1) offset.x = 0;
 
-		const move = { ...this.character.move };
-		const position = { ...this.character.position };
-		const angle = { ...this.character.angle };
-		const devided = (NUMBER_FRAMES_BEEATLE / NUMBER_FRAMES_ELEMENTS);
-		const statusDestroyElement = Math.round(getFrames(move, position, angle) / devided);
+		let statusDestroyElement;
+		if (this.character.angle === 0)
+			statusDestroyElement = Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
+		if (this.character.angle === 180)
+			statusDestroyElement = 3 - Math.floor((this.character.position.x % 1) * NUMBER_FRAMES_ELEMENTS);
 
 		const tile = {
 			x: Math.floor(this.character.position.x) + offset.x,
